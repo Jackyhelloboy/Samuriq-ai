@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1794325918130,
+      "tag": "0000_violet_leech",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794327310588,
+      "tag": "0001_empty_titanium_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1794328598814,
+      "tag": "0002_fair_slayback",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1794357892912,
+      "tag": "0003_chubby_donald_blake",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1794360026217,
+      "tag": "0004_parched_silhouette",
+      "breakpoints": true
+    }
+  ]
+}

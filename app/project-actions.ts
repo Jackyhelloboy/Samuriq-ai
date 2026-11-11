@@ -1,0 +1,199 @@
+"use server";
+import { requireFeature } from "./features";
+import { getChatGPTUser } from "./chatgpt-auth";
+import { settings } from "./telegram";
+import { projectState } from "./project-state";
+import { getDb } from "../db";
+import { projects, applications, participants } from "../db/schema";
+import { eq, and } from "drizzle-orm";
+import { redirect } from "next/navigation";
+async function owner() {
+  const user = await getChatGPTUser();
+  if (
+    !user ||
+    user.email.toLowerCase() !== settings().ADMIN_EMAIL?.toLowerCase()
+  )
+    throw Error("Owner access required");
+}
+export async function publishProject(form: FormData) {
+  await owner();
+  const value = (key: string) => String(form.get(key) || "").trim();
+  const title = value("title").slice(0, 120),
+    description = value("description").slice(0, 4000);
+  if (!title || !description) throw Error("Title and description required");
+  const clientUrl = value("clientUrl");
+  if (clientUrl) {
+    const url = new URL(clientUrl);
+    if (url.protocol !== "https:" || url.username || url.password)
+      throw Error("Use an HTTPS client URL");
+  }
+  const vid = (k: string) => {
+    const v = value(k);
+    if (v) {
+      const u = new URL(v);
+      if (u.protocol !== "https:" || u.username || u.password) throw Error("Video links must be HTTPS");
+    }
+    return v;
+  };
+  const introUrl = vid("introUrl"), tutorialUrl = vid("tutorialUrl"), registerUrl = vid("registerUrl");
+  const communityUrl = value("communityUrl");
+  if (communityUrl) {
+    const u = new URL(communityUrl);
+    if (
+      u.protocol !== "https:" ||
+      !["t.me", "discord.gg", "discord.com"].includes(u.hostname) ||
+      u.username ||
+      u.password
+    )
+      throw Error("Use a Telegram or Discord invite URL");
+  }
+  const targetMinutes = Number(value("targetHours") || 0) * 60,
+    hourlyRate = Number(value("hourlyRate") || 0),
+    targetStart = value("targetStart"),
+    deadline = value("deadline");
+  if (
+    !Number.isInteger(targetMinutes) ||
+    targetMinutes < 0 ||
+    targetMinutes > 10080 ||
+    !Number.isInteger(hourlyRate) ||
+    hourlyRate < 0 ||
+    hourlyRate > 100000
+  )
+    throw Error("Check target hours and hourly rate");
+  if (
+    (targetStart || deadline) &&
+    (!/^\d{4}-\d{2}-\d{2}$/.test(targetStart) ||
+      !/^\d{4}-\d{2}-\d{2}$/.test(deadline) ||
+      deadline < targetStart)
+  )
+    throw Error("Set a valid target period");
+  const id = value("id");
+  const values = {
+    title,
+    targetMinutes,
+    hourlyRate,
+    targetStart,
+    deadline,
+    communityUrl,
+    introUrl,
+    tutorialUrl,
+    registerUrl,
+    description,
+    category: value("category").slice(0, 100),
+    requirements: value("requirements").slice(0, 2000),
+    clientUrl,
+    inviteCode: value("inviteCode").slice(0, 100),
+    pair: form.get("pair") === "yes" ? 1 : 0,
+    rate: value("rate").slice(0, 200),
+    location: value("location").slice(0, 200),
+    questions: value("questions").slice(0, 2000),
+    active: form.get("active") === "1" ? 1 : 0,
+  };
+  if (id) await getDb().update(projects).set(values).where(eq(projects.id, id));
+  else
+    await getDb()
+      .insert(projects)
+      .values({
+        id: crypto.randomUUID(),
+        ...values,
+        created: new Date().toISOString(),
+      });
+  redirect("/admin/projects");
+}
+export async function applyProject(form: FormData) {
+  await requireFeature("applications");
+  const user = await getChatGPTUser();
+  if (!user) redirect("/signin-with-chatgpt?return_to=/projects");
+  const db = getDb(),
+    projectId = String(form.get("projectId"));
+  const project = await db
+    .select()
+    .from(projects)
+    .where(eq(projects.id, projectId))
+    .get();
+  const profile = await db
+    .select()
+    .from(participants)
+    .where(eq(participants.id, user.userId))
+    .get();
+  if (!profile) redirect("/workspace?next=" + encodeURIComponent(projectId));
+  if (!project?.active) throw Error("Applications are closed");
+  if (projectState(project) === "paused") throw Error("This project is paused. Its deadline has passed.");
+  const partner = String(form.get("partner") || "")
+    .trim()
+    .slice(0, 100);
+  if (project.pair && !partner) throw Error("Partner name is required");
+  const partnerEmail = String(form.get("partnerEmail") || "")
+      .trim()
+      .toLowerCase(),
+    communityHandle = String(form.get("communityHandle") || "")
+      .trim()
+      .slice(0, 100);
+  if (
+    project.pair &&
+    (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(partnerEmail) ||
+      partnerEmail === user.email.toLowerCase())
+  )
+    throw Error("Use your permanent partner’s separate sign-in email");
+  if (!communityHandle) throw Error("Add your Telegram or Discord username");
+  const answers = String(form.get("experience") || "").trim();
+  if (!answers) throw Error("Complete your application answers");
+  if (form.get("consent") !== "yes") throw Error("Confirm your application");
+  await db
+    .insert(applications)
+    .values({
+      userId: user.userId,
+      projectId,
+      partner,
+      partnerEmail,
+      communityHandle,
+      experience: String(form.get("experience") || "").slice(0, 2000),
+      created: new Date().toISOString(),
+    })
+    .onConflictDoNothing();
+  redirect("/projects");
+}
+export async function decideApplication(form: FormData) {
+  await owner();
+  const status = String(form.get("status"));
+  if (!["approved", "pending", "declined"].includes(status))
+    throw Error("Invalid status");
+  const db = getDb(),
+    row = await db
+      .select()
+      .from(applications)
+      .innerJoin(projects, eq(projects.id, applications.projectId))
+      .where(
+        and(
+          eq(applications.userId, String(form.get("userId"))),
+          eq(applications.projectId, String(form.get("projectId"))),
+        ),
+      )
+      .get();
+  if (!row) throw Error("Application not found");
+  const communityVerified = form.get("communityVerified") === "yes" ? 1 : 0;
+  if (
+    status === "approved" &&
+    (!communityVerified ||
+      (row.projects.pair && !row.applications.partnerConfirmed))
+  )
+    throw Error("Confirm both partner consent and community membership first");
+  await db
+    .update(applications)
+    .set({ status, communityVerified })
+    .where(
+      and(
+        eq(applications.userId, String(form.get("userId"))),
+        eq(applications.projectId, String(form.get("projectId"))),
+      ),
+    );
+  redirect("/admin/projects");
+}
+export async function toggleProject(form: FormData) {
+  await owner();
+  await getDb()
+    .update(projects)
+    .set({ active: form.get("active") === "1" ? 1 : 0 })
+    .where(eq(projects.id, String(form.get("id"))));
+  redirect("/admin/projects");
+}
