@@ -1,4 +1,4 @@
-import { requireOwner } from "../../access";
+import { requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
 import { desc, like, count } from "drizzle-orm";
@@ -11,7 +11,7 @@ export default async function AdminProjects({
 }: {
   searchParams: Promise<Record<string, string>>;
 }) {
-  await requireOwner();
+  const operator=await requireOperator();
   const q = await searchParams,
     term = (q.q || "").slice(0, 100),
     page = Math.max(1, Math.min(10000, Number(q.page) || 1)),
@@ -29,20 +29,20 @@ export default async function AdminProjects({
   )[0].n;
   return (
     <Shell admin active="Projects">
-      <div className="actions">
+      {operator.role==="owner"&&<div className="actions">
         <a className="button light" href="/admin/import">
           Import projects from CSV ↓
         </a>
-      </div>
+      </div>}
       <Heading
         eyebrow="PROJECT OPERATIONS"
         title="Your project portfolio."
         description="Create detailed briefs, manage client destinations and control applications."
-        action={
+        action={operator.role==="owner"?
           <a className="button dark" href="/admin/projects/edit">
             <Plus size={16} />
             Create project
-          </a>
+          </a>:undefined
         }
       />
       <form className="filter-bar">
@@ -86,16 +86,16 @@ export default async function AdminProjects({
                   </td>
                   <td>
                     <span className={"badge " + (j.active ? "approved" : "")}>
-                      {j.active ? "Open" : "Closed / draft"}
+                      {j.active ? "ACTIVE" : j.visibility==="listed"?"CLOSED":"DRAFT"}
                     </span>
                   </td>
                   <td>
-                    <a
+                    {operator.role==="owner"&&<a
                       className="text-link"
                       href={"/admin/projects/edit?id=" + j.id}
                     >
                       Edit brief
-                    </a>
+                    </a>}
                     <form action={toggleProject}>
                       <input name="id" type="hidden" value={j.id} />
                       <input
@@ -104,7 +104,7 @@ export default async function AdminProjects({
                         value={j.active ? "0" : "1"}
                       />
                       <button className="table-button">
-                        {j.active ? "Close applications" : "Publish / reopen"}
+                        {j.active ? "Close project" : "Activate project"}
                       </button>
                     </form>
                     <a href={"/projects/detail?id=" + j.id}>

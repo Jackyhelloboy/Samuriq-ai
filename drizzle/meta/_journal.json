@@ -64,6 +64,20 @@
       "when": 1794360034217,
       "tag": "0008_onboarding_roles",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1794407486661,
+      "tag": "0009_slim_mercury",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1794407897980,
+      "tag": "0010_freezing_alex_power",
+      "breakpoints": true
     }
   ]
 }

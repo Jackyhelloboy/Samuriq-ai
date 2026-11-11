@@ -3,6 +3,7 @@ import {
   text,
   integer,
   primaryKey,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 export const participants = sqliteTable("participants", {
   id: text("id").primaryKey(),
@@ -52,6 +53,7 @@ export const projects = sqliteTable("projects", {
   introUrl: text("intro_url").notNull().default(""),
   tutorialUrl: text("tutorial_url").notNull().default(""),
   registerUrl: text("register_url").notNull().default(""),
+  visibility:text("visibility").notNull().default("legacy"),
   pair: integer("pair").notNull().default(0),
   active: integer("active").notNull().default(1),
   created: text("created").notNull(),
@@ -113,6 +115,7 @@ export const launches = sqliteTable("launches", {
 export const bankDetails = sqliteTable("bank_details", {
   userId: text("user_id").primaryKey(),
   encrypted: text("encrypted").notNull(),
+  fingerprint:text("fingerprint").notNull().default(""),
   last4: text("last4").notNull(),
   updated: text("updated").notNull(),
 });
@@ -165,6 +168,7 @@ export const onboarding = sqliteTable(
     userId: text("user_id").notNull(),
     projectId: text("project_id").notNull(),
     version: text("version").notNull(),
+    requiredSeconds:integer("required_seconds").notNull().default(0),
     watched: integer("watched").notNull().default(0),
     position: integer("position").notNull().default(0),
     lastTick: integer("last_tick").notNull().default(0),
@@ -198,3 +202,8 @@ export const authLimits = sqliteTable("auth_limits", {
   attempts: integer("attempts").notNull(),
   expires: integer("expires").notNull(),
 });
+
+export const identities=sqliteTable("identity_records",{userId:text("user_id").primaryKey(),panHash:text("pan_hash").notNull(),documentHash:text("document_hash").notNull(),encrypted:text("encrypted").notNull(),panLast4:text("pan_last4").notNull(),status:text("status").notNull().default("submitted"),documentKey:text("document_key").notNull(),documentType:text("document_type").notNull(),reviewNote:text("review_note").notNull().default(""),updated:text("updated").notNull()},t=>[uniqueIndex("identity_pan_unique").on(t.panHash),uniqueIndex("identity_document_unique").on(t.documentHash)]);
+export const bankClaims=sqliteTable("bank_claims",{fingerprint:text("fingerprint").primaryKey(),ownerId:text("owner_id").notNull(),created:text("created").notNull()});
+export const familyGrants=sqliteTable("family_grants",{userId:text("user_id").notNull(),fingerprint:text("fingerprint").notNull(),approvedBy:text("approved_by").notNull(),created:text("created").notNull()},t=>[primaryKey({columns:[t.userId,t.fingerprint]})]);
+export const paymentRequests=sqliteTable("payment_requests",{id:text("id").primaryKey(),userId:text("user_id").notNull(),kind:text("kind").notNull(),fingerprint:text("fingerprint").notNull().default(""),last4:text("last4").notNull().default(""),encrypted:text("encrypted").notNull().default(""),reason:text("reason").notNull(),status:text("status").notNull().default("pending"),reviewNote:text("review_note").notNull().default(""),created:text("created").notNull(),reviewed:text("reviewed").notNull().default("")});

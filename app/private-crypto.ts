@@ -1,0 +1,10 @@
+import {env} from 'cloudflare:workers';
+const enc=new TextEncoder();
+function rawKey(){const s=(env as unknown as {BANK_ENCRYPTION_KEY?:string}).BANK_ENCRYPTION_KEY;if(!s||!/^[a-f0-9]{64}$/.test(s))throw Error('Private payment storage is not configured');return Uint8Array.from(s.match(/../g)!,x=>parseInt(x,16));}
+async function key(){return crypto.subtle.importKey('raw',rawKey(),'AES-GCM',false,['encrypt','decrypt']);}
+export async function sealBytes(bytes:Uint8Array,context:string){const iv=crypto.getRandomValues(new Uint8Array(12)),cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:enc.encode(context)},await key(),new Uint8Array(bytes));const all=new Uint8Array(12+cipher.byteLength);all.set(iv);all.set(new Uint8Array(cipher),12);return all;}
+export async function openBytes(bytes:Uint8Array,context:string){return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:bytes.slice(0,12),additionalData:enc.encode(context)},await key(),bytes.slice(12)));}
+export async function sealRecord(value:unknown,context:string){const bytes=await sealBytes(enc.encode(JSON.stringify(value)),context);return Array.from(bytes,x=>x.toString(16).padStart(2,'0')).join('');}
+export async function openRecord<T>(hex:string,context:string):Promise<T>{return JSON.parse(new TextDecoder().decode(await openBytes(Uint8Array.from(hex.match(/../g)||[],x=>parseInt(x,16)),context)));}
+export async function privateFingerprint(value:string|Uint8Array,purpose:string){const hk=await crypto.subtle.importKey('raw',rawKey(),'HKDF',false,['deriveKey']),signing=await crypto.subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt:enc.encode('samuriq-private-index-v1'),info:enc.encode(purpose)},hk,{name:'HMAC',hash:'SHA-256',length:256},false,['sign']);return Array.from(new Uint8Array(await crypto.subtle.sign('HMAC',signing,typeof value==='string'?enc.encode(value):new Uint8Array(value))),x=>x.toString(16).padStart(2,'0')).join('');}
+export const privateFiles=()=>{const bucket=(env as unknown as {PRIVATE_FILES?:R2Bucket}).PRIVATE_FILES;if(!bucket)throw Error('Private document upload is not configured');return bucket;};

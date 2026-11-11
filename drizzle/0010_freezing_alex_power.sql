@@ -1,0 +1,1 @@
+ALTER TABLE `onboarding` ADD `required_seconds` integer DEFAULT 0 NOT NULL;

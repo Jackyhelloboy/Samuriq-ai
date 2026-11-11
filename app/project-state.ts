@@ -8,7 +8,7 @@ export function projectState(j: { active?: number | boolean; targetStart: string
   if (j.targetStart && t < j.targetStart) return "soon";
   return "online";
 }
-export const stateLabel = (s: ProjState) => (s === "online" ? "ONLINE" : s === "soon" ? "STARTS SOON" : "PAUSED · OFFLINE");
+export const stateLabel = (s: ProjState) => (s === "online" ? "ACTIVE" : s === "soon" ? "UPCOMING" : "CLOSED");
 export function embedUrl(raw: string): string | null {
   try {
     const u = new URL(raw), h = u.hostname.replace(/^www\./, "");

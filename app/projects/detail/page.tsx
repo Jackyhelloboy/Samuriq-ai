@@ -1,3 +1,4 @@
+import {staffRole} from "../../access";
 import { onboardingVersion } from "../../onboarding-state";
 import { onboarding } from "../../../db/schema";
 import { projectState, stateLabel, embedUrl } from "../../project-state";
@@ -34,6 +35,7 @@ export default async function Detail({
         <a href="/projects">Back to opportunities</a>
       </Shell>
     );
+  if(projectState(job)!=="online"&&!(await staffRole()))return <Shell active="Find projects"><Heading eyebrow="PROJECT CLOSED" title="This project is currently closed." description="Project details, registration, tutorials and work access unlock when an admin or manager activates the project."/><a className="button light" href="/projects">Back to projects</a></Shell>;
   const application = user
     ? await db
         .select()

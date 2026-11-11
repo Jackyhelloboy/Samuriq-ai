@@ -39,6 +39,7 @@ export async function Shell({
         ["Proof & reports", "/admin/reports", ShieldCheck],
         ["Announcements", "/admin/announcements", Radio],
         ["Payments", "/admin/payments", Wallet],
+        ["Identity & requests", "/admin/identity", ShieldCheck],
         ["Controls", "/admin/settings", Settings2],
         ["Security", "/admin/security", ShieldCheck],
         ["Integrations", "/admin/integrations", Plug],
@@ -56,6 +57,7 @@ export async function Shell({
     "/admin/roster",
     "/admin/reports",
     "/admin/onboarding",
+    "/admin/projects",
   ];
   const links =
     admin && staff?.role === "manager"

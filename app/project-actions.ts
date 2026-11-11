@@ -84,7 +84,9 @@ export async function publishProject(form: FormData) {
   if (onboardingRequired && (!(tutorialUrl || registerUrl) || !terms))
     throw Error("Required onboarding needs a tutorial URL and project terms");
   const id = value("id");
+  const visibility=form.get("listed")==="yes"?"listed":"draft";
   const values = {
+    visibility,
     title,
     targetMinutes,
     hourlyRate,
@@ -106,7 +108,7 @@ export async function publishProject(form: FormData) {
     rate: value("rate").slice(0, 200),
     location: value("location").slice(0, 200),
     questions: value("questions").slice(0, 2000),
-    active: form.get("active") === "1" ? 1 : 0,
+    active: form.get("active") === "1" && visibility==="listed" ? 1 : 0,
   };
   if (id) await getDb().update(projects).set(values).where(eq(projects.id, id));
   else
@@ -137,7 +139,7 @@ export async function applyProject(form: FormData) {
     .get();
   if (!profile) redirect("/workspace?next=" + encodeURIComponent(projectId));
   if (!project?.active) throw Error("Applications are closed");
-  if (projectState(project) === "paused")
+  if (projectState(project) !== "online")
     throw Error("This project is paused. Its deadline has passed.");
   await requireOnboarding(user.userId, project);
   const partner = String(form.get("partner") || "")
@@ -210,11 +212,4 @@ export async function decideApplication(form: FormData) {
     );
   redirect("/admin");
 }
-export async function toggleProject(form: FormData) {
-  await owner();
-  await getDb()
-    .update(projects)
-    .set({ active: form.get("active") === "1" ? 1 : 0 })
-    .where(eq(projects.id, String(form.get("id"))));
-  redirect("/admin/projects");
-}
+export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&(!job.clientUrl||!job.communityUrl))throw Error("The owner must configure client and community links first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed"}).where(eq(projects.id,id));redirect("/admin/projects");}

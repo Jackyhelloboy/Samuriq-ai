@@ -1,3 +1,4 @@
+import {projectState} from "../../project-state";
 import { getChatGPTUser, chatGPTSignInPath } from "../../chatgpt-auth";
 import { getDb } from "../../../db";
 import { projects, onboarding, participants } from "../../../db/schema";
@@ -26,6 +27,7 @@ export default async function Onboarding({
         <h1>Project unavailable</h1>
       </Shell>
     );
+  if(projectState(j)!=="online")return <Shell><Heading eyebrow="PROJECT CLOSED" title="Onboarding is closed." description="The coordinator must activate this project before you can continue."/><a href="/projects">Back to projects</a></Shell>;
   const p = user
     ? await db
         .select()
@@ -48,7 +50,7 @@ export default async function Onboarding({
           .get()
       : null,
     complete =
-      record && (record.verified || record.watched >= j.tutorialSeconds),
+      record && (record.verified || record.watched >= Math.max(j.tutorialSeconds,record.requiredSeconds)),
     url = j.tutorialUrl || j.registerUrl;
   return (
     <Shell active="Find projects">
@@ -89,7 +91,7 @@ export default async function Onboarding({
             <TutorialPlayer
               projectId={j.id}
               url={url}
-              seconds={j.tutorialSeconds}
+              seconds={Math.max(j.tutorialSeconds,record?.requiredSeconds||0)}
               initialWatched={record?.watched || 0}
               mode={videoMode(url)}
             />

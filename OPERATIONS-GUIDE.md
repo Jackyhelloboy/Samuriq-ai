@@ -53,3 +53,17 @@ The complete source includes frontend, server actions, migrations, assets and lo
 Requires Node.js 22.13+, npm and Cloudflare Workers/D1 through the bundled Vinext integration. Run `npm ci`, `npm run build`, then `python scripts/test-platform.py` and `python scripts/test-vendor.py`. Tests use isolated local databases, fixture identities and a dummy bank key, never the live participant database.
 
 For another hosting platform, replace the Sites trusted identity adapter with a supported authentication provider and provision the Worker/D1 bindings. Never trust arbitrary browser-supplied identity headers on an independently deployed server.
+
+
+## Pro5 release — projects and payment identity
+
+- Public project tiles show ACTIVE, UPCOMING or CLOSED. Closing a listed project keeps its tile visible but blocks contributor briefs, onboarding, applications, reporting and client access. Owner and managers can activate/close projects; only owner edits private links and configuration. Expired project schedules must be corrected before reactivation.
+- Five demonstration tiles are clearly marked LAYOUT PREVIEW and closed. Disable “Preview projects” in Controls to remove them. They are not real hiring opportunities.
+- New project categories include 3D hand labeling and video labeling. Each real project retains its own tutorial, requirements, terms, community URL, client URL, schedule and rates.
+- The tutorial player provides a play button without pause, seek or speed controls. Direct video and YouTube use elapsed playback credit. The detected full duration increases the configured minimum. This is a viewing gate, not proof of attention or tamper-proof DRM. Drive and unsupported embeds require a coordinator’s documented manual verification.
+- Contributors submit their own PAN before bank details. Identity records and documents are encrypted using the existing BANK_ENCRYPTION_KEY. Do not rotate or lose this key without a migration. Private R2 binding PRIVATE_FILES stores encrypted documents; no public file URL is issued.
+- PAN format and keyed duplicate checks run automatically; unique database indexes prevent PAN/document reuse across users. PAN authenticity is NOT verified with Income Tax/Protean. Integrating an authorized verification provider requires credentials and a separate implementation. A manual-reviewed status means only that the owner reviewed documents.
+- Owner console → Identity & requests supports masked records, explicit POST-only reveals/downloads, manual review, identity appeals and family-bank requests. Managers cannot access these records. Never export PAN documents into ordinary Sheets/CSV.
+- Existing bank records must be indexed by the owner before new bank updates are accepted. Conflicting old shared accounts remain unindexed until the owner reviews each contributor’s unique PAN and approves a family request. Old encryption remains compatible.
+- A family exception applies to one exact bank fingerprint. Both original holder and applicant need different manually reviewed PANs; the owner must record relationship, consent and a review note. Sharing a PAN is never enabled. PAN correction/recovery appeals require owner assistance; automatic account merging is not implemented.
+- PAN deduplication does not guarantee one physical person. Document authenticity, rightful account ownership and client work/QC still need human or provider verification. Bank details are for payout coordination; no transfer is initiated automatically.

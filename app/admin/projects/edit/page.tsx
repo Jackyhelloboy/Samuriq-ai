@@ -52,6 +52,8 @@ export default async function Editor({
                     {[
                       "AI training",
                       "Data annotation",
+              "3D hand labeling",
+              "Video labeling",
                       "Speech & audio",
                       "Human motion & POV",
                       "AI evaluation",
@@ -262,12 +264,12 @@ export default async function Editor({
               </label>
             </section>
             <section className="suite-card">
-              <h3>Publication</h3>
+              <h3>Publication</h3><label className="check"><input type="checkbox" name="listed" value="yes" defaultChecked={job?job.active===1||job.visibility==="listed":true}/>Display in the project catalog</label>
               <label>
                 Status
                 <select name="active" defaultValue={job?.active ? "1" : "0"}>
-                  <option value="0">Draft / applications closed</option>
-                  <option value="1">Published · applications open</option>
+                  <option value="0">Closed · no contributor access</option>
+                  <option value="1">Active · applications open</option>
                 </select>
               </label>
               <p>

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { startTutorial, recordPlayback } from "../onboarding-actions";
+import { startTutorial, recordPlayback, setVideoDuration } from "../onboarding-actions";
 import { embedUrl } from "../project-state";
 export default function TutorialPlayer({
   projectId,
@@ -15,6 +15,7 @@ export default function TutorialPlayer({
   initialWatched: number;
   mode: string;
 }) {
+  const [required,setRequired]=useState(seconds),[started,setStarted]=useState(false),[playerReady,setPlayerReady]=useState(false);
   const [watched, setWatched] = useState(initialWatched),
     [message, setMessage] = useState(""),
     [ready, setReady] = useState(false);
@@ -23,7 +24,7 @@ export default function TutorialPlayer({
     box = useRef<HTMLDivElement>(null),
     furthest = useRef(initialWatched),
     player = useRef<any>(null),
-    busy = useRef(false);
+    busy = useRef(false), durationSent=useRef(false);
   useEffect(() => {
     let active = true;
     startTutorial(projectId)
@@ -46,18 +47,21 @@ export default function TutorialPlayer({
       let position = 0,
         playing = false;
       if (mode === "direct" && video.current) {
-        position = video.current.currentTime;
+        position = video.current.ended?Math.ceil(video.current.currentTime):video.current.currentTime;
         playing =
           (!video.current.paused && !video.current.ended) ||
           video.current.ended;
       }
       if (mode === "youtube" && player.current?.getCurrentTime) {
-        position = player.current.getCurrentTime();
+        position = player.current.getPlayerState()===0?Math.ceil(player.current.getCurrentTime()):player.current.getCurrentTime();
         playing =
           player.current.getPlayerState() === 1 ||
           (player.current.getPlayerState() === 0 && position >= seconds);
       }
       if (!playing) return;
+      const duration=mode==='direct'?video.current?.duration:player.current?.getDuration?.();
+      if(!durationSent.current&&Number.isFinite(duration)&&duration>0){durationSent.current=true;setVideoDuration(projectId,nonce.current,duration).then(r=>setRequired(r.requiredSeconds)).catch(e=>{durationSent.current=false;setMessage(e.message)});}
+
       if (position > furthest.current + 15) {
         if (mode === "direct" && video.current)
           video.current.currentTime = furthest.current;
@@ -87,12 +91,10 @@ export default function TutorialPlayer({
       const id = e.split("/").pop();
       player.current = new (window as any).YT.Player(box.current, {
         videoId: id,
-        playerVars: { controls: 1, disablekb: 1, rel: 0, playsinline: 1 },
+        playerVars: { controls: 0, disablekb: 1, rel: 0, playsinline: 1 },
         events: {
-          onReady: () =>
-            setMessage(
-              "Play the tutorial. Forward seeking is restricted during onboarding.",
-            ),
+          onReady:()=>{setPlayerReady(true);setMessage("Play the full tutorial to continue. Skip and speed controls are unavailable.");const d=player.current?.getDuration?.();if(d)setVideoDuration(projectId,nonce.current,d).then(r=>setRequired(r.requiredSeconds)).catch(e=>setMessage(e.message));},
+          onPlaybackRateChange:()=>player.current?.setPlaybackRate?.(1),
         },
       });
     };
@@ -126,7 +128,10 @@ export default function TutorialPlayer({
         <video
           ref={video}
           src={url}
-          controls
+          tabIndex={-1}
+          disablePictureInPicture
+          onContextMenu={e=>e.preventDefault()}
+          onLoadedMetadata={()=>{if(video.current?.duration&&nonce.current)setVideoDuration(projectId,nonce.current,video.current.duration).then(r=>setRequired(r.requiredSeconds)).catch(e=>setMessage(e.message));}}
           controlsList="nodownload noplaybackrate"
           playsInline
           onSeeking={() => {
@@ -153,6 +158,7 @@ export default function TutorialPlayer({
           Open tutorial video ↗
         </a>
       )}
+      {mode!=="manual"&&<button className="tutorial-play" disabled={!ready||(mode==="youtube"&&!playerReady)||started} onClick={()=>{setStarted(true);if(mode==="direct")video.current?.play().catch(e=>{setStarted(false);setMessage("Tap play again or check your browser’s media permission.")});else player.current?.playVideo?.();}}>{started?"Tutorial playing · complete the full duration":"Play required tutorial"}</button>}
       {mode === "manual" ? (
         <p>
           This video provider needs coordinator verification. Watch the full
@@ -160,17 +166,17 @@ export default function TutorialPlayer({
         </p>
       ) : (
         <>
-          <progress max={seconds} value={watched} />
+          <progress max={required} value={watched} />
           <p>
-            {Math.min(watched, seconds)} / {seconds} seconds recorded.{" "}
-            {watched >= seconds
+            {Math.min(watched, required)} / {required} seconds recorded.{" "}
+            {watched >= required
               ? "Tutorial complete. Refresh to continue to terms."
-              : "Keep this page visible while the video plays."}
+              : "No pause, skip or speed buttons are provided. Keep this page visible while the tutorial plays."}
           </p>
         </>
       )}
       {message && <p role="status">{message}</p>}
-      {watched >= seconds && (
+      {watched >= required && (
         <a
           className="button dark"
           href={"/projects/onboarding?id=" + encodeURIComponent(projectId)}

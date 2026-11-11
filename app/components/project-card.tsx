@@ -20,6 +20,7 @@ type Job = {
   targetStart: string;
   deadline: string;
   onboardingRequired?: number;
+  preview?: boolean;
 };
 export function ProjectCard({
   job: j,
@@ -46,7 +47,7 @@ export function ProjectCard({
           {stateLabel(state)}
         </span>
       </div>
-      <p className="card-discipline">{j.category}</p>
+      <p className="card-discipline">{j.category}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
       <h2>{j.title}</h2>
       <p className="card-excerpt">{j.description}</p>
       <div className="card-facts">
@@ -60,7 +61,7 @@ export function ProjectCard({
         </span>
       </div>
       <div className="card-compensation">{j.rate}</div>
-      <a
+      {state==="online"&&!j.preview?(      <a
         href={
           "/projects/detail?id=" +
           encodeURIComponent(j.id) +
@@ -70,7 +71,7 @@ export function ProjectCard({
         className="card-apply"
       >
         Select project <ArrowUpRight size={18} />
-      </a>
+      </a>):<div className="card-apply card-closed" aria-disabled="true"><span>{j.preview?"Preview only · no applications":"Project closed"}</span><span aria-hidden="true">—</span></div>}
     </article>
   );
 }

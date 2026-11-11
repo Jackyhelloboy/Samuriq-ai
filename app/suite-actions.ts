@@ -25,7 +25,7 @@ export async function saveProgress(form: FormData) {
   if (application?.status !== "approved" || !application.communityVerified)
     throw Error("Project approval required");
   const proj = await getDb().select().from(projects).where(eq(projects.id, projectId)).get();
-  if (proj && projectState(proj) === "paused") throw Error("This project is paused. The deadline has passed.");
+  if (proj && projectState(proj) !== "online") throw Error("This project is paused. The deadline has passed.");
   const status = String(form.get("status")),
     minutes = Number(form.get("minutes")),
     units = Number(form.get("units"));

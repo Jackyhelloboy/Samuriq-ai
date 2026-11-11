@@ -638,7 +638,7 @@ export default async function Workspace({
                             </div>
                           );
                         })()}
-                      {a.status === "approved" &&
+                      {projectState(j)==="online" && a.status === "approved" &&
                       a.communityVerified &&
                       (!j.pair || a.partnerConfirmed) ? (
                         <>
@@ -660,7 +660,7 @@ export default async function Workspace({
                           >
                             Open project desk →
                           </a>
-                          {flags.community &&
+                          {projectState(j)==="online" && flags.community &&
                             !j.onboardingRequired &&
                             j.communityUrl && (
                               <a
@@ -904,33 +904,8 @@ export default async function Workspace({
               </section>
               <section className="suite-card compact">
                 <h3>Community & support</h3>
-                {!flags.community ? (
-                  <p>Community links are temporarily paused.</p>
-                ) : (
-                  <>
-                    <p>
-                      Join the project community for coordination and
-                      instructions.
-                    </p>
-                    <a
-                      className="social-row"
-                      href={
-                        social.find((s) => s.id === "telegram")?.url ||
-                        settings().COMMUNITY_JOIN_URL
-                      }
-                    >
-                      Telegram <ArrowUpRight size={15} />
-                    </a>
-                    {social
-                      .filter((s) => s.url && s.id !== "telegram")
-                      .map((s) => (
-                        <a className="social-row" key={s.id} href={s.url}>
-                          {s.id}
-                          <ArrowUpRight size={15} />
-                        </a>
-                      ))}
-                  </>
-                )}
+                <p>Each approved project has its own community. Open an active project desk to join the correct team after onboarding.</p>
+                <a className="text-link" href="/projects">Browse project teams →</a>
               </section>
               <section className="suite-card compact">
                 <Wallet size={22} />

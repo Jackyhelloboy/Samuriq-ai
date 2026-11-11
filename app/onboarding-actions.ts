@@ -1,4 +1,5 @@
 "use server";
+import {projectState} from "./project-state";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { requireOperator } from "./access";
 import { getDb } from "../db";
@@ -23,6 +24,7 @@ async function context(id: string) {
       .where(eq(participants.id, user.userId))
       .get();
   if (!j || !p) throw Error("Complete your profile first");
+  if(projectState(j)!=="online")throw Error("This project is closed");
   return { user, db, j, version: await onboardingVersion(j) };
 }
 export async function startTutorial(id: string) {
@@ -55,6 +57,7 @@ export async function startTutorial(id: string) {
         nonce,
         lastTick: Date.now(),
         watched: 0,
+        requiredSeconds:0,
         position: 0,
         verified: 0,
         acceptedAt: "",
@@ -92,7 +95,7 @@ export async function recordPlayback(
         ? Math.min(advance, Math.floor(elapsed), 12)
         : 0;
   const watched = Math.min(
-    j.tutorialSeconds,
+    Math.max(j.tutorialSeconds,row.requiredSeconds),
     row.watched + Math.max(0, credit),
   );
   await db
@@ -125,7 +128,7 @@ export async function acceptOnboarding(form: FormData) {
   if (
     !r ||
     r.version !== version ||
-    (!r.verified && r.watched < j.tutorialSeconds)
+    (!r.verified && r.watched < Math.max(j.tutorialSeconds,r.requiredSeconds))
   )
     throw Error("Finish the tutorial or wait for coordinator verification");
   const clientEmail = String(form.get("clientEmail") || "")
@@ -240,3 +243,5 @@ export async function verifyTutorial(form: FormData) {
   });
   redirect("/admin/onboarding?saved=1");
 }
+
+export async function setVideoDuration(id:string,nonce:string,seconds:number){const {user,db,j,version}=await context(id);const duration=Math.ceil(seconds);if(!Number.isFinite(duration)||duration<1||duration>14400)throw Error("Video duration unavailable or unsupported");const row=await db.select().from(onboarding).where(and(eq(onboarding.userId,user.userId),eq(onboarding.projectId,id),eq(onboarding.version,version),eq(onboarding.nonce,nonce))).get();if(!row)throw Error("Restart the tutorial");const requiredSeconds=Math.max(j.tutorialSeconds,row.requiredSeconds,duration);await db.update(onboarding).set({requiredSeconds,...(requiredSeconds>Math.max(j.tutorialSeconds,row.requiredSeconds)?{acceptedAt:''}:{})}).where(and(eq(onboarding.userId,user.userId),eq(onboarding.projectId,id),eq(onboarding.nonce,nonce)));return {requiredSeconds};}

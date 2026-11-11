@@ -1,4 +1,5 @@
 "use server";
+import {storeBank} from "./payment-actions";
 import { requireFeature } from "./features";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { requireOnboarding } from "./onboarding-state";
@@ -133,56 +134,4 @@ export async function reviewReport(form: FormData) {
     throw Error("This report changed. Refresh and review the latest version.");
   redirect("/admin/reports?saved=1");
 }
-export async function saveBank(form: FormData) {
-  await requireFeature("bank");
-  const user = await getChatGPTUser();
-  if (!user) throw Error("Sign in first");
-  const db = getDb(),
-    profile = await db
-      .select()
-      .from(participants)
-      .where(eq(participants.id, user.userId))
-      .get();
-  if (!profile) throw Error("Complete your profile first");
-  const holder = String(form.get("holder") || "").trim(),
-    account = String(form.get("account") || "").replace(/\s/g, ""),
-    confirm = String(form.get("confirm") || "").replace(/\s/g, ""),
-    ifsc = String(form.get("ifsc") || "")
-      .trim()
-      .toUpperCase();
-  if (
-    holder.length < 2 ||
-    holder.length > 100 ||
-    !/^\d{9,18}$/.test(account) ||
-    account !== confirm ||
-    !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc) ||
-    form.get("consent") !== "yes"
-  )
-    throw Error(
-      "Check account holder, matching account numbers, IFSC and consent",
-    );
-  const encrypted = await encryptBank({ holder, account, ifsc }, user.userId),
-    updated = new Date().toISOString();
-  await db.batch([
-    db
-      .insert(bankDetails)
-      .values({
-        userId: user.userId,
-        encrypted,
-        last4: account.slice(-4),
-        updated,
-      })
-      .onConflictDoUpdate({
-        target: bankDetails.userId,
-        set: { encrypted, last4: account.slice(-4), updated },
-      }),
-    db.insert(bankAudit).values({
-      id: crypto.randomUUID(),
-      actor: user.userId,
-      target: user.userId,
-      action: "updated",
-      created: updated,
-    }),
-  ]);
-  redirect("/workspace/payments?saved=1");
-}
+export async function saveBank(form:FormData){return storeBank(form);}

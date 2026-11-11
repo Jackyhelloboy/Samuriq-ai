@@ -1,9 +1,11 @@
+import {features} from "./features";
+import {previewProjects} from "./preview-projects";
 import { ProjectCard } from "./components/project-card";
 import { ContentSlot } from "./components/content-slot";
 import { Brand } from "./marks";
 import { getDb } from "../db";
 import { projects } from "../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, or } from "drizzle-orm";
 import {
   ArrowUpRight,
   AudioLines,
@@ -26,11 +28,13 @@ export default async function Home({
     jobs = await getDb()
       .select()
       .from(projects)
-      .where(eq(projects.active, 1))
+      .where(or(eq(projects.active,1),eq(projects.visibility,"listed")))
       .orderBy(desc(projects.created))
       .limit(50);
+  const flags=await features();
+  const displayJobs=[...jobs,...(flags.preview_projects?previewProjects:[])];
   return (
-    <div className="premium-site">
+    <div className="premium-site pro5">
       <header className="company-nav">
         <Brand />
         <nav aria-label="Main navigation">
@@ -74,7 +78,7 @@ export default async function Home({
           </div>
           <ContentSlot slot="home" />
           <div className="opportunity-grid">
-            {jobs.map((j) => (
+            {displayJobs.map((j) => (
               <ProjectCard
                 key={j.id}
                 job={j}

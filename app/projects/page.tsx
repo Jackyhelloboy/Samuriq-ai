@@ -1,3 +1,5 @@
+import {features} from "../features";
+import {previewProjects} from "../preview-projects";
 import { ProjectCard } from "../components/project-card";
 import { ContentSlot } from "../components/content-slot";
 import { projectState, stateLabel } from "../project-state";
@@ -17,7 +19,7 @@ export default async function Projects({
     category = q.category || "",
     page = Math.max(1, Math.min(10000, Number(q.page) || 1));
   const filter = and(
-    eq(projects.active, 1),
+    or(eq(projects.active,1),eq(projects.visibility,"listed")),
     term
       ? or(
           like(projects.title, "%" + term + "%"),
@@ -35,6 +37,7 @@ export default async function Projects({
       .limit(50)
       .offset((page - 1) * 50),
     total = (await db.select({ n: count() }).from(projects).where(filter))[0].n;
+  const flags=await features(),samples=flags.preview_projects&&page===1?previewProjects.filter(j=>(!category||j.category===category)&&(!term||(j.title+" "+j.description).toLowerCase().includes(term.toLowerCase()))):[];
   const params = new URLSearchParams({
     q: term,
     category,
@@ -74,6 +77,8 @@ export default async function Projects({
             {[
               "AI training",
               "Data annotation",
+              "3D hand labeling",
+              "Video labeling",
               "Speech & audio",
               "Human motion & POV",
               "AI evaluation",
@@ -91,13 +96,13 @@ export default async function Projects({
       </form>
       <div className="section-kicker">
         <h3>
-          {total} open {total === 1 ? "opportunity" : "opportunities"}
+          {total} published {total === 1 ? "project" : "projects"}{samples.length>0&&" · "+samples.length+" layout previews"}
         </h3>
         <span>Newest first</span>
       </div>
       <ContentSlot slot="projects" />
       <div className="opportunity-grid">
-        {jobs.map((j) => (
+        {[...jobs,...samples].map((j) => (
           <ProjectCard key={j.id} job={j} source={q.source || "direct"} />
         ))}
       </div>

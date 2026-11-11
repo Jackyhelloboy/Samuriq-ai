@@ -1,3 +1,11 @@
+# Samuriq AI — Pro5
+
+Modern project marketplace and contributor operations platform. Pro5 tightens desktop/mobile layouts, adds clearly labelled closed demonstration cards, enforces project status on contributor access, and adds encrypted PAN/document submissions, duplicate detection, owner reviews and family-bank requests.
+
+Start with [OPERATIONS-GUIDE.md](OPERATIONS-GUIDE.md) for configuration and limitations. Automated checks: `python scripts/test-platform.py`, `python scripts/test-vendor.py`, `python scripts/test-pro5.py` after a production build. Run these sequentially because they share a local test port. All test identities and banking fixtures are synthetic and use a disposable local database.
+
+Official PAN verification, email ownership verification, automatic Sheets synchronization and bank transfers need separately connected services. Client sites do not provide API access; daily work remains evidence-based self-reporting plus client QC.
+
 # Samuriq AI — current release
 
 Read [OPERATIONS-GUIDE.md](OPERATIONS-GUIDE.md) for the current onboarding, roles, authentication, private records, community workflow and deployment limits. This guide supersedes older setup notes below.
