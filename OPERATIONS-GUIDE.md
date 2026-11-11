@@ -67,3 +67,43 @@ For another hosting platform, replace the Sites trusted identity adapter with a 
 - Existing bank records must be indexed by the owner before new bank updates are accepted. Conflicting old shared accounts remain unindexed until the owner reviews each contributor’s unique PAN and approves a family request. Old encryption remains compatible.
 - A family exception applies to one exact bank fingerprint. Both original holder and applicant need different manually reviewed PANs; the owner must record relationship, consent and a review note. Sharing a PAN is never enabled. PAN correction/recovery appeals require owner assistance; automatic account merging is not implemented.
 - PAN deduplication does not guarantee one physical person. Document authenticity, rightful account ownership and client work/QC still need human or provider verification. Bank details are for payout coordination; no transfer is initiated automatically.
+
+## Project team leaders, tickets and earnings
+
+### Roles and supervision
+
+- Owner: appoint/revoke managers; appoint project TLs; approve proposed TL contributor rates and special activity-export permission; view all supervisor workspaces; review PAN/bank details; post earnings and authorize payouts.
+- Manager: appoint registered non-staff contributors as project TLs; suspend/restore teams and contributor accounts; oversee every TL workspace; see consented contributor contacts; assign and close support tickets. Cannot approve special TL rights, reduced rates, client QC payable minutes, identity reviews or payouts. Staff phone numbers remain hidden.
+- Team leader: access only their assigned active project teams, consented member contacts and activity; propose rates for future joins; reply to team tickets; mark resolutions for manager review; submit mandatory daily TL reports. Cannot ban/delete users, modify participant reports, approve applications/client QC, access PAN/bank records, redirect payouts or self-grant access.
+- Contributor: join a project team through its invitation; accept the disclosed rate and commission; complete project tutorial/application/approval; view own earnings, payout status and TL contact; raise a private manager escalation hidden from TLs.
+
+Supervisor views do not impersonate another account. All actions use the actual owner/manager identity. A TL assignment is project-specific. A contributor has at most one team per project and joins before applying. Existing applications cannot be silently reassigned or have their rates changed. Appoint a new team and contact management for any migration; this release intentionally has no silent bulk reassignment or destructive deletion.
+
+### First setup
+
+1. Ask each proposed TL to sign in, complete a contributor profile, add a valid phone number and consent to project coordination.
+2. Owner/manager opens Team leaders → Appoint project TL. Project hourly pay must already be configured. For paired recordings the project hourly rate is the pair budget; it is split equally into the standard individual rate.
+3. TL opens Team workspace and proposes a lower contributor rate if required. The owner approves it. The difference from the individual project budget is the disclosed TL commission. Existing member rate snapshots do not change.
+4. TL shares their project invitation URL. Each person registers and explicitly accepts their own rate. Joining does not bypass project approval, community verification or tutorial gates. Both pair members must join/register separately for their own earnings attribution.
+5. TL follows the roster and posts the daily coordination summary, blockers and next steps. Snapshot counts are calculated from website reports, not user-entered counts. Manager follows missing TL reports and tickets in Team leaders.
+6. Contributors can use Support → Private escalation to bypass their TL. The TL cannot read the private ticket. A TL resolves normal tickets; only a manager/owner closes them. Staff-created tasks can be assigned among active TL teams for the same project; contributor tickets stay with the contributor’s own team.
+
+Phone numbers are self-declared, not OTP verified. Do not treat them as identity verification. TLs see only their own members’ consented numbers; managers see consented contributor numbers. Owner/manager numbers are filtered out. TL activity CSV has no email, phone, PAN or bank details and requires an owner-granted special permission.
+
+### Earnings and payouts
+
+- Owner records client-QC-approved minutes in Proof & reports, then opens Payout ledger to post the report.
+- Posting atomically creates immutable earning lines and locks the report against contributor changes or further QC edits. It credits each registered permanent pair member once at their own frozen individual rate and separately credits each TL’s disclosed commission. Integer paise and reconciled rounding keep the total within the pair budget. Reports that are not QC approved cannot be posted.
+- Normal contributors use the configured individual project rate at posting if no team rate was accepted. Configure pay carefully before approving work. This release supports hourly accounting; non-hourly tasks should use their recorded approved-work duration until a separate per-unit rate model is implemented.
+- Users open Earnings, also linked from Payment details, for project rates, submitted/QC hours, posted earnings, paid amounts and references. Pending QC is an estimate, not a payable balance. Work and TL commission are separately labelled. The ledger view shows up to 500 recent entries per user; admin shows 200 recent earnings and 500 orders. Large-account analytics/export should use database reporting rather than assuming these bounded views are all-time totals.
+- Prepare one protected payout order per earning after checking indexed bank details, manually reviewed PAN identity and bank ownership. The bank destination is encrypted in a frozen order snapshot. The database prevents duplicate payout orders for the same earning. TLs/managers cannot alter payment destinations or submit payouts.
+- For manual bank payments, the owner records an explicit confirmation and UTR/reference. This is labelled owner-recorded, not provider verified. Never mark a payment complete before the external transfer completes.
+- Posted report corrections and historical reassignment require a reviewed compensating adjustment outside this release; the application blocks mutation of the original financial record. Do not erase ledger rows to work around this control.
+
+### Cashfree adapter: not live until configured
+
+This is a Cashfree Payouts V2 integration, not a checkout gateway. It uses server-only CASHFREE_CLIENT_ID and CASHFREE_CLIENT_SECRET, version 2024-01-01, CASHFREE_ENV=sandbox|production and CASHFREE_PAYOUTS_ENABLED=true. No credentials were installed and no real payment was sent during development. Arrange Cashfree-approved server authentication/IP whitelisting before enabling; public-key request signing is not implemented by this adapter. Cloudflare Workers do not provide an account-specific fixed egress IP by default, so the owner may need a supported server/gateway deployment before production activation.
+
+Each owner-confirmed submission atomically claims an existing payout order before contacting the provider. The transfer_id is the stable order ID. A timeout/error becomes “unknown”; the application blocks resubmission. Reconcile via authenticated GET transfer status with the same ID. Acknowledgment/RECEIVED does not mean paid. ID, amount and returned bank details are checked. Only a production provider SUCCESS counts as paid; sandbox success is “test-success”. Failed/reversed/unknown orders must be reconciled with Cashfree; this release does not automatically retry or create replacement transfers. Sandbox orders must use test earnings/beneficiaries in a separate test deployment; do not consume real payable earnings for sandbox testing.
+
+No payment webhook route is installed: status updates are fetched explicitly by the owner. Provider webhook automation, bulk-transfer batching, beneficiary name verification, official PAN verification, bank-balance reconciliation and customer checkout are not enabled. The data model and ledger can be extended for these after provider onboarding and sandbox tests. No secrets belong in GitHub, project briefs or support tickets.

@@ -1,7 +1,7 @@
 "use server";
 import { requireOwner } from "./access";
 import { getDb } from "../db";
-import { managers, participants, operationAudit } from "../db/schema";
+import { managers, participants, operationAudit, projectTeams } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 export async function setManager(form: FormData) {
@@ -16,6 +16,7 @@ export async function setManager(form: FormData) {
       .get();
   if (!p || p.email.toLowerCase() === owner.email.toLowerCase())
     throw Error("Select an existing contributor account");
+  if(grant&&await db.select().from(projectTeams).where(eq(projectTeams.leaderId,userId)).get())throw Error("Revoke this contributor’s team leadership before appointing them as manager");
   const action = grant
     ? db
         .insert(managers)

@@ -1,0 +1,1 @@
+ALTER TABLE `project_progress` ADD `ledger_locked` integer DEFAULT 0 NOT NULL;

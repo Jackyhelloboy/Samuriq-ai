@@ -1,3 +1,6 @@
+import {getDb} from "../db";
+import {participants} from "../db/schema";
+import {eq} from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { sessionUser } from "./account";
@@ -19,7 +22,7 @@ const SIGN_IN_PATH = "/signin-with-chatgpt";
 const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
-export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
+async function rawUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);
@@ -90,3 +93,5 @@ function safeDecodeURIComponent(value: string): string | null {
   }
 }
 
+
+export async function getChatGPTUser():Promise<ChatGPTUser|null>{const user=await rawUser();if(!user)return null;const p=await getDb().select({suspended:participants.suspended}).from(participants).where(eq(participants.id,user.userId)).get();if(p?.suspended)return null;return user;}

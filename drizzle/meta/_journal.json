@@ -78,6 +78,27 @@
       "when": 1794407897980,
       "tag": "0010_freezing_alex_power",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1794410780970,
+      "tag": "0011_fair_morbius",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1794411096637,
+      "tag": "0012_loving_dagger",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1794411200438,
+      "tag": "0013_fat_captain_universe",
+      "breakpoints": true
     }
   ]
 }

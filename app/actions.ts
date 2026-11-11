@@ -26,6 +26,10 @@ export async function register(form: FormData) {
     form.get("consent") !== "yes"
   )
     throw Error("Check the required registration fields.");
+  const phone=String(form.get("phone")||"").replace(/[\s()-]/g,"");
+  if(phone&&!/^\+?[0-9]{8,15}$/.test(phone))throw Error("Use a valid contact number with country code");
+  const phoneConsent=form.get("phoneConsent")==="yes"?1:0;
+  if(phone&&!phoneConsent)throw Error("Confirm the project contact consent or leave the number blank");
   const source = String(form.get("source") || "direct").slice(0, 100);
   const skills = String(form.get("skills") || "").slice(0, 1500),
     location = String(form.get("location") || "").slice(0, 100),
@@ -35,6 +39,7 @@ export async function register(form: FormData) {
     .values({
       id: user.userId,
       name,
+      phone,phoneConsent,
       email: user.email,
       telegram,
       language,
@@ -47,7 +52,7 @@ export async function register(form: FormData) {
     })
     .onConflictDoUpdate({
       target: participants.id,
-      set: { name, telegram, language, project, skills, location, device },
+      set: { name,phone,phoneConsent, telegram, language, project, skills, location, device },
     });
   const next=String(form.get("next")||"");
   redirect(next?"/projects/onboarding?id="+encodeURIComponent(next):"/workspace");

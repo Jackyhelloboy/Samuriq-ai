@@ -1,3 +1,16 @@
+# Samuriq AI — Project Leadership & Payout Operations
+
+Extends Pro5 with project-specific TL workspaces, referral invitations, disclosed and locked member rates, private manager escalations, assigned tickets, daily TL reports, consented contact access and an immutable QC earnings ledger with separate contributor pay and TL commission.
+
+- Owner/manager console: `/admin/leaders`, `/admin/contacts`, `/support`.
+- TL workspace: `/teams` (assigned teams only).
+- Contributor project payments: `/workspace/earnings`, linked from Payment details.
+- Owner earnings/payout console: `/admin/payouts`.
+
+Cashfree Payouts V2 adapter is implemented but disabled until server credentials and provider security are configured. Development made no real transfers. Read [OPERATIONS-GUIDE.md](OPERATIONS-GUIDE.md) before activation, including fixed-egress/authentication, sandbox isolation, rate snapshots, locked reports and reconciliation limits.
+
+Validate after a production build by running the four Python integration suites sequentially: test-platform.py, test-vendor.py, test-pro5.py and test-leadership.py. Tests use synthetic identities and disposable local storage.
+
 # Samuriq AI — Pro5
 
 Modern project marketplace and contributor operations platform. Pro5 tightens desktop/mobile layouts, adds clearly labelled closed demonstration cards, enforces project status on contributor access, and adds encrypted PAN/document submissions, duplicate detection, owner reviews and family-bank requests.

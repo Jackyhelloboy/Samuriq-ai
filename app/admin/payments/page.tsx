@@ -25,6 +25,7 @@ export default async function Payments() {
         title="Payment details, in one place."
         description="Workers may add bank details after completing work. Review client QC and agreed terms before arranging payouts."
       />
+      <a className="button dark" href="/admin/payouts">Open earnings & payout ledger →</a>
       <div className="soft-note">
         Details are unverified. Revealing them records an audit event. Transfers
         remain manual until a payout provider is connected.

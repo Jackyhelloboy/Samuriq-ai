@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { getDb } from "../db";
-import { accounts } from "../db/schema";
+import { accounts,participants } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword, randomHex, startSession } from "./account";
 import { bot } from "./telegram-bot";
@@ -56,6 +56,8 @@ export async function loginAccount(form: FormData) {
     .get();
   const h = await hashPassword(pw, a?.salt || "00");
   if (!a || h !== a.hash) return back(to, "login");
+  const p=await getDb().select().from(participants).where(eq(participants.id,a.id)).get();
+  if(p?.suspended)return back(to,"restricted");
   await startSession(a.id);
   redirect(to);
 }

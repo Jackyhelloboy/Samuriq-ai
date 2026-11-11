@@ -71,13 +71,15 @@ export async function saveProgress(form: FormData) {
     reviewNote: "",
     updated: new Date().toISOString(),
   };
-  await getDb()
+  const result=await getDb()
     .insert(progress)
     .values(row)
     .onConflictDoUpdate({
       target: [progress.userId, progress.projectId, progress.day],
       set: row,
-    });
+      setWhere:eq(progress.ledgerLocked,0),
+    }).returning();
+  if(!result.length)throw Error("This report is locked in the earnings ledger. Contact the owner for a payment adjustment.");
   redirect("/workspace?saved=1#progress");
 }
 export async function saveIntegration(form: FormData) {

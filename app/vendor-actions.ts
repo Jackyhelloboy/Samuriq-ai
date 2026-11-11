@@ -127,6 +127,7 @@ export async function reviewReport(form: FormData) {
         eq(progress.day, String(form.get("day"))),
         eq(progress.updated, String(form.get("version"))),
         gte(progress.minutes, approvedMinutes),
+        eq(progress.ledgerLocked,0),
       ),
     )
     .returning();

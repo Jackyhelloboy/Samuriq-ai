@@ -38,6 +38,7 @@ export default async function Login({
             {(
               {
                 login: "Wrong email or password.",
+                restricted:"This account is restricted. Contact your project manager for a review.",
                 exists: "That email already has an account. Sign in instead.",
                 short: "Password must be at least 8 characters.",
                 details: "Enter your name and a valid email.",

@@ -1,10 +1,11 @@
+import {money} from "../../team-access";
 import {staffRole} from "../../access";
 import { onboardingVersion } from "../../onboarding-state";
 import { onboarding } from "../../../db/schema";
 import { projectState, stateLabel, embedUrl } from "../../project-state";
 import { features } from "../../features";
 import { getDb } from "../../../db";
-import { projects, applications, participants } from "../../../db/schema";
+import { projects, applications, participants,teamMembers } from "../../../db/schema";
 import { eq, and } from "drizzle-orm";
 import { getChatGPTUser, chatGPTSignInPath } from "../../chatgpt-auth";
 import { Shell, Heading } from "../../components/shell";
@@ -36,6 +37,7 @@ export default async function Detail({
       </Shell>
     );
   if(projectState(job)!=="online"&&!(await staffRole()))return <Shell active="Find projects"><Heading eyebrow="PROJECT CLOSED" title="This project is currently closed." description="Project details, registration, tutorials and work access unlock when an admin or manager activates the project."/><a className="button light" href="/projects">Back to projects</a></Shell>;
+  const membership=user?await db.select().from(teamMembers).where(and(eq(teamMembers.userId,user.userId),eq(teamMembers.projectId,job.id))).get():null;
   const application = user
     ? await db
         .select()
@@ -154,7 +156,7 @@ export default async function Detail({
           <h3>Requirements & quality expectations</h3>
           <p className="preserve">{job.requirements}</p>
           <h3>Compensation</h3>
-          <p>{job.rate}</p>
+          <p>{membership?<>Your accepted team rate: <strong>{money(membership.ratePaise)} per QC-approved individual hour</strong>. The public project budget includes the disclosed TL commission.</>:job.rate}</p>
           {job.questions && (
             <>
               <h3>Application questions</h3>

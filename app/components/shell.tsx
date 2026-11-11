@@ -1,7 +1,11 @@
+import {getDb} from "../../db";
+import {projectTeams} from "../../db/schema";
+import {and,eq} from "drizzle-orm";
 import { Brand } from "../marks";
 import { staffRole } from "../access";
 import { getChatGPTUser } from "../chatgpt-auth";
 import {
+  Users,
   LayoutDashboard,
   FolderOpen,
   UserRound,
@@ -27,9 +31,13 @@ export async function Shell({
 }) {
   const staff = await staffRole(),
     user = await getChatGPTUser();
+  const hasTeam=user?!!await getDb().select({id:projectTeams.id}).from(projectTeams).where(and(eq(projectTeams.leaderId,user.userId),eq(projectTeams.active,1))).get():false;
   const all = admin
     ? ([
         ["Overview", "/admin", LayoutDashboard],
+        ["Team leaders", "/admin/leaders", Users],
+        ["Support desk", "/support", BookOpen],
+        ["Contacts", "/admin/contacts", Users],
         ["Onboarding", "/admin/onboarding", BookOpen],
         ["People & roles", "/admin/people", UserRound],
         ["Content studio", "/admin/content", PenLine],
@@ -39,6 +47,7 @@ export async function Shell({
         ["Proof & reports", "/admin/reports", ShieldCheck],
         ["Announcements", "/admin/announcements", Radio],
         ["Payments", "/admin/payments", Wallet],
+        ["Payout ledger", "/admin/payouts", Wallet],
         ["Identity & requests", "/admin/identity", ShieldCheck],
         ["Controls", "/admin/settings", Settings2],
         ["Security", "/admin/security", ShieldCheck],
@@ -49,6 +58,9 @@ export async function Shell({
         ["Find projects", "/projects", FolderOpen],
         ["My profile", "/workspace?edit=1", UserRound],
         ["Payment details", "/workspace/payments", Wallet],
+        ...(hasTeam?[["Team workspace", "/teams", Users] as const]:[]),
+        ["Support desk", "/support", BookOpen],
+        ["Earnings", "/workspace/earnings", Wallet],
         ["Daily progress", "/workspace#progress", ChartNoAxesCombined],
       ] as const);
   const managerRoutes = [
@@ -58,6 +70,9 @@ export async function Shell({
     "/admin/reports",
     "/admin/onboarding",
     "/admin/projects",
+    "/admin/leaders",
+    "/admin/contacts",
+    "/support",
   ];
   const links =
     admin && staff?.role === "manager"

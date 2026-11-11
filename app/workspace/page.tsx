@@ -1,3 +1,5 @@
+import {baseRate,money} from "../team-access";
+import {MyTeams} from "../components/my-teams";
 import { ContentSlot } from "../components/content-slot";
 import { ProjectCard } from "../components/project-card";
 import {
@@ -12,6 +14,7 @@ import { Shell, Heading, Stats, Empty } from "../components/shell";
 import { getDb } from "../../db";
 import {
   participants,
+  teamMembers,
   applications,
   projects,
   progress,
@@ -49,6 +52,7 @@ export default async function Workspace({
         .where(eq(participants.id, user.userId))
         .get()
     : null;
+  const memberships=user?await db.select().from(teamMembers).where(eq(teamMembers.userId,user.userId)):[];
   const mine = user
     ? await db
         .select()
@@ -129,6 +133,7 @@ export default async function Workspace({
     source = (query.source || "direct").slice(0, 100);
   return (
     <Shell active={query.edit ? "My profile" : "Overview"}>
+      <MyTeams/>
       <Heading
         eyebrow="YOUR CONTRIBUTOR WORKSPACE"
         title={
@@ -263,6 +268,7 @@ export default async function Workspace({
                   </select>
                 </label>
               </div>
+              <div className="form-grid"><label>Project contact number<input name="phone" type="tel" maxLength={18} defaultValue={profile?.phone} placeholder="+91…"/></label><label className="check"><input name="phoneConsent" type="checkbox" value="yes" defaultChecked={!!profile?.phoneConsent}/>I allow my assigned team leader and authorized managers to contact me for project coordination. Staff phone numbers are not publicly shared.</label></div>
               <label>
                 Skills & experience
                 <textarea
@@ -629,11 +635,8 @@ export default async function Workspace({
                                 );
                               })()}
                               <p>
-                                QC approved: {(qc / 60).toFixed(2)} hours ·
-                                Estimated ₹
-                                {((qc * j.hourlyRate) / 60).toFixed(2)} per pair
-                                / ₹{((qc * j.hourlyRate) / 120).toFixed(2)}{" "}
-                                each. Not a payment confirmation.
+                                QC approved: {(qc / 60).toFixed(2)} hours · Your estimated work pay {money(Math.round(qc*(memberships.find(m=>m.projectId===j.id)?.ratePaise??baseRate(j))/60))}.
+                                {' '}<a href="/workspace/earnings">See posted earnings and payments</a>. Estimates are subject to owner posting and your accepted project terms.
                               </p>
                             </div>
                           );
