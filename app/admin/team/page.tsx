@@ -1,4 +1,4 @@
-import { requireOwner } from "../../access";
+import { requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
 import { teamRows, indiaDay } from "../../team-metrics";
@@ -9,7 +9,7 @@ export default async function Team({
 }: {
   searchParams: Promise<Record<string, string>>;
 }) {
-  await requireOwner();
+  const operator = await requireOperator();
   const q = await searchParams,
     day = /^\d{4}-\d{2}-\d{2}$/.test(q.day || "") ? q.day : indiaDay(),
     page = Math.max(1, Math.floor(Number(q.page) || 1)),
@@ -23,12 +23,24 @@ export default async function Team({
         title="Your working team. One clear report."
         description="Track fixed pairs, completed sections and shared recording hours. Download a client-ready CSV without bank details or private proof links."
         action={
-          <><form action="/admin/remind" method="post" style={{ display: "inline-block", marginRight: 12 }}>
-            <button className="button light">Send Telegram reminders to everyone missing today</button>
-          </form>
-          <a className="button dark" href={"/admin/team/export?" + params}>
-            Download client report
-          </a></>
+          <>
+            {operator.role === "owner" && (
+              <form
+                action="/admin/remind"
+                method="post"
+                style={{ display: "inline-block", marginRight: 12 }}
+              >
+                <button className="button light">
+                  Send Telegram reminders to everyone missing today
+                </button>
+              </form>
+            )}
+            {operator.role === "owner" && (
+              <a className="button dark" href={"/admin/team/export?" + params}>
+                Download client report
+              </a>
+            )}
+          </>
         }
       />
       <Stats

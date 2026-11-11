@@ -1,3 +1,7 @@
+# Samuriq AI — current release
+
+Read [OPERATIONS-GUIDE.md](OPERATIONS-GUIDE.md) for the current onboarding, roles, authentication, private records, community workflow and deployment limits. This guide supersedes older setup notes below.
+
 # vinext-starter
 
 A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.

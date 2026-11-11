@@ -1,4 +1,4 @@
-import { requireOwner } from "../../access";
+import { requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import {
   progress,
@@ -15,7 +15,7 @@ export default async function Reports({
 }: {
   searchParams: Promise<Record<string, string>>;
 }) {
-  await requireOwner();
+  const operator=await requireOperator();
   const q = await searchParams,
     db = getDb(),
     day = /^\d{4}-\d{2}-\d{2}$/.test(q.day || "")
@@ -120,7 +120,7 @@ export default async function Reports({
                 <select name="review" defaultValue={r.review}>
                   <option value="pending">Pending</option>
                   <option value="proof-reviewed">Proof reviewed</option>
-                  <option value="client-approved">Client-approved</option>
+                  {operator.role==="owner"&&<option value="client-approved">Client-approved</option>}
                   <option value="needs-correction">Needs correction</option>
                 </select>
               </label>

@@ -1,3 +1,5 @@
+import { ProjectCard } from "../components/project-card";
+import { ContentSlot } from "../components/content-slot";
 import { projectState, stateLabel } from "../project-state";
 import { getDb } from "../../db";
 import { projects } from "../../db/schema";
@@ -93,41 +95,10 @@ export default async function Projects({
         </h3>
         <span>Newest first</span>
       </div>
-      <div className="job-grid project-directory">
+      <ContentSlot slot="projects" />
+      <div className="opportunity-grid">
         {jobs.map((j) => (
-          <article className="job-card" key={j.id} id={"project-" + j.id}>
-            <div className="assignment-top">
-              <span className="category-symbol">
-                {j.category.slice(0, 2).toUpperCase()}
-              </span>
-              <span className="badge approved">OPEN</span>
-            </div>
-            <small>{j.category}</small>
-            <h2>{j.title}</h2>
-            <p className="job-excerpt">{j.description}</p>
-            <div className="job-meta">
-              <span>
-                <MapPin size={14} />
-                {j.location}
-              </span>
-              <span>
-                <Users size={14} />
-                {j.pair ? "Pair project" : "Individual"}
-              </span>
-            </div>
-            <strong className="job-rate">{j.rate} · {stateLabel(projectState(j))}</strong>
-            <a
-              className="button light"
-              href={
-                "/projects/detail?id=" +
-                encodeURIComponent(j.id) +
-                "&source=" +
-                encodeURIComponent(q.source || "direct")
-              }
-            >
-              View project <ArrowUpRight size={16} />
-            </a>
-          </article>
+          <ProjectCard key={j.id} job={j} source={q.source || "direct"} />
         ))}
       </div>
       {!jobs.length && (

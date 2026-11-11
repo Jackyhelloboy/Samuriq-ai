@@ -126,3 +126,4 @@ export async function announce(form: FormData) {
   });
   redirect("/admin/announcements?saved=1");
 }
+

@@ -29,3 +29,4 @@ export async function sessionUser() {
   const a = await db.select().from(accounts).where(eq(accounts.id, s.accountId)).get();
   return a ? { userId: a.id, email: a.email, displayName: a.name || a.email, fullName: a.name } : null;
 }
+

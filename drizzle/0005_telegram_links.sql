@@ -3,3 +3,4 @@ CREATE TABLE IF NOT EXISTS `telegram_links` (
   `chat_id` text NOT NULL,
   `created` text NOT NULL
 );
+

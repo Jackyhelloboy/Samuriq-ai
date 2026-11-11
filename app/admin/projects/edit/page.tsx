@@ -146,6 +146,35 @@ export default async function Editor({
                   />
                 </label>
               </div>
+              <label className="check">
+                <input
+                  type="checkbox"
+                  name="onboardingRequired"
+                  value="yes"
+                  defaultChecked={job ? !!job.onboardingRequired : true}
+                />
+                Require tutorial and terms before applying
+              </label>
+              <label>
+                Minimum tutorial playback (seconds)
+                <input
+                  name="tutorialSeconds"
+                  type="number"
+                  min={5}
+                  max={14400}
+                  defaultValue={job?.tutorialSeconds || 60}
+                />
+              </label>
+              <label>
+                Project terms and participant commitments
+                <textarea
+                  name="terms"
+                  rows={7}
+                  maxLength={5000}
+                  defaultValue={job?.terms}
+                  placeholder="Project workflow, reporting duties, client registration identity, quality requirements and payment terms."
+                />
+              </label>
               <label>
                 Questions for applicants
                 <textarea
@@ -185,16 +214,30 @@ export default async function Editor({
                 />
               </label>
               <label>
-                Preview / introduction video link (YouTube, Google Drive, Vimeo or any link)
-                <input name="introUrl" type="url" defaultValue={job?.introUrl} placeholder="https://youtu.be/..." />
+                Preview / introduction video link (YouTube, Google Drive, Vimeo
+                or any link)
+                <input
+                  name="introUrl"
+                  type="url"
+                  defaultValue={job?.introUrl}
+                  placeholder="https://youtu.be/..."
+                />
               </label>
               <label>
                 Tutorial video link: how to do the work
-                <input name="tutorialUrl" type="url" defaultValue={job?.tutorialUrl} />
+                <input
+                  name="tutorialUrl"
+                  type="url"
+                  defaultValue={job?.tutorialUrl}
+                />
               </label>
               <label>
                 Registration video link: how to register on this website
-                <input name="registerUrl" type="url" defaultValue={job?.registerUrl} />
+                <input
+                  name="registerUrl"
+                  type="url"
+                  defaultValue={job?.registerUrl}
+                />
               </label>
               <label>
                 Private Telegram / Discord invite

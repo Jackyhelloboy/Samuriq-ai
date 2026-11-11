@@ -1,3 +1,5 @@
+import { ProjectCard } from "./components/project-card";
+import { ContentSlot } from "./components/content-slot";
 import { Brand } from "./marks";
 import { getDb } from "../db";
 import { projects } from "../db/schema";
@@ -26,7 +28,7 @@ export default async function Home({
       .from(projects)
       .where(eq(projects.active, 1))
       .orderBy(desc(projects.created))
-      .limit(6);
+      .limit(50);
   return (
     <div className="premium-site">
       <header className="company-nav">
@@ -42,47 +44,48 @@ export default async function Home({
         </a>
       </header>
       <main>
-        <section className="company-hero">
-          <div className="hero-copy">
-            <p className="eyebrow">THE HUMAN SIDE OF ARTIFICIAL INTELLIGENCE</p>
+        <section className="project-first-hero">
+          <div>
+            <p className="eyebrow">SAMURIQ AI · HUMAN INTELLIGENCE AT WORK</p>
             <h1>
-              Intelligence begins
+              Your skills.
               <br />
-              with <em>people.</em>
+              <em>Your next project.</em>
             </h1>
-            <p className="hero-lead">
-              Connecting human expertise with the teams building tomorrow’s AI.
+            <p>
+              Explore real opportunities. Register once. Join an approved team
+              and keep your work in view.
             </p>
-            <div className="actions">
-              <a className="button pearl" href={board}>
-                Explore opportunities <ArrowUpRight size={18} />
-              </a>
-              <a className="hero-link" href="#company">
-                Build with us <ArrowRight size={18} />
-              </a>
-            </div>
-            <div className="hero-footnote">
-              <span>DATA COLLECTION</span>
-              <span>ANNOTATION</span>
-              <span>AI EVALUATION</span>
-            </div>
           </div>
-          <div className="hero-image">
-            <img
-              src="/images/team.jpg"
-              alt="A collaborative team discussing work around a laptop"
-              fetchPriority="high"
-            />
-            <div className="image-caption">
-              <span>PEOPLE × POSSIBILITY</span>
-              <p>
-                A human perspective.
-                <br />A more capable future.
-              </p>
-            </div>
-            <span className="image-index">01 / HUMAN INTELLIGENCE</span>
-          </div>
+          <img
+            src="/images/team.jpg"
+            alt="Professionals collaborating on a project"
+          />
         </section>
+        <section className="home-project-board">
+          <div className="section-kicker">
+            <div>
+              <p className="eyebrow">PROJECT OPPORTUNITIES</p>
+              <h2>Choose where you contribute.</h2>
+            </div>
+            <a className="text-link" href={board}>
+              Search & filter projects ↗
+            </a>
+          </div>
+          <ContentSlot slot="home" />
+          <div className="opportunity-grid">
+            {jobs.map((j) => (
+              <ProjectCard
+                key={j.id}
+                job={j}
+                source={decodeURIComponent(source)}
+              />
+            ))}
+          </div>
+          {!jobs.length && (
+            <p>New projects will appear when applications open.</p>
+          )}
+        </section>{" "}
         <section className="statement-strip">
           <span>BUILT FOR THE WORK THAT MATTERS</span>
           <p>
@@ -146,59 +149,6 @@ export default async function Home({
               );
             })}
           </div>
-        </section>
-        <section className="careers-section">
-          <div className="section-title-line">
-            <div>
-              <p className="eyebrow">02 — CONTRIBUTE YOUR EXPERTISE</p>
-              <h2>
-                Good work starts
-                <br />
-                with the right opportunity.
-              </h2>
-            </div>
-            <a className="button outline" href={board}>
-              Browse all projects <ArrowUpRight size={17} />
-            </a>
-          </div>
-          <div className="premium-openings">
-            {jobs.map((j, i) => (
-              <a
-                key={j.id}
-                href={
-                  "/projects/detail?id=" +
-                  encodeURIComponent(j.id) +
-                  "&source=" +
-                  source
-                }
-              >
-                <span className="opening-number">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <div>
-                  <span>{j.category}</span>
-                  <h3>{j.title}</h3>
-                </div>
-                <p>
-                  {j.location}
-                  <small>
-                    {j.pair ? "Permanent pair" : "Individual contribution"}
-                  </small>
-                </p>
-                <span className="opening-status">
-                  <i /> Applications open
-                </span>
-                <ArrowUpRight size={24} />
-              </a>
-            ))}
-            {!jobs.length && (
-              <p>New opportunities will appear here when applications open.</p>
-            )}
-          </div>
-          <p className="editorial-note">
-            Every opportunity includes its own requirements, approval process
-            and compensation terms.
-          </p>
         </section>
         <section className="delivery-section" id="delivery">
           <div className="delivery-photo">
@@ -274,6 +224,7 @@ export default async function Home({
           </div>
         </section>
       </main>
+      <ContentSlot slot="footer" />
       <footer className="company-footer">
         <div>
           <Brand />

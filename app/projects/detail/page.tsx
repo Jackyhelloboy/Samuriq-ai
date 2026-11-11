@@ -1,3 +1,5 @@
+import { onboardingVersion } from "../../onboarding-state";
+import { onboarding } from "../../../db/schema";
 import { projectState, stateLabel, embedUrl } from "../../project-state";
 import { features } from "../../features";
 import { getDb } from "../../../db";
@@ -51,6 +53,21 @@ export default async function Detail({
         .where(eq(participants.id, user.userId))
         .get()
     : null;
+  const gate = user
+    ? await db
+        .select()
+        .from(onboarding)
+        .where(
+          and(
+            eq(onboarding.userId, user.userId),
+            eq(onboarding.projectId, job.id),
+          ),
+        )
+        .get()
+    : null;
+  const onboardingComplete =
+    !job.onboardingRequired ||
+    (gate?.version === (await onboardingVersion(job)) && !!gate?.acceptedAt);
   return (
     <Shell active="Find projects">
       <a className="back-link" href="/projects">
@@ -68,17 +85,66 @@ export default async function Detail({
       <div className="workspace-columns">
         <section className="suite-card" style={{ gridColumn: "1 / -1" }}>
           <h2>Status and videos</h2>
-          <p><span className={"badge" + (projectState(job) === "online" ? " approved" : "")}>{stateLabel(projectState(job))}</span>{job.deadline ? "  Deadline " + job.deadline + " (India time, end of day)" : ""}</p>
-          {projectState(job) === "paused" && <p>This project is paused because its deadline has passed. Applications and updates are closed.</p>}
-          {([["Introduction", job.introUrl], ["How to register", job.registerUrl], ["Tutorial: how to do the work", job.tutorialUrl]] as [string, string][]).filter(([, u]) => u).map(([t, u]) => {
-            const e = embedUrl(u);
-            return (
-              <div key={t} style={{ margin: "16px 0" }}>
-                <h3>{t}</h3>
-                {e ? <div style={{ position: "relative", paddingTop: "56.25%" }}><iframe src={e} title={t} allowFullScreen loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0 }} /></div> : <a className="button light" href={u} target="_blank" rel="noreferrer">Open video ↗</a>}
-              </div>
-            );
-          })}
+          <p>
+            <span
+              className={
+                "badge" + (projectState(job) === "online" ? " approved" : "")
+              }
+            >
+              {stateLabel(projectState(job))}
+            </span>
+            {job.deadline
+              ? "  Deadline " + job.deadline + " (India time, end of day)"
+              : ""}
+          </p>
+          {projectState(job) === "paused" && (
+            <p>
+              This project is paused because its deadline has passed.
+              Applications and updates are closed.
+            </p>
+          )}
+          {(
+            [
+              ["Introduction", job.introUrl],
+              ["How to register", job.registerUrl],
+              ["Tutorial: how to do the work", job.tutorialUrl],
+            ] as [string, string][]
+          )
+            .filter(([, u]) => u)
+            .map(([t, u]) => {
+              const e = embedUrl(u);
+              return (
+                <div key={t} style={{ margin: "16px 0" }}>
+                  <h3>{t}</h3>
+                  {e ? (
+                    <div style={{ position: "relative", paddingTop: "56.25%" }}>
+                      <iframe
+                        src={e}
+                        title={t}
+                        allowFullScreen
+                        loading="lazy"
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          width: "100%",
+                          height: "100%",
+                          border: 0,
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <a
+                      className="button light"
+                      href={u}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Open video ↗
+                    </a>
+                  )}
+                </div>
+              );
+            })}
         </section>
         <section className="suite-card">
           <h2>Project overview</h2>
@@ -131,11 +197,26 @@ export default async function Detail({
                 <a
                   className="button dark"
                   href={
-                    "/workspace?source=" +
+                    "/workspace?next=" +
+                    encodeURIComponent(job.id) +
+                    "&source=" +
                     encodeURIComponent(q.source || "direct")
                   }
                 >
                   Create profile
+                </a>
+              </>
+            ) : !onboardingComplete ? (
+              <>
+                <p>
+                  Watch the required tutorial and accept the project terms
+                  before applying.
+                </p>
+                <a
+                  className="button dark"
+                  href={"/projects/onboarding?id=" + encodeURIComponent(job.id)}
+                >
+                  Start project onboarding →
                 </a>
               </>
             ) : (

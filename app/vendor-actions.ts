@@ -1,6 +1,8 @@
 "use server";
 import { requireFeature } from "./features";
 import { getChatGPTUser } from "./chatgpt-auth";
+import { requireOnboarding } from "./onboarding-state";
+import { requireOperator } from "./access";
 import { requireOwner } from "./access";
 import { getDb } from "../db";
 import {
@@ -43,10 +45,24 @@ export async function launchProject(form: FormData) {
     (row.projects.pair && !row.applications.partnerConfirmed)
   )
     throw Error("Project access is not approved");
-  if (projectState(row.projects) !== "online") throw Error("This project is not online right now");
-  const last = await db.select().from(progress).where(and(eq(progress.userId, user.userId), eq(progress.projectId, id))).orderBy(desc(progress.day)).get();
+  await requireOnboarding(user.userId, row.projects);
+  if (projectState(row.projects) !== "online")
+    throw Error("This project is not online right now");
+  const last = await db
+    .select()
+    .from(progress)
+    .where(
+      and(
+        eq(progress.userId, row.applications.userId),
+        eq(progress.projectId, id),
+      ),
+    )
+    .orderBy(desc(progress.day))
+    .get();
   if (missedInfo(last?.day, row.applications.created, row.projects).blocked)
-    throw Error("Access paused: you missed daily updates. Submit today's update in your workspace to restore access.");
+    throw Error(
+      "Access paused: you missed daily updates. Submit today's update in your workspace to restore access.",
+    );
   const target = new URL(row.projects.clientUrl);
   if (target.protocol !== "https:" || target.username || target.password)
     throw Error("Invalid project destination");
@@ -59,7 +75,7 @@ export async function launchProject(form: FormData) {
   redirect(target.href);
 }
 export async function reviewReport(form: FormData) {
-  await requireOwner();
+  const operator = await requireOperator();
   const review = String(form.get("review")),
     reviewNote = String(form.get("reviewNote") || "")
       .trim()
@@ -75,6 +91,23 @@ export async function reviewReport(form: FormData) {
     throw Error("Invalid review status");
   if (review !== "pending" && !reviewNote)
     throw Error("Add a review note or client QC reference");
+  if (operator.role !== "owner" && review === "client-approved")
+    throw Error("Client QC approval is owner-only");
+  if (operator.role !== "owner") {
+    const existing = await getDb()
+      .select()
+      .from(progress)
+      .where(
+        and(
+          eq(progress.userId, String(form.get("userId"))),
+          eq(progress.projectId, String(form.get("projectId"))),
+          eq(progress.day, String(form.get("day"))),
+        ),
+      )
+      .get();
+    if (existing?.review === "client-approved")
+      throw Error("Only the owner may change a client-approved report");
+  }
   const approvedMinutes =
     review === "client-approved" ? Number(form.get("approvedMinutes")) : 0;
   if (

@@ -1,4 +1,6 @@
 import { Brand } from "../marks";
+import { staffRole } from "../access";
+import { getChatGPTUser } from "../chatgpt-auth";
 import {
   LayoutDashboard,
   FolderOpen,
@@ -10,9 +12,9 @@ import {
   ArrowUpRight,
   ShieldCheck,
   Settings2,
+  BookOpen,
+  PenLine,
 } from "lucide-react";
-import { getChatGPTUser } from "../chatgpt-auth";
-import { settings } from "../telegram";
 import type { ReactNode } from "react";
 export async function Shell({
   children,
@@ -23,20 +25,23 @@ export async function Shell({
   admin?: boolean;
   active?: string;
 }) {
-  const user = await getChatGPTUser(),
-    isOwner =
-      user?.email.toLowerCase() === settings().ADMIN_EMAIL?.toLowerCase();
-  const links = admin
+  const staff = await staffRole(),
+    user = await getChatGPTUser();
+  const all = admin
     ? ([
         ["Overview", "/admin", LayoutDashboard],
-        ["Team & targets", "/admin/team", UserRound],
+        ["Onboarding", "/admin/onboarding", BookOpen],
+        ["People & roles", "/admin/people", UserRound],
+        ["Content studio", "/admin/content", PenLine],
+        ["Team & targets", "/admin/team", ChartNoAxesCombined],
         ["Project roster", "/admin/roster", UserRound],
         ["Projects", "/admin/projects", FolderOpen],
-        ["Proof & reports", "/admin/reports", ChartNoAxesCombined],
-        ["Integrations", "/admin/integrations", Plug],
+        ["Proof & reports", "/admin/reports", ShieldCheck],
         ["Announcements", "/admin/announcements", Radio],
         ["Payments", "/admin/payments", Wallet],
         ["Controls", "/admin/settings", Settings2],
+        ["Security", "/admin/security", ShieldCheck],
+        ["Integrations", "/admin/integrations", Plug],
       ] as const)
     : ([
         ["Overview", "/workspace", LayoutDashboard],
@@ -45,12 +50,27 @@ export async function Shell({
         ["Payment details", "/workspace/payments", Wallet],
         ["Daily progress", "/workspace#progress", ChartNoAxesCombined],
       ] as const);
+  const managerRoutes = [
+    "/admin",
+    "/admin/team",
+    "/admin/roster",
+    "/admin/reports",
+    "/admin/onboarding",
+  ];
+  const links =
+    admin && staff?.role === "manager"
+      ? all.filter((l) => managerRoutes.includes(l[1]))
+      : all;
   return (
     <div className="suite">
       <aside className="suite-sidebar">
         <Brand />
         <p className="sidebar-label">
-          {admin ? "OPERATIONS CONSOLE" : "CONTRIBUTOR PORTAL"}
+          {admin
+            ? staff?.role === "owner"
+              ? "OWNER CONSOLE"
+              : "TEAM OPERATIONS"
+            : "CONTRIBUTOR WORKSPACE"}
         </p>
         <nav aria-label="Workspace navigation">
           {links.map(([name, url, Icon]) => (
@@ -67,17 +87,15 @@ export async function Shell({
         <div className="sidebar-note">
           <ShieldCheck size={22} />
           <strong>
-            {admin
-              ? "Your operations, organized."
-              : "A clear path to your next project."}
+            {admin ? "People. Projects. Progress." : "Your work, connected."}
           </strong>
           <p>
             {admin
-              ? "Publish work. Review applications. Follow progress."
-              : "Build your profile and apply to opportunities that match your skills."}
+              ? "Clear approvals and daily team visibility."
+              : "Choose a project, complete onboarding and stay in touch with your team."}
           </p>
           <a href="/">
-            Company website <ArrowUpRight size={14} />
+            Company & project board <ArrowUpRight size={14} />
           </a>
         </div>
       </aside>
@@ -85,20 +103,29 @@ export async function Shell({
         <header className="suite-top">
           <span>
             <span className="status-dot" />
-            {admin ? "Samuriq AI / Administration" : "Samuriq AI / Workspace"}
-          </span>
-          <a href={admin ? "/projects" : isOwner ? "/admin" : "/login"}>
+            Samuriq AI /{" "}
             {admin
-              ? "View project board"
-              : isOwner
-                ? "Manage platform"
-                : "My account"}{" "}
-            <ArrowUpRight size={15} />
-          </a>
+              ? staff?.role === "owner"
+                ? "Owner"
+                : "Manager"
+              : "Workspace"}
+          </span>
+          <div className="actions">
+            {user && <span>{user.displayName.split(" ")[0]}</span>}
+            <a href={admin ? "/projects" : staff ? "/admin" : "/login"}>
+              {admin
+                ? "Project board"
+                : staff
+                  ? "Manage platform"
+                  : "My account"}{" "}
+              <ArrowUpRight size={14} />
+            </a>
+            {user && <a href="/signout">Sign out</a>}
+          </div>
         </header>
         <main className="suite-main">{children}</main>
         <footer className="suite-foot">
-          Samuriq AI · Human intelligence at work{" "}
+          <span>Samuriq AI · Human data. Real possibility.</span>
           <a href="/privacy">Privacy & data</a>
         </footer>
       </div>
@@ -149,7 +176,7 @@ export function Stats({ items }: { items: [string, number | string][] }) {
         <article key={label}>
           <span>{label}</span>
           <strong>{value}</strong>
-          <small>Workspace activity</small>
+          <small>Current workspace data</small>
         </article>
       ))}
     </div>

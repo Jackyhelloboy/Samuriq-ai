@@ -1,4 +1,11 @@
-import { projectState, stateLabel, missedInfo, MISS_LIMIT } from "../project-state";
+import { ContentSlot } from "../components/content-slot";
+import { ProjectCard } from "../components/project-card";
+import {
+  projectState,
+  stateLabel,
+  missedInfo,
+  MISS_LIMIT,
+} from "../project-state";
 import { features } from "../features";
 import { getChatGPTUser, chatGPTSignInPath } from "../chatgpt-auth";
 import { Shell, Heading, Stats, Empty } from "../components/shell";
@@ -136,6 +143,7 @@ export default async function Workspace({
           </a>
         }
       />
+      <ContentSlot slot="workspace" />
       {!user ? (
         <div className="onboarding-grid">
           <section className="suite-card">
@@ -190,6 +198,7 @@ export default async function Workspace({
             </p>
             <form action={register} className="profile-form">
               <input name="source" type="hidden" value={source} />
+              <input name="next" type="hidden" value={query.next || ""} />
               <div className="form-grid">
                 <label>
                   Full name
@@ -362,6 +371,17 @@ export default async function Workspace({
                       <p>
                         {j.category} · {j.location}
                       </p>
+                      {j.onboardingRequired === 1 && (
+                        <a
+                          className="button light"
+                          href={
+                            "/projects/onboarding?id=" +
+                            encodeURIComponent(j.id)
+                          }
+                        >
+                          Complete project onboarding →
+                        </a>
+                      )}
                       {!!j.pair && (
                         <div className="soft-note">
                           <strong>
@@ -440,14 +460,47 @@ export default async function Workspace({
                             )}
                         </div>
                       )}
-                      <p><span className={"badge" + (projectState(j) === "online" ? " approved" : "")}>{stateLabel(projectState(j))}</span>{j.tutorialUrl && <> · <a href={"/projects/detail?id=" + encodeURIComponent(j.id)}>Watch the tutorial video</a></>}</p>
-                      {a.status === "approved" && (() => {
-                        const last = history.find((h) => h.project_progress.projectId === j.id)?.project_progress.day,
-                          m = missedInfo(last, a.created, j);
-                        return m.blocked ? (
-                          <div className="soft-note pace"><div className="need bad"><strong>Access paused.</strong> You missed {m.missed} daily updates (limit {MISS_LIMIT}). Submit today’s update under “Report progress” to restore access.</div></div>
-                        ) : null;
-                      })()}
+                      <p>
+                        <span
+                          className={
+                            "badge" +
+                            (projectState(j) === "online" ? " approved" : "")
+                          }
+                        >
+                          {stateLabel(projectState(j))}
+                        </span>
+                        {j.tutorialUrl && (
+                          <>
+                            {" "}
+                            ·{" "}
+                            <a
+                              href={
+                                "/projects/detail?id=" +
+                                encodeURIComponent(j.id)
+                              }
+                            >
+                              Watch the tutorial video
+                            </a>
+                          </>
+                        )}
+                      </p>
+                      {a.status === "approved" &&
+                        (() => {
+                          const last = history.find(
+                              (h) => h.project_progress.projectId === j.id,
+                            )?.project_progress.day,
+                            m = missedInfo(last, a.created, j);
+                          return m.blocked ? (
+                            <div className="soft-note pace">
+                              <div className="need bad">
+                                <strong>Access paused.</strong> You missed{" "}
+                                {m.missed} daily updates (limit {MISS_LIMIT}).
+                                Submit today’s update under “Report progress” to
+                                restore access.
+                              </div>
+                            </div>
+                          ) : null;
+                        })()}
                       {j.targetMinutes > 0 &&
                         (() => {
                           const period = targetReports.filter(
@@ -469,28 +522,109 @@ export default async function Workspace({
                           return (
                             <div className="soft-note pace">
                               {(() => {
-                                const D = (s: string) => new Date(s + "T00:00:00Z").getTime();
-                                const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
-                                const total = Math.max(1, Math.round((D(j.deadline) - D(j.targetStart)) / 864e5) + 1);
-                                const passed = Math.min(total, Math.max(0, Math.round((D(today) - D(j.targetStart)) / 864e5) + 1));
-                                const left = Math.max(1, Math.round((D(j.deadline) - D(today)) / 864e5) + 1);
-                                const pct = Math.min(100, (mins / j.targetMinutes) * 100);
-                                const need = Math.max(0, j.targetMinutes - mins);
+                                const D = (s: string) =>
+                                  new Date(s + "T00:00:00Z").getTime();
+                                const today = new Intl.DateTimeFormat("en-CA", {
+                                  timeZone: "Asia/Kolkata",
+                                }).format(new Date());
+                                const total = Math.max(
+                                  1,
+                                  Math.round(
+                                    (D(j.deadline) - D(j.targetStart)) / 864e5,
+                                  ) + 1,
+                                );
+                                const passed = Math.min(
+                                  total,
+                                  Math.max(
+                                    0,
+                                    Math.round(
+                                      (D(today) - D(j.targetStart)) / 864e5,
+                                    ) + 1,
+                                  ),
+                                );
+                                const left = Math.max(
+                                  1,
+                                  Math.round(
+                                    (D(j.deadline) - D(today)) / 864e5,
+                                  ) + 1,
+                                );
+                                const pct = Math.min(
+                                  100,
+                                  (mins / j.targetMinutes) * 100,
+                                );
+                                const need = Math.max(
+                                  0,
+                                  j.targetMinutes - mins,
+                                );
                                 const perDay = Math.ceil(need / left);
-                                const doneToday = period.some((r) => r.day === today);
+                                const doneToday = period.some(
+                                  (r) => r.day === today,
+                                );
                                 const behind = pct < (passed / total) * 100 - 5;
                                 return (
                                   <>
-                                    <span className="big">{(mins / 60).toFixed(1)} / {j.targetMinutes / 60} h reported ({Math.round(pct)}%)</span>
-                                    <div className="bar" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(pct)} aria-label="Target progress">
-                                      <div className="fill" style={{ width: pct + "%" }} />
-                                      <div className="time" style={{ left: (passed / total) * 100 + "%" }} title="Where today falls between start and deadline" />
+                                    <span className="big">
+                                      {(mins / 60).toFixed(1)} /{" "}
+                                      {j.targetMinutes / 60} h reported (
+                                      {Math.round(pct)}%)
+                                    </span>
+                                    <div
+                                      className="bar"
+                                      role="progressbar"
+                                      aria-valuemin={0}
+                                      aria-valuemax={100}
+                                      aria-valuenow={Math.round(pct)}
+                                      aria-label="Target progress"
+                                    >
+                                      <div
+                                        className="fill"
+                                        style={{ width: pct + "%" }}
+                                      />
+                                      <div
+                                        className="time"
+                                        style={{
+                                          left: (passed / total) * 100 + "%",
+                                        }}
+                                        title="Where today falls between start and deadline"
+                                      />
                                     </div>
-                                    <div className="row"><span>Green = your work · Orange line = today</span><span>{left} day{left === 1 ? "" : "s"} left · due {j.deadline}</span></div>
-                                    <div className={"need " + (need === 0 ? "ok" : behind ? "bad" : "")}>
-                                      {need === 0 ? "Target reached. Keep reporting until the deadline." : "To finish on time record about " + (perDay / 60).toFixed(1) + " h per day." + (behind ? " You are behind pace." : "")}
+                                    <div className="row">
+                                      <span>
+                                        Green = your work · Orange line = today
+                                      </span>
+                                      <span>
+                                        {left} day{left === 1 ? "" : "s"} left ·
+                                        due {j.deadline}
+                                      </span>
                                     </div>
-                                    {!doneToday && <div className="need bad"><strong>Today’s update is missing.</strong> Daily updates are mandatory. Unreported days are not eligible for payout.</div>}
+                                    <div
+                                      className={
+                                        "need " +
+                                        (need === 0
+                                          ? "ok"
+                                          : behind
+                                            ? "bad"
+                                            : "")
+                                      }
+                                    >
+                                      {need === 0
+                                        ? "Target reached. Keep reporting until the deadline."
+                                        : "To finish on time record about " +
+                                          (perDay / 60).toFixed(1) +
+                                          " h per day." +
+                                          (behind
+                                            ? " You are behind pace."
+                                            : "")}
+                                    </div>
+                                    {!doneToday && (
+                                      <div className="need bad">
+                                        <strong>
+                                          Today’s update is missing.
+                                        </strong>{" "}
+                                        Daily updates are mandatory. Unreported
+                                        days are not eligible for payout.
+                                      </div>
+                                    )}
                                   </>
                                 );
                               })()}
@@ -518,30 +652,42 @@ export default async function Workspace({
                             )}
                             Review the project brief before starting.
                           </div>
-                          {flags.community && j.communityUrl && (
-                            <a
-                              className="button light"
-                              href={j.communityUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              Join approved project community ↗
-                            </a>
-                          )}
-                          <div className="actions">
-                            {flags.client_access && j.clientUrl && (
-                              <form action={launchProject}>
-                                <input
-                                  type="hidden"
-                                  name="projectId"
-                                  value={j.id}
-                                />
-                                <button>
-                                  Open client workspace{" "}
-                                  <ArrowUpRight size={15} />
-                                </button>
-                              </form>
+                          <a
+                            className="button dark"
+                            href={
+                              "/projects/work?id=" + encodeURIComponent(j.id)
+                            }
+                          >
+                            Open project desk →
+                          </a>
+                          {flags.community &&
+                            !j.onboardingRequired &&
+                            j.communityUrl && (
+                              <a
+                                className="button light"
+                                href={j.communityUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Join approved project community ↗
+                              </a>
                             )}
+                          <div className="actions">
+                            {flags.client_access &&
+                              !j.onboardingRequired &&
+                              j.clientUrl && (
+                                <form action={launchProject}>
+                                  <input
+                                    type="hidden"
+                                    name="projectId"
+                                    value={j.id}
+                                  />
+                                  <button>
+                                    Open client workspace{" "}
+                                    <ArrowUpRight size={15} />
+                                  </button>
+                                </form>
+                              )}
                             <a className="button light" href="#progress">
                               Report progress
                             </a>
@@ -565,7 +711,27 @@ export default async function Workspace({
                   </Empty>
                 )}
               </section>
-              <div className="howto"><strong>How this works</strong><ol><li>Complete your profile, then apply to a project.</li><li>Message us on Telegram so we can verify you. Registration alone gives no access.</li><li>After approval, open the client workspace with the button below. Never share the link.</li><li>Every day, send your update under “Report progress”. Missed days are not paid.</li><li>Watch the bar: green is your work, the orange line is today.</li></ol></div>
+              <div className="howto">
+                <strong>How this works</strong>
+                <ol>
+                  <li>Complete your profile, then apply to a project.</li>
+                  <li>
+                    Message us on Telegram so we can verify you. Registration
+                    alone gives no access.
+                  </li>
+                  <li>
+                    After approval, open the client workspace with the button
+                    below. Never share the link.
+                  </li>
+                  <li>
+                    Every day, send your update under “Report progress”. Missed
+                    days are not paid.
+                  </li>
+                  <li>
+                    Watch the bar: green is your work, the orange line is today.
+                  </li>
+                </ol>
+              </div>
               <section className="suite-card" id="progress">
                 <div className="section-kicker">
                   <h2>Daily check-in</h2>

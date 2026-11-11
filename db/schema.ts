@@ -46,6 +46,9 @@ export const projects = sqliteTable("projects", {
   deadline: text("deadline").notNull().default(""),
   hourlyRate: integer("hourly_rate").notNull().default(0),
   communityUrl: text("community_url").notNull().default(""),
+  onboardingRequired: integer("onboarding_required").notNull().default(0),
+  tutorialSeconds: integer("tutorial_seconds").notNull().default(60),
+  terms: text("terms").notNull().default(""),
   introUrl: text("intro_url").notNull().default(""),
   tutorialUrl: text("tutorial_url").notNull().default(""),
   registerUrl: text("register_url").notNull().default(""),
@@ -148,5 +151,50 @@ export const accounts = sqliteTable("accounts", {
 export const sessions = sqliteTable("sessions", {
   tokenHash: text("token_hash").primaryKey(),
   accountId: text("account_id").notNull(),
+  expires: integer("expires").notNull(),
+});
+
+export const managers = sqliteTable("managers", {
+  userId: text("user_id").primaryKey(),
+  grantedBy: text("granted_by").notNull(),
+  created: text("created").notNull(),
+});
+export const onboarding = sqliteTable(
+  "onboarding",
+  {
+    userId: text("user_id").notNull(),
+    projectId: text("project_id").notNull(),
+    version: text("version").notNull(),
+    watched: integer("watched").notNull().default(0),
+    position: integer("position").notNull().default(0),
+    lastTick: integer("last_tick").notNull().default(0),
+    nonce: text("nonce").notNull(),
+    verified: integer("verified").notNull().default(0),
+    acceptedAt: text("accepted_at").notNull().default(""),
+    clientEmail: text("client_email").notNull().default(""),
+    clientUsername: text("client_username").notNull().default(""),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.projectId] })],
+);
+export const clientClaims = sqliteTable(
+  "client_claims",
+  {
+    projectId: text("project_id").notNull(),
+    username: text("username").notNull(),
+    userId: text("user_id").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.projectId, t.username] })],
+);
+export const operationAudit = sqliteTable("operation_audit", {
+  id: text("id").primaryKey(),
+  actor: text("actor").notNull(),
+  action: text("action").notNull(),
+  target: text("target").notNull(),
+  detail: text("detail").notNull(),
+  created: text("created").notNull(),
+});
+export const authLimits = sqliteTable("auth_limits", {
+  key: text("key").primaryKey(),
+  attempts: integer("attempts").notNull(),
   expires: integer("expires").notNull(),
 });

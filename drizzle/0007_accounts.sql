@@ -12,3 +12,4 @@ CREATE TABLE IF NOT EXISTS `sessions` (
   `account_id` text NOT NULL,
   `expires` integer NOT NULL
 );
+

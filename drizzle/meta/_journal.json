@@ -36,6 +36,34 @@
       "when": 1794360026217,
       "tag": "0004_parched_silhouette",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1794360031217,
+      "tag": "0005_telegram_links",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794360032217,
+      "tag": "0006_project_videos",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1794360033217,
+      "tag": "0007_accounts",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1794360034217,
+      "tag": "0008_onboarding_roles",
+      "breakpoints": true
     }
   ]
 }

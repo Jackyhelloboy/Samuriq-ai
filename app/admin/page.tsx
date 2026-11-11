@@ -1,4 +1,4 @@
-import { requireOwner } from "../access";
+import { requireOperator } from "../access";
 import { getDb } from "../../db";
 import {
   participants,
@@ -16,7 +16,7 @@ export default async function Admin({
 }: {
   searchParams: Promise<Record<string, string>>;
 }) {
-  await requireOwner();
+  const operator=await requireOperator();
   const db = getDb(),
     q = await searchParams,
     term = (q.q || "").slice(0, 100),
@@ -106,8 +106,8 @@ export default async function Admin({
           " IST"
         }
         action={
-          <a className="button dark" href="/admin/projects/edit">
-            Create project
+          <a className="button dark" href={operator.role==="owner"?"/admin/projects/edit":"/admin/onboarding"}>
+            {operator.role==="owner"?"Create project":"Help with onboarding"}
           </a>
         }
       />
@@ -132,7 +132,7 @@ export default async function Admin({
       <section className="suite-card">
         <div className="section-kicker">
           <h2>Applications & progress</h2>
-          <a className="button light" href="/admin/export">
+          <a className="button light" href={operator.role==="owner"?"/admin/export":"/admin/roster"}>
             Export reports
           </a>
         </div>
@@ -288,3 +288,4 @@ export default async function Admin({
     </Shell>
   );
 }
+

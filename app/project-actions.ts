@@ -1,4 +1,6 @@
 "use server";
+import { requireOnboarding } from "./onboarding-state";
+import { requireOperator } from "./access";
 import { requireFeature } from "./features";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { settings } from "./telegram";
@@ -31,11 +33,14 @@ export async function publishProject(form: FormData) {
     const v = value(k);
     if (v) {
       const u = new URL(v);
-      if (u.protocol !== "https:" || u.username || u.password) throw Error("Video links must be HTTPS");
+      if (u.protocol !== "https:" || u.username || u.password)
+        throw Error("Video links must be HTTPS");
     }
     return v;
   };
-  const introUrl = vid("introUrl"), tutorialUrl = vid("tutorialUrl"), registerUrl = vid("registerUrl");
+  const introUrl = vid("introUrl"),
+    tutorialUrl = vid("tutorialUrl"),
+    registerUrl = vid("registerUrl");
   const communityUrl = value("communityUrl");
   if (communityUrl) {
     const u = new URL(communityUrl);
@@ -67,6 +72,17 @@ export async function publishProject(form: FormData) {
       deadline < targetStart)
   )
     throw Error("Set a valid target period");
+  const onboardingRequired = form.get("onboardingRequired") === "yes" ? 1 : 0,
+    tutorialSeconds = Number(value("tutorialSeconds") || 60),
+    terms = value("terms").slice(0, 5000);
+  if (
+    !Number.isInteger(tutorialSeconds) ||
+    tutorialSeconds < 5 ||
+    tutorialSeconds > 14400
+  )
+    throw Error("Set a tutorial duration from 5 seconds to 4 hours");
+  if (onboardingRequired && (!(tutorialUrl || registerUrl) || !terms))
+    throw Error("Required onboarding needs a tutorial URL and project terms");
   const id = value("id");
   const values = {
     title,
@@ -75,6 +91,9 @@ export async function publishProject(form: FormData) {
     targetStart,
     deadline,
     communityUrl,
+    onboardingRequired,
+    tutorialSeconds,
+    terms,
     introUrl,
     tutorialUrl,
     registerUrl,
@@ -118,7 +137,9 @@ export async function applyProject(form: FormData) {
     .get();
   if (!profile) redirect("/workspace?next=" + encodeURIComponent(projectId));
   if (!project?.active) throw Error("Applications are closed");
-  if (projectState(project) === "paused") throw Error("This project is paused. Its deadline has passed.");
+  if (projectState(project) === "paused")
+    throw Error("This project is paused. Its deadline has passed.");
+  await requireOnboarding(user.userId, project);
   const partner = String(form.get("partner") || "")
     .trim()
     .slice(0, 100);
@@ -154,7 +175,7 @@ export async function applyProject(form: FormData) {
   redirect("/projects");
 }
 export async function decideApplication(form: FormData) {
-  await owner();
+  await requireOperator();
   const status = String(form.get("status"));
   if (!["approved", "pending", "declined"].includes(status))
     throw Error("Invalid status");
@@ -187,7 +208,7 @@ export async function decideApplication(form: FormData) {
         eq(applications.projectId, String(form.get("projectId"))),
       ),
     );
-  redirect("/admin/projects");
+  redirect("/admin");
 }
 export async function toggleProject(form: FormData) {
   await owner();

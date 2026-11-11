@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     return Response.json({ ok: true });
   }
   await db.insert(telegramLinks).values({ handle, chatId, created: new Date().toISOString() }).onConflictDoUpdate({ target: telegramLinks.handle, set: { chatId } });
-  for (const p of rows) await db.update(applications).set({ communityVerified: 1 }).where(eq(applications.userId, p.id));
-  await sendTelegram(chatId, "Verified, " + rows[0].name + ". You will get a reminder here if your daily update is missing. Send your update in your workspace every day. Missed days are not paid.");
+  await sendTelegram(chatId, "Telegram contact linked, " + rows[0].name + ". Coordinator verification and project approval are still required. Submit daily output in your website workspace.");
   return Response.json({ ok: true });
 }
+

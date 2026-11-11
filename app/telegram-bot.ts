@@ -12,3 +12,4 @@ export async function sendTelegram(chatId: string, text: string) {
   });
   return r.ok;
 }
+

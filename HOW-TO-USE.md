@@ -63,3 +63,4 @@ While on hold, do it by hand: tick community verified, use the Send reminders bu
 - Auto-block: after 2 full days without a daily update, "Open client workspace" is refused and the person sees "Access paused". Submitting a new update restores access automatically. Change the limit with MISS_LIMIT in app/project-state.ts. Admin > Project roster shows who is paused.
 - Tests: after `npm run build`, run `python3 scripts/test-vendor.py` and `python3 scripts/test-v13.py` (local server with sample data; checks sign-up/sign-in, wrong passwords, owner-email protection, paused projects, missed-update blocking, restore, videos, admin pages).
 - Desktop admin: sticky sidebar, wider layout, zebra tables with hover, three-column integration cards.
+

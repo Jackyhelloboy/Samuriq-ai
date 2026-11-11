@@ -49,7 +49,8 @@ export async function register(form: FormData) {
       target: participants.id,
       set: { name, telegram, language, project, skills, location, device },
     });
-  redirect("/workspace");
+  const next=String(form.get("next")||"");
+  redirect(next?"/projects/onboarding?id="+encodeURIComponent(next):"/workspace");
 }
 export async function report(form: FormData) {
   const user = await getChatGPTUser();

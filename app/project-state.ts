@@ -3,6 +3,7 @@ const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" 
 // Online between start day and the deadline day (India time, end of day). Past the deadline the project is paused automatically.
 export function projectState(j: { active?: number | boolean; targetStart: string; deadline: string }): ProjState {
   const t = today();
+  if(j.active===0||j.active===false)return "paused";
   if (j.deadline && t > j.deadline) return "paused";
   if (j.targetStart && t < j.targetStart) return "soon";
   return "online";
@@ -37,3 +38,4 @@ export function missedInfo(lastDay: string | null | undefined, since: string, j:
   const missed = Math.max(0, dayNum(t) - dayNum(ref) - (lastDay ? 1 : 0));
   return { missed, blocked: missed >= MISS_LIMIT };
 }
+
