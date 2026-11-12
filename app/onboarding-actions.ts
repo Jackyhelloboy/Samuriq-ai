@@ -210,7 +210,7 @@ export async function acceptOnboarding(form: FormData) {
       created: acceptedAt,
     }),
   ]);
-  redirect("/projects/detail?id=" + encodeURIComponent(id) + "&onboarded=1");
+  redirect("/projects/community?id=" + encodeURIComponent(id));
 }
 export async function verifyTutorial(form: FormData) {
   const staff = await requireOperator(),

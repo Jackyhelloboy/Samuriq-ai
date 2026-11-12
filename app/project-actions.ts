@@ -7,7 +7,7 @@ import { getChatGPTUser } from "./chatgpt-auth";
 import { settings } from "./telegram";
 import { projectState } from "./project-state";
 import { getDb } from "../db";
-import { projects, applications, participants,teamMembers } from "../db/schema";
+import { projects, applications, participants,teamMembers,projectTeams } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { redirect } from "next/navigation";
 async function owner() {
@@ -116,6 +116,7 @@ export async function publishProject(form: FormData) {
   };
   if(values.evidenceRequired&&(!values.pair||!values.onboardingRequired||!values.inviteCode))throw Error("Pair evidence projects need permanent pairs, tutorial/terms onboarding and an invitation code");
   if(values.active&&(!clientUrl||!communityUrl||(deadline&&deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("Set client/community links and a current schedule before activating");
+  if(id){const original=await getDb().select().from(projects).where(eq(projects.id,id)).get(),contract=await getDb().select().from(projectTeams).where(and(eq(projectTeams.projectId,id),(await import('drizzle-orm')).ne(projectTeams.vendorFrom,''))).get();if(original&&contract&&(original.hourlyRate!==values.hourlyRate||original.pair!==values.pair||original.targetStart!==values.targetStart||original.deadline!==values.deadline||original.targetMinutes!==values.targetMinutes))throw Error('This project has a vendor contract. Create a new project for a different financial period, target, budget or work format; existing contract calculations are preserved.');}
   if (id) await getDb().update(projects).set(values).where(eq(projects.id, id));
   else
     await getDb()

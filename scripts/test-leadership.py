@@ -11,6 +11,7 @@ INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES
 INSERT INTO applications(user_id,project_id,partner,partner_email,experience,status,created) VALUES ('test-lead','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01'),('test-other','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01');
 """
 sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
+sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
@@ -55,7 +56,7 @@ try:
  for user,name,phone in [('tlone','Leader One','911111111111'),('tltwo','Leader Two','912222222222'),('member','Member Alpha','913333333333'),('mate','Member Beta','914444444444'),('owner','Private Owner','919999999999')]:
   run("insert into participants(id,name,email,telegram,language,project,phone,phone_consent,created) values('test-%s','%s','%s@example.test','','Hindi','general','%s',1,'2026-01-01')"%(user,name,user,phone))
  grant=form('/admin/people','Appoint manager','owner');grant.update(userId='test-worker',grant='yes');assert req('/admin/people','owner',grant)[0]==303
- appoint=form('/admin/leaders','Appoint project TL','worker');appoint.update(projectId='speech-pair',leaderId='test-tlone',label='Synthetic Team One');assert req('/admin/leaders','worker',appoint,origin='https://evil.example')[0]>=400;assert req('/admin/leaders','worker',appoint)[0]==303
+ appoint=form('/admin/leaders','Appoint project TL','worker');appoint.update(projectId='speech-pair',leaderId='test-tlone',label='Synthetic Team One',model='direct');assert req('/admin/leaders','worker',appoint,origin='https://evil.example')[0]>=400;assert req('/admin/leaders','worker',appoint)[0]==303
  appoint['leaderId']='test-tltwo';appoint['label']='Synthetic Team Two';assert req('/admin/leaders','worker',appoint)[0]==303
  team1=scalar("select id from project_teams where leader_id='test-tlone'");team2=scalar("select id from project_teams where leader_id='test-tltwo'");code=scalar("select code from project_teams where id='%s'"%team1)
  assert req('/admin/leaders','tlone',appoint)[0]>=400

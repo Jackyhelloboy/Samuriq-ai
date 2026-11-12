@@ -1,3 +1,4 @@
+import {requireLeaderScope} from './vendor-policy';
 import { getChatGPTUser } from "./chatgpt-auth";
 import { getDb } from "../db";
 import { applications, projects, progress,teamMembers,projectTeams,participants,evidenceFolders } from "../db/schema";
@@ -35,7 +36,9 @@ export async function accessibleProject(id: string) {
       "Coordinator approval and confirmed team membership are required",
     );
   const membership=await db.select().from(teamMembers).where(and(eq(teamMembers.userId,user.userId),eq(teamMembers.projectId,id))).get();
+  if(membership){const assigned=await db.select().from(projectTeams).where(eq(projectTeams.id,membership.teamId)).get(),leader=assigned?await db.select().from(participants).where(eq(participants.id,assigned.leaderId)).get():null;if(!assigned?.active||!leader||leader.suspended)throw Error('Your team assignment requires management attention');await requireLeaderScope(assigned);}
   if(membership&&!membership.rateAccepted)throw Error("Accept your assigned team terms on the project brief first");
+  if(row.projects.enrollmentOnly)throw Error("Enrollment is open; management must finish tutorial and Telegram setup before work access");
   await requireOnboarding(user.userId, row.projects);
   if (projectState(row.projects) !== "online")
     throw Error("This project is not currently online");

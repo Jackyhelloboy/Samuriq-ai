@@ -1,3 +1,4 @@
+import {contractVersion} from '../../vendor-policy';
 import ShareProject from '../../components/share-project';
 import {applicationLocks} from '../../enrollment';
 import {requestProjectPermission,acceptAssignedRate} from '../../enrollment-actions';
@@ -92,7 +93,8 @@ export default async function Detail({
         }
       />
       {locks.length>0&&<section className="suite-card"><span className="badge">TL PERMISSION REQUIRED</span><h2>Ask your current team before applying.</h2><p>Each active team leader must approve your additional project. Your existing team does not change.</p><form action={requestProjectPermission}><input type="hidden" name="projectId" value={job.id}/><label>How will you manage both commitments?<textarea name="reason" required minLength={10} maxLength={1000}/></label><button>Request TL permission</button></form></section>}
-      {membership&&!membership.rateAccepted&&<section className="suite-card"><h2>Your team assignment is ready.</h2><p>Your individual contractual rate is {money(membership.ratePaise)} per client-QC-approved hour. Settlement is at month end, after QC and owner review.</p><form action={acceptAssignedRate}><input type="hidden" name="projectId" value={job.id}/><input type="hidden" name="rate" value={membership.ratePaise}/><label className="check"><input type="checkbox" name="consent" value="yes" required/>I accept my assigned team terms and consent to project coordination by my TL.</label><button>Accept assigned team terms</button></form></section>}
+      {job.enrollmentOnly===1&&<section className="suite-card"><span className="badge approved">ENROLLMENT OPEN</span><h2>Register now. Work opens after setup.</h2><p>Management will add the required tutorial and Telegram invite. Client work stays locked until training, team approval and evidence-folder checks are complete.</p><a className="button dark" href={'/workspace?edit=1&next='+job.id}>Register / update my profile</a></section>}
+      {membership&&!membership.rateAccepted&&<section className="suite-card"><h2>Your team assignment is ready.</h2>{membership.vendorFrom?<><span className="badge">VENDOR-MANAGED PAYROLL</span><p>Your vendor receives the Samuriq settlement and is responsible for your individual payment. The owner's vendor budget is not your individual offer.</p><p className="preserve">{membership.payrollTerms||'Your vendor must provide written payroll terms before you can accept.'}</p></>:<p>Your individual contractual rate is {money(membership.ratePaise)} per client-QC-approved hour. Settlement is at month end after QC and owner review.</p>}<form action={acceptAssignedRate}><input type="hidden" name="projectId" value={job.id}/>{membership.vendorFrom?<input type="hidden" name="termsVersion" value={await contractVersion(membership)}/>:<input type="hidden" name="rate" value={membership.ratePaise}/>}<label className="check"><input type="checkbox" name="consent" value="yes" required/>I accept my assigned team’s private terms and understand who is responsible for paying me.</label><button disabled={!!membership.vendorFrom&&membership.payrollTerms.length<20}>Accept assigned team terms</button></form></section>}
       <div className="workspace-columns">
         <section className="suite-card" style={{ gridColumn: "1 / -1" }}>
           <h2>Status and videos</h2>
@@ -162,8 +164,7 @@ export default async function Detail({
           <p className="preserve">{job.description}</p>
           <h3>Requirements & quality expectations</h3>
           <p className="preserve">{job.requirements}</p>
-          <h3>Compensation</h3>
-          <p>{membership?<>Your accepted team rate: <strong>{money(membership.ratePaise)} per QC-approved individual hour</strong>. The public project budget includes the disclosed TL commission.</>:job.rate}</p>
+          <h3>Payment responsibility</h3><p>{membership?.vendorFrom?'Vendor-managed payroll. Your assigned vendor pays you under your private agreement. Samuriq pays the vendor after client QC, target checks and owner review.':membership?'Direct Samuriq payments follow your accepted individual contract and month-end owner review.':'Your payment route and private terms are confirmed with your team assignment. No joining fee is required.'}</p>{membership?.vendorFrom&&membership.rateAccepted===1&&<details><summary>My accepted vendor payroll terms</summary><p className="preserve">{membership.payrollTerms}</p></details>}
           {job.questions && (
             <>
               <h3>Application questions</h3>

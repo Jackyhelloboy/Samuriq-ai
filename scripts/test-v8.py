@@ -11,6 +11,7 @@ INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES
 INSERT INTO applications(user_id,project_id,partner,partner_email,experience,status,created) VALUES ('test-lead','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01'),('test-other','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01');
 """
 sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
+sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
@@ -65,10 +66,10 @@ try:
   run("insert into project_teams(id,project_id,leader_id,label,code,rate_paise,approved_rate_paise,created_by,created) values('%s','speech-pair','test-%s','%s','code-%s',25000,25000,'test-owner','2026-01-01')"%(t,l,t,t))
  # Shared public links need no authentication; production amounts remain owner-private.
  for role in ['owner','manager','tl','helper','contributor']:
-  status,b,h=req('/demo?role='+role,None);assert status==200 and 'Workspace V8' in b and 'Interactive demo.' in b
+  status,b,h=req('/demo?role='+role,None);assert status==200 and 'Workspace V9' in b and 'Interactive demo.' in b
   if role!='owner':assert 'Posted QC earnings' not in b and '₹1,250' not in b
  assert 'fictional' in req('/demo?role=tl',None)[1].lower()
- assert 'Choose a synthetic account' in req('/demo/login',None)[1]
+ assert 'No password is required' in req('/demo/login',None)[1]
  for u in ['worker','tlone','helper','referred']:
   assert req('/workspace/earnings',u)[0]!=200
   assert req('/admin/payouts',u)[0]!=200
@@ -146,6 +147,7 @@ try:
  # Concurrent attempts at two projects cannot bypass the current-team permission gate.
  run("insert into participants(id,name,email,telegram,language,project,phone,phone_consent,created) values('test-race','Synthetic Race','race@example.test','','Hindi','general','+910000000000',1,'2026-01-01')")
  run("insert into project_teams(id,project_id,leader_id,label,code,rate_paise,approved_rate_paise,created_by,created) values('second-team','second','test-tlone','Second team','second-code',25000,25000,'test-owner','2026-01-01')")
+ run("insert into leader_policies(user_id,max_projects,approved_by,reason,updated) values('test-tlone',2,'test-owner','Synthetic authorized second assignment','2026-01-01')")
  with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
   racing=list(pool.map(lambda project:req('/projects/detail','race',{**template,'projectId':project})[0],['speech-pair','second']))
  assert sorted(racing)==[303,500],racing

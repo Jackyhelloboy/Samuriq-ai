@@ -11,6 +11,7 @@ INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES
 INSERT INTO applications(user_id,project_id,partner,partner_email,experience,status,created) VALUES ('test-lead','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01'),('test-other','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01');
 """
 sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
+sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
@@ -59,7 +60,7 @@ try:
  run("update projects set active=1,target_start='%s',deadline='%s',external_allowed=0,community_url='https://t.me/synthetic' where id='speech-pair'"%(ymd(0),ymd(7)))
  run("update applications set created='%sT00:00:00Z'"%ymd(0))
  for role in ['owner','manager','tl','contributor']:
-  st,b,h=req('/demo?role='+role,None);assert st==200 and 'v7-suite' in b and 'Workspace V8' in b and 'Interactive demo.' in b
+  st,b,h=req('/demo?role='+role,None);assert st==200 and 'v7-suite' in b and 'Workspace V9' in b and 'Interactive demo.' in b
  b=req('/workspace','worker')[1];assert 'Before you start' in b and 'Daily work record' in b and 'My evidence folder' in b
  assert 'Your project team' in b and 'Month-end payments' in b
  assert 'Bank &amp; PAN' not in req('/workspace/earnings','worker')[1]

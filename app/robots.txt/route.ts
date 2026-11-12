@@ -1,0 +1,1 @@
+export function GET(){return new Response('User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /workspace\nDisallow: /teams\nDisallow: /helper\nDisallow: /manager\nDisallow: /support\nDisallow: /demo\nSitemap: https://samuriq-ai-recording-community.thinladle2.chatgpt.site/sitemap.xml\n',{headers:{'Content-Type':'text/plain','Cache-Control':'public, max-age=3600'}})}

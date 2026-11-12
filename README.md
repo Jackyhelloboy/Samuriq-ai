@@ -1,178 +1,36 @@
-# Samuriq AI — V6 Workspaces
+# Samuriq AI · V9 vendor operations
 
-V6 adds a shared, responsive operations shell with a role-aware workspace selector, collapsible navigation, dedicated owner/manager delivery dashboards, active-project sharing, an authenticated action queue and an owner expense ledger. Existing contributor, TL, identity and payout permissions remain enforced on the server.
+A role-scoped portal for AI recording, annotation, evaluation, POV and other client projects. Work happens on the client platform; Samuriq coordinates registration, training, teams, evidence, support and owner-controlled settlements.
 
-Explore sample data at `/demo?role=manager`, `/demo?role=owner`, `/demo?role=tl` and `/demo?role=contributor`. Demo actions never modify live accounts, projects or payments.
+## Payment responsibility
 
-After building, run the five integration suites sequentially: `test-platform.py`, `test-vendor.py`, `test-pro5.py`, `test-leadership.py`, `test-v6.py` in `scripts/`. See OPERATIONS-GUIDE.md for setup and current integration limits.
+- **Direct contributor:** Samuriq pays the individual under their accepted contract.
+- **Vendor team:** Samuriq settles the contracted vendor; the vendor handles member payroll under separate private agreements.
+- **Pair work:** One shared recording hour includes two confirmed people. Owner calculations use the private per-person contract, without promising that upstream rate to vendor-team members.
 
-# Samuriq AI — Project Leadership & Payout Operations
+Posted earnings, vendor settlements and full beneficiary details are owner-private. No daily earnings/commission balances are displayed to contributors, helpers, TLs or managers. Monthly vendor orders claim their source work exactly once. Cashfree is implemented but remains disabled until owner credentials and provider testing are complete.
 
-Extends Pro5 with project-specific TL workspaces, referral invitations, disclosed and locked member rates, private manager escalations, assigned tickets, daily TL reports, consented contact access and an immutable QC earnings ledger with separate contributor pay and TL commission.
+Read [PRODUCTION-V9.md](PRODUCTION-V9.md) for current rules, assumptions and limits. Older version guides describe legacy contracts and must not override V9.
 
-- Owner/manager console: `/admin/leaders`, `/admin/contacts`, `/support`.
-- TL workspace: `/teams` (assigned teams only).
-- Contributor project payments: `/workspace/earnings`, linked from Payment details.
-- Owner earnings/payout console: `/admin/payouts`.
+## Workspaces
 
-Cashfree Payouts V2 adapter is implemented but disabled until server credentials and provider security are configured. Development made no real transfers. Read [OPERATIONS-GUIDE.md](OPERATIONS-GUIDE.md) before activation, including fixed-egress/authentication, sandbox isolation, rate snapshots, locked reports and reconciliation limits.
+| Role | Route | Scope |
+| --- | --- | --- |
+| Owner | `/admin/dashboard` | Finance, bank review, projects and permissions |
+| Manager | `/manager` | Team operations, project workflow and assignment exceptions |
+| Vendor / TL | `/teams` | Assigned team only; one active project by default |
+| Helper | `/helper` | Explicitly delegated review, contact or ticket permissions |
+| Contributor | `/workspace` | Own projects, evidence, private agreement and support |
+| Isolated demos | `/demo/login` | Synthetic role previews; no password or live privileges |
 
-Validate after a production build by running the four Python integration suites sequentially: test-platform.py, test-vendor.py, test-pro5.py and test-leadership.py. Tests use synthetic identities and disposable local storage.
+Owner tools include `/admin/vendors`, `/admin/payouts` and `/admin/workflows`. Managers add real training and community links at `/admin/projects/workflow?id=PROJECT_ID`. A second TL project needs an explicit management policy and appointment. Query parameters do not grant roles or another vendor's team access.
 
-# Samuriq AI — Pro5
+## Hindi recording rollout
 
-Modern project marketplace and contributor operations platform. Pro5 tightens desktop/mobile layouts, adds clearly labelled closed demonstration cards, enforces project status on contributor access, and adds encrypted PAN/document submissions, duplicate detection, owner reviews and family-bank requests.
+The existing Hindi pair project opens enrollment for the 18 November 2026 deadline. The owner selected **configure links later**. Client work remains locked if the tutorial or project community is missing. After required tutorial checks and terms acceptance, the server-gated community route opens the configured Telegram/Discord invite. Do not replace missing links with fake destinations.
 
-Start with [OPERATIONS-GUIDE.md](OPERATIONS-GUIDE.md) for configuration and limitations. Automated checks: `python scripts/test-platform.py`, `python scripts/test-vendor.py`, `python scripts/test-pro5.py` after a production build. Run these sequentially because they share a local test port. All test identities and banking fixtures are synthetic and use a disposable local database.
+## Development and verification
 
-Official PAN verification, email ownership verification, automatic Sheets synchronization and bank transfers need separately connected services. Client sites do not provide API access; daily work remains evidence-based self-reporting plus client QC.
+Use the repository's `npm run install:ci`, then `npm run build`. The existing Sites/Cloudflare integration, D1 migrations and private R2 binding must be preserved. Runtime secrets include `ADMIN_EMAIL` and `BANK_ENCRYPTION_KEY`; never commit real secrets or rotate the bank key casually. See `.env.example` and the provider setup notes before enabling live payouts.
 
-# Samuriq AI — current release
-
-Read [OPERATIONS-GUIDE.md](OPERATIONS-GUIDE.md) for the current onboarding, roles, authentication, private records, community workflow and deployment limits. This guide supersedes older setup notes below.
-
-# vinext-starter
-
-A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
-
-## Prerequisites
-
-- Node.js `>=22.13.0`
-- Portable: Windows, macOS, or Linux; no Bash required
-- Managed Linux: managed Linux runtime with Bash, `flock`, `curl`, `sha256sum`, and GNU `timeout`
-- Git and `tar` (including Windows `tar.exe`) are required for publishing; portable publication does not require Bash
-
-## Sites Lifecycle
-
-The Sites initializer copies the shared starter and selects managed-linux only when `SITES_MANAGED_LINUX_CONTAINER=1`; otherwise it selects portable. It saves the selection only in ignored `.sites-runtime/execution-profile.json`. Both profiles copy/configure first, then use the plugin's separate `install-dependencies.mjs` step to measure installation independently. Edit source under `app/` and follow the Sites skill for installation, preview, builds, and publishing.
-
-Run `node <plugin-root>/scripts/configure-execution-profile.mjs` only when the profile is unknown for the current checkout and environment. Profile changes do not alter tracked source or require reinstalling otherwise-valid dependencies; restart an existing preview to use the new selection. Do not commit or upload `.sites-runtime/`.
-
-This starter does not use `wrangler.jsonc`.
-
-Publish archives outside the source checkout or under its ignored `outputs/` directory. Local `.env*`, `.dev.vars*`, TypeScript build state, and tool runtime directories are ignored; keep the hosting manifest, migrations, and authored scripts in source control.
-
-`install:ci` runs `npm ci` once against the shared lockfile, disables parent-workspace discovery, and includes required dev/optional dependencies despite production/omit settings. Sharp defaults to prebuilt binaries unless explicitly configured otherwise. Do not overlap installers.
-
-- **Portable:** Preserve host HOME, npm cache, registry, proxy, temporary paths, retry/concurrency settings, and lifecycle-script policy. Use `--prefer-offline --no-audit --no-fund`.
-- **Managed Linux:** Use the existing project-local HOME/cache/tmp setup and Linux install lock, tarball preflight, and timeout. Restore the image-seeded npm cache only when its lockfile hash matches; retain network fallback. Builds keep their existing timeout. These helpers are not invoked by the portable profile.
-
-`scripts/sites-env.mjs` preserves the caller's HOME, npm cache, proxy, XDG, and temporary-directory configuration while defaulting Wrangler and Miniflare state to the checkout. If npm reports an unwritable cache, select a writable path with `npm_config_cache` for that install. The `dev` and `start` scripts also keep Wrangler logs inside the checkout. Generated `.sites-runtime/` and `.wrangler/` directories are disposable and ignored by Git.
-
-On portable, `npm run dev` uses `vinext dev` with HMR, starting at port 5173. Vinext records the running server in ignored `.vinext/` state, rejects an ordinary duplicate launch, and recovers stale state after a stopped process; exactly simultaneous starts can race. Pass `--port <port>` or `--hostname <host>` after `npm run dev --` when needed; keep portable previews on loopback.
-
-For managed Linux browser QA, follow the Sites skill's managed preview reference. The daemon runs the project's Vite dev script with `--host 0.0.0.0 --port 4173 --strictPort`; use the CLI's returned URL. The ignored local profile survives the daemon's cleared environment.
-
-The portable profile simulates ChatGPT sign-in only for loopback development requests. Visit `/signin-with-chatgpt?return_to=/` to sign in as `local_seedy` (`seedy@sites.test`, display name `Seedy`) and `/signout-with-chatgpt?return_to=/` to sign out. The development cookie preserves that identity across server restarts. Mock auth is disabled in the managed-linux profile and is not included in production builds; hosted authentication remains dispatch-owned.
-
-The Worker uses `vinext/server/fetch-handler`, including Vinext's config-aware image handling. After building, `npm start` runs that Worker locally through Wrangler on `127.0.0.1`, sharing `.wrangler/state` with dev preview and local D1 migrations; it does not deploy the site or simulate sign-in. Use the URL printed by the server. Pass `npm start -- --port <port>` to select a different built-preview port.
-
-Local previews use Miniflare's placeholder `Request.cf` metadata without a network lookup. Set `CLOUDFLARE_CF_FETCH_ENABLED=true` to opt into fetching preview metadata; this setting does not change hosted request metadata.
-
-Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=true` to opt in.
-
-## Included Shape
-
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `worker/index.ts` is the production Worker entrypoint and preserves request-scoped connector bindings
-- `scripts/vite/` contains the maintained Vite integrations and the vendored Sites plugin license
-- `scripts/connector-preview/` contains the local connector preview Worker and session helpers
-- the remaining `scripts/` files select execution profiles and run installation, development, and builds; the plugin's helpers orchestrate the Sites lifecycle
-- `dist/` contains generated deployment output; `.vinext/`, `.wrangler/`, and `.sites-runtime/` contain ignored local tool state
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `@cloudflare/workers-types` provides Worker types; `cloudflare-env.d.ts` declares optional `DB`/`BUCKET` bindings—update these declarations if binding names change
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Use it as the durable user key; use email and name for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive `oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty `name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by `oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use the returned `userId` as the stable user key for user-owned records; do not use email as a durable identifier.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send anonymous visitors through Sign in with ChatGPT.
-- In a Server Component, start sign-in with `<a href={chatGPTSignInPath(returnTo)} target="_top">`. The auth helper module is server-only; do not import it into a Client Component.
-- Do not use `fetch`, XHR, a client-side router, or a framework link that can prefetch the sign-in route. SIWC must start as a top-level navigation.
-- Never request the AuthAPI authorization endpoint directly. The dispatch-owned `/signin-with-chatgpt` route must start the SIWC flow.
-- Use `chatGPTSignOutPath(returnTo)` for browser sign-out links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the OAuth cookies, and identity header injection. Do not implement app routes for those reserved paths. Routes that do not import and call the helper remain anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the Sites hosting platform's access policy controls for workspace-wide restrictions, or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Local D1 migrations
-
-For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
-
-```sh
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_example.sql
-```
-
-Replace the filename with the pending migration and `DB` with your D1 binding name if different. Use `.wrangler/state`, not `.wrangler/state/v3`; Wrangler adds the versioned directories. Do not replay migrations already applied locally. This updates only the preview database; publishing applies production migrations separately.
-
-## Diagnostic Commands
-
-- `npm run install:ci`: perform the one locked dependency install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build the deployable Sites artifact
-- `npm run start`: preview the built Worker locally with D1/R2 support
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-When using the Sites plugin, follow its skill instructions for installation, builds, and publishing. These npm commands remain available for standalone use.
-
-The portable build runs Vinext directly without a host `timeout` command. The managed-linux build uses `scripts/build-verified.sh` and its existing `SITES_BUILD_TIMEOUT` setting.
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
-
-## Vendor workflow
-
-Contributors register, apply, and obtain coordinator approval before the portal launches an external client workspace. Launches record navigation only, not client activity. Completed daily reports require a Drive evidence URL; the owner can review proof and separately record client QC confirmation. Editing a report resets its review. Daily CSV export includes approved assignments missing a check-in when a date is selected.
-
-Optional bank details use AES-GCM encryption with the runtime secret `BANK_ENCRYPTION_KEY` (64 hexadecimal characters). Preserve this key: replacing it makes existing details unreadable. Full details are excluded from pages and CSVs. The owner can explicitly reveal details with an audited same-origin POST. Bank ownership and payouts are not automated.
-
-Run `python scripts/test-vendor.py` after the production build for isolated local workflow and security checks. Fixtures and the dummy encryption key never touch the production database. This test requires the bundled Wrangler dependencies and Python 3.
-
-External client APIs, client-side enforcement of vendor attribution, automatic QC, bank transfers, and Drive upload automation require separate provider access. A client URL becomes visible after navigation. Evidence alone does not prove work ownership; reconcile participant/client IDs and QC with the client before payment.
-
-See **START-HERE.md** for the permanent-pair workflow, 14-hour target, November 18 deadline, ₹500/pair-hour QC terms, community permissions, daily client exports and deployment requirements.
+Run these Python integration scripts **sequentially** after the production build: `test-platform.py`, `test-vendor.py`, `test-pro5.py`, `test-leadership.py`, `test-v6.py`, `test-evidence.py`, `test-v7.py`, `test-v8.py`, `test-v9.py` under `scripts/`. They use disposable local D1 fixtures and synthetic identities. The V9 concurrency check does not establish a production capacity guarantee. No client API, automated client QC observation, automatic Drive verification or prevention of direct external registrations is claimed.

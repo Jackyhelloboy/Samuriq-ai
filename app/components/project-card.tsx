@@ -22,6 +22,7 @@ type Job = {
   deadline: string;
   onboardingRequired?: number;
   preview?: boolean;
+  enrollmentOnly?:number;
 };
 export function ProjectCard({
   job: j,
@@ -46,7 +47,7 @@ export function ProjectCard({
         </span>
         {!j.preview&&<ShareProject compact path={"/projects/detail?id="+encodeURIComponent(j.id)} title={j.title}/>}
         <span className={"badge " + (state === "online" ? "approved" : "")}>
-          {stateLabel(state)}
+          {j.enrollmentOnly&&state==='online'?'ENROLLMENT OPEN':stateLabel(state)}
         </span>
       </div>
       <p className="card-discipline">{j.category}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
@@ -62,7 +63,7 @@ export function ProjectCard({
           {j.pair ? "Permanent pair" : "Individual"}
         </span>
       </div>
-      <div className="card-compensation">{j.rate}</div>
+      <div className="card-compensation">Remote projects · Approved participation</div>
 
       {state==="online"&&!j.preview?(      <a
         href={

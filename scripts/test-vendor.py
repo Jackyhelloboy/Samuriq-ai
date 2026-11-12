@@ -14,6 +14,7 @@ sql+="""
 INSERT INTO identity_records(user_id,pan_hash,document_hash,encrypted,pan_last4,status,document_key,document_type,updated) VALUES ('test-worker','test-pan-hash','test-document-hash','fixture','000A','manual-reviewed','fixture','image/png','2026-01-01');
 """
 sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
+sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
