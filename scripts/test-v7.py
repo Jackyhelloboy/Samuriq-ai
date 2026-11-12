@@ -82,6 +82,8 @@ try:
  assert req('/projects/launch','worker')[0] in (404,405)
  f=form('/projects/work?id=speech-pair','Load client workspace','worker');assert len(f['session'])==72
  assert 'Open approved external session' not in req('/projects/work?id=speech-pair','worker')[1]
+ assert 'microphone https://webrtcsg.shenfei-rec.com; camera https://webrtcsg.shenfei-rec.com; fullscreen https://webrtcsg.shenfei-rec.com' in req('/projects/work?id=speech-pair','worker')[1]
+ assert 'Your Samuriq login does not sign you into the client platform' in req('/projects/work?id=speech-pair','worker')[1]
  assert scalar('select count(*) from launches')==0
  assert req('/projects/launch','worker',{**f,'mode':'external'})[0]==403
  assert req('/projects/launch','other',{**f,'mode':'embed'})[0]==403
@@ -126,6 +128,15 @@ try:
  with ThreadPoolExecutor(max_workers=6) as pool:
   status=list(pool.map(lambda role:req('/demo?role='+role,None)[0],['owner','manager','tl','contributor']*3))
  assert all(s==200 for s in status),status
+ # Owner-only recommended client setup retains all required training gates and project economics.
+ setup=form('/admin/projects/workflow?id=speech-pair','Apply embedded client setup','owner');setup.update(projectId='speech-pair',confirmed='yes')
+ assert req('/admin/projects/workflow','worker',setup)[0]>=400
+ oldrate=scalar("select hourly_rate from projects where id='speech-pair'")
+ assert req('/admin/projects/workflow','owner',setup)[0]==303
+ assert scalar("select client_url from projects where id='speech-pair'")=='https://webrtcsg.shenfei-rec.com/index'
+ assert scalar("select external_allowed from projects where id='speech-pair'")==0
+ assert scalar("select onboarding_required from projects where id='speech-pair'")==1
+ assert scalar("select hourly_rate from projects where id='speech-pair'")==oldrate
  assert scalar('select count(*) from payout_orders')==0
  print('PASS V7: consistent role demos; task-first contributor workspace; public client URL isolation; one-use hashed sessions; replay/expiry/account binding; approval rechecks; origin and iframe policy; explicit external opt-in; atomic concurrent claims; generation throttling; 12 synthetic demo requests across six local concurrent workers in %.2fs. This is not a production capacity guarantee.'%(time.monotonic()-start))
 finally:
