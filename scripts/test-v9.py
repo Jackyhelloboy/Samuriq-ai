@@ -12,6 +12,16 @@ INSERT INTO applications(user_id,project_id,partner,partner_email,experience,sta
 """
 sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
 sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
+
+# Pre-consented synthetic legacy fixtures only; never an application migration.
+sql+="""
+INSERT OR IGNORE INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT p.id,c.version_id,r.role,p.name,'2026-11-12T00:00:00Z','fixture' FROM participants p CROSS JOIN current_policy c CROSS JOIN (SELECT 'contributor' role UNION ALL SELECT 'tl' UNION ALL SELECT 'helper' UNION ALL SELECT 'manager' UNION ALL SELECT 'owner') r;
+INSERT OR IGNORE INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT 'test-owner',version_id,r.role,'Synthetic owner','2026-11-12T00:00:00Z','fixture' FROM current_policy CROSS JOIN (SELECT 'contributor' role UNION ALL SELECT 'tl' UNION ALL SELECT 'helper' UNION ALL SELECT 'manager' UNION ALL SELECT 'owner') r;
+CREATE TRIGGER synthetic_policy_profile AFTER INSERT ON participants BEGIN INSERT OR IGNORE INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT NEW.id,c.version_id,r.role,NEW.name,'2026-11-12T00:00:00Z','fixture' FROM current_policy c CROSS JOIN (SELECT 'contributor' role UNION ALL SELECT 'tl' UNION ALL SELECT 'helper' UNION ALL SELECT 'manager' UNION ALL SELECT 'owner') r; END;
+CREATE TRIGGER synthetic_policy_account AFTER INSERT ON accounts BEGIN INSERT OR IGNORE INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT NEW.id,c.version_id,r.role,NEW.name,'2026-11-12T00:00:00Z','fixture' FROM current_policy c CROSS JOIN (SELECT 'contributor' role UNION ALL SELECT 'tl' UNION ALL SELECT 'helper' UNION ALL SELECT 'manager' UNION ALL SELECT 'owner') r; END;
+CREATE TRIGGER synthetic_legacy_invite AFTER INSERT ON project_teams BEGIN INSERT INTO team_invites(id,team_id,code,expires_at,max_uses,created_by,created) VALUES ('fixture-'||NEW.id,NEW.id,NEW.code,4070908800000,1000,'fixture','2026-11-12T00:00:00Z'); END;
+"""
+
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
@@ -160,7 +170,7 @@ try:
  st,b,h=req('/api/project-readiness',None);assert st==200 and json.loads(b)['workReady']==False and 'client.example' not in b
  assert req('/robots.txt',None)[0]==200 and req('/sitemap.xml',None)[0]==200
  for role in ['owner','manager','tl','helper','contributor']:
-  st,b,h=req('/demo?role='+role,None);assert st==200 and 'Workspace V9' in b
+  st,b,h=req('/demo?role='+role,None);assert st==200 and 'Workspace V10' in b
   if role!='owner':assert '₹1,250' not in b
  # Scoped SQL and pagination: synthetic local concurrency, not a production capacity promise.
  start=time.monotonic()

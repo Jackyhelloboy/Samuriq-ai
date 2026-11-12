@@ -16,9 +16,10 @@ export async function staffRole() {
     .get();
   return row ? { user, role: "manager" as const } : null;
 }
-export async function requireOwner(){const user=await getChatGPTUser();if(!user)redirect(chatGPTSignInPath('/admin'));if(user.email.toLowerCase()!==settings().ADMIN_EMAIL?.toLowerCase())throw Error('Owner access required');return user;}
+export async function requireOwner(){const user=await getChatGPTUser();if(!user)redirect(chatGPTSignInPath('/admin'));if(user.email.toLowerCase()!==settings().ADMIN_EMAIL?.toLowerCase())throw Error('Owner access required');await (await import('./policy')).requirePolicyRole(user.userId,'owner',true);return user;}
 export async function requireOperator() {
   const staff = await staffRole();
   if (!staff) throw Error("Manager or owner access required");
+  await (await import("./policy")).requirePolicyRole(staff.user.userId,staff.role,true);
   return staff;
 }

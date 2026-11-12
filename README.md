@@ -1,4 +1,4 @@
-# Samuriq AI · V9 vendor operations
+# Samuriq AI · V10 delivery operations
 
 A role-scoped portal for AI recording, annotation, evaluation, POV and other client projects. Work happens on the client platform; Samuriq coordinates registration, training, teams, evidence, support and owner-controlled settlements.
 
@@ -10,7 +10,7 @@ A role-scoped portal for AI recording, annotation, evaluation, POV and other cli
 
 Posted earnings, vendor settlements and full beneficiary details are owner-private. No daily earnings/commission balances are displayed to contributors, helpers, TLs or managers. Monthly vendor orders claim their source work exactly once. Cashfree is implemented but remains disabled until owner credentials and provider testing are complete.
 
-Read [PRODUCTION-V9.md](PRODUCTION-V9.md) for current rules, assumptions and limits. Older version guides describe legacy contracts and must not override V9.
+Read [PRODUCTION-V10.md](PRODUCTION-V10.md) for current role agreements, working-day payment expectations, expiring/capped invitations, manager handovers and retained history. V9 finance remains supported; public project-share buttons are removed.
 
 ## Workspaces
 
@@ -33,4 +33,4 @@ The existing Hindi pair project opens enrollment for the 18 November 2026 deadli
 
 Use the repository's `npm run install:ci`, then `npm run build`. The existing Sites/Cloudflare integration, D1 migrations and private R2 binding must be preserved. Runtime secrets include `ADMIN_EMAIL` and `BANK_ENCRYPTION_KEY`; never commit real secrets or rotate the bank key casually. See `.env.example` and the provider setup notes before enabling live payouts.
 
-Run these Python integration scripts **sequentially** after the production build: `test-platform.py`, `test-vendor.py`, `test-pro5.py`, `test-leadership.py`, `test-v6.py`, `test-evidence.py`, `test-v7.py`, `test-v8.py`, `test-v9.py` under `scripts/`. They use disposable local D1 fixtures and synthetic identities. The V9 concurrency check does not establish a production capacity guarantee. No client API, automated client QC observation, automatic Drive verification or prevention of direct external registrations is claimed.
+Run these Python integration scripts **sequentially** after the production build: `test-platform.py`, `test-vendor.py`, `test-pro5.py`, `test-leadership.py`, `test-v6.py`, `test-evidence.py`, `test-v7.py`, `test-v8.py`, `test-v9.py`, `test-v10.py` under `scripts/`. They use disposable local D1 fixtures and synthetic identities. The V9 concurrency check does not establish a production capacity guarantee. No client API, automated client QC observation, automatic Drive verification or prevention of direct external registrations is claimed.

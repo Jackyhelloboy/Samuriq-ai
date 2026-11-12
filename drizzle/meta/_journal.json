@@ -176,6 +176,13 @@
       "when": 1794467416886,
       "tag": "0024_nappy_peter_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "6",
+      "when": 1794476524747,
+      "tag": "0025_handy_inhumans",
+      "breakpoints": true
     }
   ]
 }

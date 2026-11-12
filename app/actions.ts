@@ -35,6 +35,7 @@ export async function register(form: FormData) {
   const skills = String(form.get("skills") || "").slice(0, 1500),
     location = String(form.get("location") || "").slice(0, 100),
     device = String(form.get("device") || "").slice(0, 100);
+  await (await import('./policy')).recordRegistrationPolicy(user,String(form.get('policyVersion')||''),form.get('platformPolicyConsent'));const chosen=String(form.get('next')||'');if(chosen&&(!phone||!phoneConsent))throw Error('Project registration requires a consented contact number');
   await getDb()
     .insert(participants)
     .values({
@@ -56,12 +57,13 @@ export async function register(form: FormData) {
       set: { name,phone,phoneConsent, telegram, language, project, skills, location, device },
     });
   const returnTo=String(form.get("return_to")||"");if(returnTo)redirect(safeReturn(returnTo));
-  const next=String(form.get("next")||"");
+  const next=String(form.get("next")||"");if(next){const e=await import("./enrollment");await e.requireApplicationPermission(user.userId,next);await e.assignDirect(user.userId,next);}
   redirect(next?"/projects/onboarding?id="+encodeURIComponent(next):"/workspace");
 }
 export async function report(form: FormData) {
   const user = await getChatGPTUser();
   if (!user) throw Error("Sign in first.");
+  await (await import("./policy")).requirePolicyRole(user.userId,"contributor");
   const db = getDb();
   const member = await db
     .select()

@@ -120,6 +120,7 @@ export async function recordPlayback(
 export async function acceptOnboarding(form: FormData) {
   const id = String(form.get("projectId")),
     { user, db, j, original, version } = await context(id);
+  await (await import('./policy')).requirePolicyRole(user.userId,'contributor');
   if(id!==j.id)throw Error("Accept terms only from the main project onboarding page");
   const r = await db
     .select()

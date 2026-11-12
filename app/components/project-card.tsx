@@ -1,4 +1,3 @@
-import ShareProject from "./share-project";
 import {
   ArrowUpRight,
   AudioLines,
@@ -45,7 +44,7 @@ export function ProjectCard({
         <span className="project-glyph">
           <Icon size={26} strokeWidth={1.4} />
         </span>
-        {!j.preview&&<ShareProject compact path={"/projects/detail?id="+encodeURIComponent(j.id)} title={j.title}/>}
+
         <span className={"badge " + (state === "online" ? "approved" : "")}>
           {j.enrollmentOnly&&state==='online'?'ENROLLMENT OPEN':stateLabel(state)}
         </span>

@@ -11,6 +11,8 @@ export async function accessibleProject(id: string) {
   await requireFeature("client_access");
   const user = await getChatGPTUser();
   if (!user) throw Error("Sign in first");
+  await (await import("./policy")).requirePolicyRole(user.userId,"contributor");
+  await (await import("./work-membership")).requireProjectAllowed(user.userId,id);
   const db = getDb(),
     row = await db
       .select()
@@ -36,7 +38,7 @@ export async function accessibleProject(id: string) {
       "Coordinator approval and confirmed team membership are required",
     );
   const membership=await db.select().from(teamMembers).where(and(eq(teamMembers.userId,user.userId),eq(teamMembers.projectId,id))).get();
-  if(membership){const assigned=await db.select().from(projectTeams).where(eq(projectTeams.id,membership.teamId)).get(),leader=assigned?await db.select().from(participants).where(eq(participants.id,assigned.leaderId)).get():null;if(!assigned?.active||!leader||leader.suspended)throw Error('Your team assignment requires management attention');await requireLeaderScope(assigned);}
+  if(membership){const assigned=await db.select().from(projectTeams).where(eq(projectTeams.id,membership.teamId)).get(),leader=assigned?await db.select().from(participants).where(eq(participants.id,assigned.leaderId)).get():null;if(!assigned?.active||!leader||leader.suspended)throw Error('Your team assignment requires management attention');await requireLeaderScope(assigned);await (await import('./policy')).requirePolicyRole(assigned.leaderId,'tl');}
   if(membership&&!membership.rateAccepted)throw Error("Accept your assigned team terms on the project brief first");
   if(row.projects.enrollmentOnly)throw Error("Enrollment is open; management must finish tutorial and Telegram setup before work access");
   await requireOnboarding(user.userId, row.projects);

@@ -12,6 +12,8 @@ export async function saveProgress(form: FormData) {
   const user = await getChatGPTUser();
   if (!user) throw Error("Sign in to continue");
   const projectId = String(form.get("projectId"));
+  await (await import("./policy")).requirePolicyRole(user.userId,"contributor");
+  await (await import("./work-membership")).requireProjectAllowed(user.userId,projectId);
   const application = await getDb()
     .select()
     .from(applications)

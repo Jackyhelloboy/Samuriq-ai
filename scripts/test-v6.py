@@ -12,6 +12,16 @@ INSERT INTO applications(user_id,project_id,partner,partner_email,experience,sta
 """
 sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
 sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
+
+# Pre-consented synthetic legacy fixtures only; never an application migration.
+sql+="""
+INSERT OR IGNORE INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT p.id,c.version_id,r.role,p.name,'2026-11-12T00:00:00Z','fixture' FROM participants p CROSS JOIN current_policy c CROSS JOIN (SELECT 'contributor' role UNION ALL SELECT 'tl' UNION ALL SELECT 'helper' UNION ALL SELECT 'manager' UNION ALL SELECT 'owner') r;
+INSERT OR IGNORE INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT 'test-owner',version_id,r.role,'Synthetic owner','2026-11-12T00:00:00Z','fixture' FROM current_policy CROSS JOIN (SELECT 'contributor' role UNION ALL SELECT 'tl' UNION ALL SELECT 'helper' UNION ALL SELECT 'manager' UNION ALL SELECT 'owner') r;
+CREATE TRIGGER synthetic_policy_profile AFTER INSERT ON participants BEGIN INSERT OR IGNORE INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT NEW.id,c.version_id,r.role,NEW.name,'2026-11-12T00:00:00Z','fixture' FROM current_policy c CROSS JOIN (SELECT 'contributor' role UNION ALL SELECT 'tl' UNION ALL SELECT 'helper' UNION ALL SELECT 'manager' UNION ALL SELECT 'owner') r; END;
+CREATE TRIGGER synthetic_policy_account AFTER INSERT ON accounts BEGIN INSERT OR IGNORE INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT NEW.id,c.version_id,r.role,NEW.name,'2026-11-12T00:00:00Z','fixture' FROM current_policy c CROSS JOIN (SELECT 'contributor' role UNION ALL SELECT 'tl' UNION ALL SELECT 'helper' UNION ALL SELECT 'manager' UNION ALL SELECT 'owner') r; END;
+CREATE TRIGGER synthetic_legacy_invite AFTER INSERT ON project_teams BEGIN INSERT INTO team_invites(id,team_id,code,expires_at,max_uses,created_by,created) VALUES ('fixture-'||NEW.id,NEW.id,NEW.code,4070908800000,1000,'fixture','2026-11-12T00:00:00Z'); END;
+"""
+
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
@@ -92,9 +102,9 @@ try:
  assert 'Team leader workspace' in req('/projects','lead')[1]
  for path in ['/','/projects','/workspace','/workspace/payments','/support','/notifications','/manager','/admin/dashboard','/admin','/admin/projects','/admin/expenses','/admin/leaders','/admin/payouts','/admin/identity','/admin/security','/admin/settings']:
   assert req(path,'owner')[0]==200,path
- assert 'Share Healthcare conversation recording' in req('/')[1]
+ assert 'Share Healthcare conversation recording' not in req('/')[1]
  run("update projects set active=0,visibility='listed' where id='speech-pair'")
- assert 'Share Healthcare conversation recording' in req('/')[1]
+ assert 'Share Healthcare conversation recording' not in req('/')[1]
  assert req('/projects/detail?id=speech-pair','other')[0]==200 and 'currently closed' in req('/projects/detail?id=speech-pair','other')[1]
  print('PASS V6: isolated demos; role-specific dashboards and switcher choices; no query-based elevation; owner-only expense ledger and reversals; CSRF; private notification scoping; public project sharing with closed-work access blocked; key pages render with the shared shell.')
 finally:

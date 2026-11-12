@@ -1,3 +1,4 @@
+import {RegistrationPolicy} from '../components/registration-policy';
 import {getChatGPTUser,chatGPTSignInPath} from '../chatgpt-auth';import {getDb} from '../../db';import {participants} from '../../db/schema';import {eq} from 'drizzle-orm';import {Shell,Heading} from '../components/shell';import {ContributorDashboard} from '../components/contributor-dashboard';import {register} from '../actions';import {ArrowUpRight,UserRound,CheckCircle2} from 'lucide-react';
 export const dynamic='force-dynamic';
 export default async function Workspace({searchParams}:{searchParams:Promise<Record<string,string>>}){const query=await searchParams,user=await getChatGPTUser(),profile=user?await getDb().select().from(participants).where(eq(participants.id,user.userId)).get():null,source=(query.source||'direct').slice(0,100);if(user&&profile&&!query.edit)return <Shell active="Overview"><ContributorDashboard user={user} profile={profile} projectId={query.project}/></Shell>;
@@ -136,7 +137,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                   </select>
                 </label>
               </div>
-              <div className="form-grid"><label>Project contact number<input name="phone" type="tel" maxLength={18} defaultValue={profile?.phone} placeholder="+91…"/></label><label className="check"><input name="phoneConsent" type="checkbox" value="yes" defaultChecked={!!profile?.phoneConsent}/>I allow my assigned team leader and authorized managers to contact me for project coordination. Staff phone numbers are not publicly shared.</label></div>
+              <div className="form-grid"><label>Project contact number<input name="phone" type="tel" required={!!query.next} maxLength={18} defaultValue={profile?.phone} placeholder="+91…"/></label><label className="check"><input name="phoneConsent" type="checkbox" required={!!query.next} value="yes" defaultChecked={!!profile?.phoneConsent}/>I allow my assigned team leader and authorized managers to contact me for project coordination. Staff phone numbers are not publicly shared.</label></div>
               <label>
                 Skills & experience
                 <textarea
@@ -152,7 +153,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                 agree to the use of my profile and project reports for
                 participation coordination.
               </label>
-              <div className="form-footer">
+              <RegistrationPolicy/><div className="form-footer">
                 <a href="/privacy">Privacy information</a>
                 <button>
                   Save my profile <ArrowUpRight size={16} />
