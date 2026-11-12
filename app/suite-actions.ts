@@ -53,6 +53,7 @@ export async function saveProgress(form: FormData) {
   }
   if (status === "completed" && !proofUrl)
     throw Error("Add a Drive evidence link before completing the report");
+  if(proj?.workType!=='general'&&status==='completed'&&!String(form.get('clientId')||'').trim())throw Error('Add the client submission or batch reference for this workflow');
   const row = {
     userId: user.userId,
     projectId,

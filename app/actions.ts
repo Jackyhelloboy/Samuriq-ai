@@ -1,4 +1,5 @@
 "use server";
+import {safeReturn} from "./auth-rate";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { settings } from "./telegram";
 import { getDb } from "../db";
@@ -54,6 +55,7 @@ export async function register(form: FormData) {
       target: participants.id,
       set: { name,phone,phoneConsent, telegram, language, project, skills, location, device },
     });
+  const returnTo=String(form.get("return_to")||"");if(returnTo)redirect(safeReturn(returnTo));
   const next=String(form.get("next")||"");
   redirect(next?"/projects/onboarding?id="+encodeURIComponent(next):"/workspace");
 }

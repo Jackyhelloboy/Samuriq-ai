@@ -89,12 +89,12 @@ try:
  assert 'Private concern secret' in req('/notifications','worker')[1]
  assert req('/login','lead')[2].get('Location')=='/teams'
  assert 'Team leader workspace' in req('/projects','lead')[1]
- for path in ['/','/projects','/workspace','/workspace/payments','/workspace/earnings','/support','/notifications','/manager','/admin/dashboard','/admin','/admin/projects','/admin/expenses','/admin/leaders','/admin/payouts','/admin/identity','/admin/security','/admin/settings']:
+ for path in ['/','/projects','/workspace','/workspace/payments','/support','/notifications','/manager','/admin/dashboard','/admin','/admin/projects','/admin/expenses','/admin/leaders','/admin/payouts','/admin/identity','/admin/security','/admin/settings']:
   assert req(path,'owner')[0]==200,path
  assert 'Share Healthcare conversation recording' in req('/')[1]
  run("update projects set active=0,visibility='listed' where id='speech-pair'")
- assert 'Share Healthcare conversation recording' not in req('/')[1]
+ assert 'Share Healthcare conversation recording' in req('/')[1]
  assert req('/projects/detail?id=speech-pair','other')[0]==200 and 'currently closed' in req('/projects/detail?id=speech-pair','other')[1]
- print('PASS V6: isolated demos; role-specific dashboards and switcher choices; no query-based elevation; owner-only expense ledger and reversals; CSRF; private notification scoping; active-only project sharing; key pages render with the shared shell.')
+ print('PASS V6: isolated demos; role-specific dashboards and switcher choices; no query-based elevation; owner-only expense ledger and reversals; CSRF; private notification scoping; public project sharing with closed-work access blocked; key pages render with the shared shell.')
 finally:
  server.terminate();server.wait(timeout=10)

@@ -28,7 +28,7 @@ export default async function Editor({
         title={job ? "Refine the project." : "Build your next project."}
         description="Turn a client brief into an opportunity with clear requirements, compensation and access instructions."
       />
-      <form action={publishProject} className="editor-form">
+      <p><a href="/admin/workflows">Configure client-specific contributor workflows →</a></p><form action={publishProject} className="editor-form">
         <input name="id" value={job?.id || ""} type="hidden" />
         <div className="workspace-columns">
           <div>

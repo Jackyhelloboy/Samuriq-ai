@@ -141,6 +141,20 @@
       "when": 1794451419735,
       "tag": "0019_blue_bushwacker",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1794462665359,
+      "tag": "0020_brainy_rogue",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "6",
+      "when": 1794463833618,
+      "tag": "0021_steady_wonder_man",
+      "breakpoints": true
     }
   ]
 }

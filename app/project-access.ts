@@ -34,12 +34,14 @@ export async function accessibleProject(id: string) {
     throw Error(
       "Coordinator approval and confirmed team membership are required",
     );
+  const membership=await db.select().from(teamMembers).where(and(eq(teamMembers.userId,user.userId),eq(teamMembers.projectId,id))).get();
+  if(membership&&!membership.rateAccepted)throw Error("Accept your assigned team terms on the project brief first");
   await requireOnboarding(user.userId, row.projects);
   if (projectState(row.projects) !== "online")
     throw Error("This project is not currently online");
   if(row.projects.evidenceRequired){
     const pair=await pairContext(id,row.applications.userId),members=await db.select().from(teamMembers).where(and(eq(teamMembers.projectId,id),inArray(teamMembers.userId,[pair.first.id,pair.second.id]))),first=members.find(m=>m.userId===pair.first.id),second=members.find(m=>m.userId===pair.second.id);
-    if(!first||!second||first.teamId!==second.teamId)throw Error("Both permanent partners must accept the same project team before client access");
+    if(!first||!second||!first.rateAccepted||!second.rateAccepted||first.teamId!==second.teamId)throw Error("Both permanent partners must accept the same project team before client access");
     const team=await db.select().from(projectTeams).where(eq(projectTeams.id,first.teamId)).get(),leader=team?await db.select().from(participants).where(eq(participants.id,team.leaderId)).get():null;
     if(!team?.active||!leader||leader.suspended)throw Error("Your project team requires manager attention before work access");
     const folders=await db.select().from(evidenceFolders).where(and(eq(evidenceFolders.projectId,id),inArray(evidenceFolders.userId,[pair.first.id,pair.second.id])));

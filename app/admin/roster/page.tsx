@@ -1,3 +1,4 @@
+import {routeWaitingApplicants} from "../../leader-actions";
 import { requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import {
@@ -75,6 +76,7 @@ export default async function Roster({
           Show
         </button>
       </form>
+      {job&&<section className="suite-card"><h2>Team assignment queue</h2><p>Direct applicants are balanced across eligible project TLs. Existing teams and TL referrals stay fixed. After appointing new TLs, route up to 100 waiting applications at a time. Contact consent and additional-project permissions still apply.</p><form action={routeWaitingApplicants}><input type="hidden" name="projectId" value={job.id}/><button>Route waiting applicants</button></form></section>}
       {job && (
         <p>
           <span

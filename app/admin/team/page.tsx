@@ -69,7 +69,7 @@ export default async function Team({
         </form>
         <p>
           One pair lead reports shared output once. Reported hours track the
-          target; only QC-approved minutes count toward estimated earnings. No
+          target; client QC is reviewed separately. No
           report means follow-up needed, not proof of inactivity.
         </p>
         <div className="table-scroll">
@@ -79,7 +79,7 @@ export default async function Team({
                 <th>Team / project</th>
                 <th>Daily output</th>
                 <th>Target progress</th>
-                <th>QC / estimated earnings</th>
+                <th>Client QC</th>
               </tr>
             </thead>
             <tbody>
@@ -133,14 +133,6 @@ export default async function Team({
                     </td>
                     <td>
                       {(qc / 60).toFixed(2)} approved hours
-                      <small>
-                        ₹{amount.toFixed(2)} {j.pair ? "per pair" : "total"}
-                      </small>
-                      {!!j.pair && (
-                        <small>
-                          ₹{(amount / 2).toFixed(2)} each · not paid
-                        </small>
-                      )}
                     </td>
                   </tr>
                 ))}

@@ -1,0 +1,1 @@
+CREATE INDEX `team_member_team` ON `team_members` (`team_id`);

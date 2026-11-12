@@ -59,9 +59,9 @@ try:
  run("update projects set active=1,target_start='%s',deadline='%s',external_allowed=0,community_url='https://t.me/synthetic' where id='speech-pair'"%(ymd(0),ymd(7)))
  run("update applications set created='%sT00:00:00Z'"%ymd(0))
  for role in ['owner','manager','tl','contributor']:
-  st,b,h=req('/demo?role='+role,None);assert st==200 and 'v7-suite' in b and 'Workspace V7' in b and 'Interactive demo.' in b
+  st,b,h=req('/demo?role='+role,None);assert st==200 and 'v7-suite' in b and 'Workspace V8' in b and 'Interactive demo.' in b
  b=req('/workspace','worker')[1];assert 'Before you start' in b and 'Daily work record' in b and 'My evidence folder' in b
- assert 'Your project team' in b and 'Payment overview' in b
+ assert 'Your project team' in b and 'Month-end payments' in b
  assert 'Bank &amp; PAN' not in req('/workspace/earnings','worker')[1]
  # No unauthorized client URL appears in public/project workspace HTML.
  assert 'webrtcsg.shenfei-rec.com' not in req('/workspace','missing')[1]

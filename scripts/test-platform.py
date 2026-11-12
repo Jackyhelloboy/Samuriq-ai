@@ -104,7 +104,7 @@ try:
  assert scalar("select client_email from onboarding where user_id='test-worker'")=='worker@example.test'
  assert approved_launch('worker')[0]==303
  assert req('/projects/launch','worker',{'projectId':'speech-pair'},origin='https://evil.example')[0]==403
- assert req('/projects/launch','other',{'projectId':'speech-pair'})[0]==403
+ denied=req('/projects/launch','other',{'projectId':'speech-pair'});assert denied[0]==403,(denied[0],denied[1][:500])
  # Material changes invalidate previous acceptance
  run("update projects set terms='Updated local test terms' where id='speech-pair'")
  assert req('/projects/launch','worker',{'projectId':'speech-pair'})[0]==403

@@ -69,7 +69,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
               Your profile helps coordinators understand your skills. Apply
               separately to any available project.
             </p>
-            <form action={register} className="profile-form">
+            <form action={register} className="profile-form"><input type="hidden" name="return_to" value={query.return_to||''}/>
               <input name="source" type="hidden" value={source} />
               <input name="next" type="hidden" value={query.next || ""} />
               <div className="form-grid">

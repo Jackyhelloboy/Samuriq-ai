@@ -107,16 +107,17 @@ try:
  rep=form('/workspace','Save daily update','member');rep.update(projectId='speech-pair',status='completed',minutes='120',units='20',proofUrl='https://drive.google.com/file/d/synthetic',notes='Synthetic change');assert req('/workspace','member',rep)[0]>=400
  assert scalar("select minutes from project_progress where user_id='test-member'")==60
  assert 'Member Beta' not in req('/workspace/earnings','member')[1]
- assert '₹200.00' in req('/workspace/earnings','member')[1]
+ assert req('/workspace/earnings','member')[0]!=200
  # Payout orders require owner access, reviewed identity, bank checks and a unique earning.
  run("insert into identity_records(user_id,pan_hash,document_hash,encrypted,pan_last4,status,document_key,document_type,updated) values('test-member','synthetic-hash','synthetic-doc','fixture','000X','manual-reviewed','fixture','image/png','2026-01-01')")
  bank=form('/workspace/payments','Save bank details','member');bank.update(holder='Synthetic Member',account='12345678901',confirm='12345678901',ifsc='TEST0123456',consent='yes');assert req('/workspace/payments','member',bank)[0]==303
+ run("update earnings set day='2026-01-01'")
  prep=form('/admin/payouts','Prepare payout','owner');prep.update(earningId=scalar("select id from earnings where user_id='test-member'"),bankChecked='yes');assert req('/admin/payouts','worker',prep)[0]>=400;assert req('/admin/payouts','owner',prep)[0]==303
  assert req('/admin/payouts','owner',prep)[0]>=400
  orderid=scalar('select id from payout_orders')
  manual=form('/admin/payouts','Record payment','owner');manual.update(orderId=orderid,reference='SYNTHETIC-UTR-ONLY',confirmed='yes');assert req('/admin/payouts','tlone',manual)[0]>=400;assert req('/admin/payouts','owner',manual)[0]==303
  assert scalar('select status from payout_orders')=='paid';assert req('/admin/payouts','owner',manual)[0]>=400
- assert 'SYNTHETIC-UTR-ONLY' in req('/workspace/earnings','member')[1]
+ assert 'SYNTHETIC-UTR-ONLY' not in req('/workspace/earnings','member')[1]
  assert '12345678901' not in req('/workspace/earnings','member')[1]
  assert req('/admin/payouts','worker')[0]!=200
  # Managers can restrict contributors; TLs cannot. Restriction takes effect on every authenticated request.

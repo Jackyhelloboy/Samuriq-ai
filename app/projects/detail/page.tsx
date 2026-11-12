@@ -1,3 +1,6 @@
+import ShareProject from '../../components/share-project';
+import {applicationLocks} from '../../enrollment';
+import {requestProjectPermission,acceptAssignedRate} from '../../enrollment-actions';
 import {money} from "../../team-access";
 import {staffRole} from "../../access";
 import { onboardingVersion } from "../../onboarding-state";
@@ -38,6 +41,7 @@ export default async function Detail({
     );
   if(projectState(job)!=="online"&&!(await staffRole()))return <Shell active="Find projects"><Heading eyebrow="PROJECT CLOSED" title="This project is currently closed." description="Project details, registration, tutorials and work access unlock when an admin or manager activates the project."/><a className="button light" href="/projects">Back to projects</a></Shell>;
   const membership=user?await db.select().from(teamMembers).where(and(eq(teamMembers.userId,user.userId),eq(teamMembers.projectId,job.id))).get():null;
+  const locks=user?await applicationLocks(user.userId,job.id):[];
   const application = user
     ? await db
         .select()
@@ -80,12 +84,15 @@ export default async function Detail({
       <Heading
         eyebrow={job.category}
         title={job.title}
+        action={<ShareProject path={"/projects/detail?id="+encodeURIComponent(job.id)} title={job.title}/>}
         description={
           job.location +
           " · " +
           (job.pair ? "Two participants required" : "Individual contribution")
         }
       />
+      {locks.length>0&&<section className="suite-card"><span className="badge">TL PERMISSION REQUIRED</span><h2>Ask your current team before applying.</h2><p>Each active team leader must approve your additional project. Your existing team does not change.</p><form action={requestProjectPermission}><input type="hidden" name="projectId" value={job.id}/><label>How will you manage both commitments?<textarea name="reason" required minLength={10} maxLength={1000}/></label><button>Request TL permission</button></form></section>}
+      {membership&&!membership.rateAccepted&&<section className="suite-card"><h2>Your team assignment is ready.</h2><p>Your individual contractual rate is {money(membership.ratePaise)} per client-QC-approved hour. Settlement is at month end, after QC and owner review.</p><form action={acceptAssignedRate}><input type="hidden" name="projectId" value={job.id}/><input type="hidden" name="rate" value={membership.ratePaise}/><label className="check"><input type="checkbox" name="consent" value="yes" required/>I accept my assigned team terms and consent to project coordination by my TL.</label><button>Accept assigned team terms</button></form></section>}
       <div className="workspace-columns">
         <section className="suite-card" style={{ gridColumn: "1 / -1" }}>
           <h2>Status and videos</h2>
@@ -183,7 +190,7 @@ export default async function Detail({
                   Open my workspace
                 </a>
               </>
-            ) : !job.active || !flags.applications ? (
+            ) : locks.length ? (<p>Application locked until your current TL approves your request above.</p>) : !job.active || !flags.applications ? (
               <p>Applications are closed for this project.</p>
             ) : !user ? (
               <a

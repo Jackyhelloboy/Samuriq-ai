@@ -44,6 +44,7 @@ export function ProjectCard({
         <span className="project-glyph">
           <Icon size={26} strokeWidth={1.4} />
         </span>
+        {!j.preview&&<ShareProject compact path={"/projects/detail?id="+encodeURIComponent(j.id)} title={j.title}/>}
         <span className={"badge " + (state === "online" ? "approved" : "")}>
           {stateLabel(state)}
         </span>
@@ -62,7 +63,7 @@ export function ProjectCard({
         </span>
       </div>
       <div className="card-compensation">{j.rate}</div>
-      {state==="online"&&!j.preview&&<ShareProject compact path={"/projects/detail?id="+encodeURIComponent(j.id)} title={j.title}/>}
+
       {state==="online"&&!j.preview?(      <a
         href={
           "/projects/detail?id=" +

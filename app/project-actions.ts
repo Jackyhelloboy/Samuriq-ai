@@ -1,4 +1,5 @@
 "use server";
+import {requireApplicationPermission,assignDirect} from "./enrollment";
 import { requireOnboarding } from "./onboarding-state";
 import { requireOperator } from "./access";
 import { requireFeature } from "./features";
@@ -6,7 +7,7 @@ import { getChatGPTUser } from "./chatgpt-auth";
 import { settings } from "./telegram";
 import { projectState } from "./project-state";
 import { getDb } from "../db";
-import { projects, applications, participants } from "../db/schema";
+import { projects, applications, participants,teamMembers } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { redirect } from "next/navigation";
 async function owner() {
@@ -87,6 +88,7 @@ export async function publishProject(form: FormData) {
   const visibility=form.get("listed")==="yes"?"listed":"draft";
   const values = {
     visibility,
+    archivedAt:form.get("active")==="1"?"":new Date().toISOString(),
     externalAllowed:form.get("externalAllowed")==="yes"?1:0,
     evidenceRequired:form.get("evidenceRequired")==="yes"?1:0,
     title,
@@ -145,6 +147,7 @@ export async function applyProject(form: FormData) {
   if (!project?.active) throw Error("Applications are closed");
   if (projectState(project) !== "online")
     throw Error("This project is paused. Its deadline has passed.");
+  await requireApplicationPermission(user.userId,projectId);
   await requireOnboarding(user.userId, project);
   const partner = String(form.get("partner") || "")
     .trim()
@@ -166,6 +169,8 @@ export async function applyProject(form: FormData) {
   const answers = String(form.get("experience") || "").trim();
   if (!answers) throw Error("Complete your application answers");
   if (form.get("consent") !== "yes") throw Error("Confirm your application");
+  await assignDirect(user.userId,projectId);
+  await requireApplicationPermission(user.userId,projectId);
   await db
     .insert(applications)
     .values({
@@ -198,6 +203,7 @@ export async function decideApplication(form: FormData) {
       )
       .get();
   if (!row) throw Error("Application not found");
+  if(status==='approved'){const member=await db.select().from(teamMembers).where(and(eq(teamMembers.userId,row.applications.userId),eq(teamMembers.projectId,row.projects.id))).get();if(!member)throw Error('Assign this applicant to an eligible project team before approval. Use Route waiting applicants in the project roster.');}
   const communityVerified = form.get("communityVerified") === "yes" ? 1 : 0;
   if (
     status === "approved" &&
@@ -216,4 +222,4 @@ export async function decideApplication(form: FormData) {
     );
   redirect("/admin");
 }
-export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");if(active&&(!job.clientUrl||!job.communityUrl))throw Error("The owner must configure client and community links first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed"}).where(eq(projects.id,id));redirect("/admin/projects");}
+export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");if(active&&(!job.clientUrl||!job.communityUrl))throw Error("The owner must configure client and community links first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed",archivedAt:active?"":new Date().toISOString()}).where(eq(projects.id,id));redirect("/admin/projects");}
