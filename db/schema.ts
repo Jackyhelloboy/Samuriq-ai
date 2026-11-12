@@ -4,6 +4,7 @@ import {
   integer,
   primaryKey,
   uniqueIndex,
+  index,
 } from "drizzle-orm/sqlite-core";
 export const participants = sqliteTable("participants", {
   id: text("id").primaryKey(),
@@ -40,6 +41,7 @@ export const projects = sqliteTable("projects", {
   category: text("category").notNull(),
   description: text("description").notNull(),
   requirements: text("requirements").notNull(),
+  externalAllowed:integer("external_allowed").notNull().default(0),
   clientUrl: text("client_url").notNull(),
   inviteCode: text("invite_code").notNull(),
   rate: text("rate").notNull().default("Confirm with coordinator"),
@@ -76,7 +78,7 @@ export const applications = sqliteTable(
     status: text("status").notNull().default("pending"),
     created: text("created").notNull(),
   },
-  (t) => [primaryKey({ columns: [t.userId, t.projectId] })],
+  (t) => [primaryKey({ columns: [t.userId, t.projectId] }),index("applications_partner_email").on(t.partnerEmail)],
 );
 
 export const progress = sqliteTable(
@@ -206,7 +208,7 @@ export const authLimits = sqliteTable("auth_limits", {
   key: text("key").primaryKey(),
   attempts: integer("attempts").notNull(),
   expires: integer("expires").notNull(),
-});
+},t=>[index("auth_limit_expiry").on(t.expires)]);
 
 export const identities=sqliteTable("identity_records",{userId:text("user_id").primaryKey(),panHash:text("pan_hash").notNull(),documentHash:text("document_hash").notNull(),encrypted:text("encrypted").notNull(),panLast4:text("pan_last4").notNull(),status:text("status").notNull().default("submitted"),documentKey:text("document_key").notNull(),documentType:text("document_type").notNull(),reviewNote:text("review_note").notNull().default(""),updated:text("updated").notNull()},t=>[uniqueIndex("identity_pan_unique").on(t.panHash),uniqueIndex("identity_document_unique").on(t.documentHash)]);
 export const bankClaims=sqliteTable("bank_claims",{fingerprint:text("fingerprint").primaryKey(),ownerId:text("owner_id").notNull(),created:text("created").notNull()});
@@ -214,7 +216,7 @@ export const familyGrants=sqliteTable("family_grants",{userId:text("user_id").no
 export const paymentRequests=sqliteTable("payment_requests",{id:text("id").primaryKey(),userId:text("user_id").notNull(),kind:text("kind").notNull(),fingerprint:text("fingerprint").notNull().default(""),last4:text("last4").notNull().default(""),encrypted:text("encrypted").notNull().default(""),reason:text("reason").notNull(),status:text("status").notNull().default("pending"),reviewNote:text("review_note").notNull().default(""),created:text("created").notNull(),reviewed:text("reviewed").notNull().default("")});
 
 export const projectTeams=sqliteTable('project_teams',{id:text('id').primaryKey(),projectId:text('project_id').notNull(),leaderId:text('leader_id').notNull(),label:text('label').notNull(),code:text('code').notNull(),active:integer('active').notNull().default(1),ratePaise:integer('rate_paise').notNull(),approvedRatePaise:integer('approved_rate_paise').notNull(),rateStatus:text('rate_status').notNull().default('approved'),specialExport:integer('special_export').notNull().default(0),createdBy:text('created_by').notNull(),created:text('created').notNull()},t=>[uniqueIndex('team_code_unique').on(t.code),uniqueIndex('team_project_leader_unique').on(t.projectId,t.leaderId)]);
-export const teamMembers=sqliteTable('team_members',{projectId:text('project_id').notNull(),userId:text('user_id').notNull(),teamId:text('team_id').notNull(),ratePaise:integer('rate_paise').notNull(),baseRatePaise:integer('base_rate_paise').notNull(),joined:text('joined').notNull()},t=>[primaryKey({columns:[t.projectId,t.userId]})]);
+export const teamMembers=sqliteTable('team_members',{projectId:text('project_id').notNull(),userId:text('user_id').notNull(),teamId:text('team_id').notNull(),ratePaise:integer('rate_paise').notNull(),baseRatePaise:integer('base_rate_paise').notNull(),joined:text('joined').notNull()},t=>[primaryKey({columns:[t.projectId,t.userId]}),index('team_member_user').on(t.userId)]);
 export const leaderReports=sqliteTable('leader_reports',{teamId:text('team_id').notNull(),day:text('day').notNull(),actor:text('actor').notNull(),summary:text('summary').notNull(),blockers:text('blockers').notNull(),nextSteps:text('next_steps').notNull(),memberCount:integer('member_count').notNull(),reportedCount:integer('reported_count').notNull(),updated:text('updated').notNull()},t=>[primaryKey({columns:[t.teamId,t.day]})]);
 export const supportTickets=sqliteTable('support_tickets',{privateEscalation:integer('private_escalation').notNull().default(0),id:text('id').primaryKey(),projectId:text('project_id').notNull(),teamId:text('team_id').notNull(),requesterId:text('requester_id').notNull(),subject:text('subject').notNull(),body:text('body').notNull(),status:text('status').notNull().default('open'),resolution:text('resolution').notNull().default(''),deadline:text('deadline').notNull().default(''),closedAt:text('closed_at').notNull().default(''),route:text('route').notNull().default('team'),created:text('created').notNull(),updated:text('updated').notNull()});
 export const ticketMessages=sqliteTable('ticket_messages',{id:text('id').primaryKey(),ticketId:text('ticket_id').notNull(),actor:text('actor').notNull(),role:text('role').notNull(),body:text('body').notNull(),created:text('created').notNull()});
@@ -225,3 +227,5 @@ export const projectExpenses=sqliteTable('project_expenses',{id:text('id').prima
 export const evidenceFolders=sqliteTable('evidence_folders',{projectId:text('project_id').notNull(),userId:text('user_id').notNull(),leadId:text('lead_id').notNull(),url:text('url').notNull(),verifiedBy:text('verified_by').notNull().default(''),updated:text('updated').notNull()},t=>[primaryKey({columns:[t.projectId,t.userId]}),uniqueIndex('project_folder_unique').on(t.projectId,t.url)]);
 export const pairReviews=sqliteTable('pair_reviews',{projectId:text('project_id').notNull(),leadId:text('lead_id').notNull(),day:text('day').notNull(),teamId:text('team_id').notNull(),pairId:text('pair_id').notNull(),sections:integer('sections').notNull(),minutes:integer('minutes').notNull(),firstUrl:text('first_url').notNull().default(''),secondUrl:text('second_url').notNull().default(''),firstShots:integer('first_shots').notNull(),secondShots:integer('second_shots').notNull(),sectionIds:text('section_ids').notNull(),attendance:text('attendance').notNull(),feedback:text('feedback').notNull(),actor:text('actor').notNull(),updated:text('updated').notNull()},t=>[primaryKey({columns:[t.projectId,t.leadId,t.day]})]);
 export const teamHelpers=sqliteTable('team_helpers',{teamId:text('team_id').notNull(),userId:text('user_id').notNull(),scopes:text('scopes').notNull(),grantedBy:text('granted_by').notNull(),created:text('created').notNull()},t=>[primaryKey({columns:[t.teamId,t.userId]})]);
+
+export const launchTickets=sqliteTable('launch_tickets',{hash:text('hash').primaryKey(),userId:text('user_id').notNull(),projectId:text('project_id').notNull(),expires:integer('expires').notNull(),used:integer('used').notNull().default(0)},t=>[index('launch_ticket_expiry').on(t.expires)]);

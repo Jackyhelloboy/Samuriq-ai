@@ -3,7 +3,18 @@ import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
 
 const worker = {
-  fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+  async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+    // Reject cross-origin writes before framework action dispatch; cancel the
+    // unread body so rejected uploads do not hold a request stream open.
+    const origin=request.headers.get('origin');
+    if(!['GET','HEAD','OPTIONS'].includes(request.method)&&origin&&origin!==new URL(request.url).origin){
+      try{await request.body?.cancel()}catch{}
+      return new Response('Invalid origin',{status:403,headers:{'Cache-Control':'no-store'}});
+    }
+    if(Number(request.headers.get('content-length')||0)>4*1024*1024){
+      try{await request.body?.cancel()}catch{}
+      return new Response('Request is too large',{status:413});
+    }
     let binding = ctx.props?.CONNECTORS;
     // Local preview emulates the same request-scoped capability. This branch and
     // the auxiliary service binding are absent from production builds.

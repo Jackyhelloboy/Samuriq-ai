@@ -44,6 +44,11 @@ def run(sql):
 def ymd(d):
  import datetime;return (datetime.datetime.utcnow()+datetime.timedelta(hours=5,minutes=30,days=d)).strftime('%Y-%m-%d')
 
+def approved_launch(user='worker'):
+ f=form('/projects/work?id=speech-pair','Load client workspace',user)
+ f.update(mode='embed')
+ return req('/projects/launch',user,f)
+
 try:
  for i in range(60):
   try:
@@ -92,7 +97,7 @@ try:
  assert scalar("select count(*) from project_progress where user_id='test-lead'")==0 # no self-report changed or QC created
  assert 'Both participants have complete section evidence.' in req('/workspace/evidence','partner')[1]
  assert 'SYNTHETIC_SECOND_123' not in req('/workspace/evidence','lead')[1] # own folder only
- assert req('/projects/launch','lead',{'projectId':'speech-pair'})[0]==303
+ assert approved_launch('lead')[0]==303
  # Every configured tutorial is required; a forged primary-video completion is insufficient.
  run("update projects set onboarding_required=1,tutorial_seconds=10,tutorial_url='https://cdn.example.test/work.mp4',register_url='https://drive.google.com/file/d/SYNTHETIC_VIDEO/preview',intro_url='https://youtu.be/synthetic01',terms='Synthetic terms for required three-video project' where id='speech-pair'")
  def action(name,args,user='lead'):
@@ -114,7 +119,7 @@ try:
  wrong={**accept,'inviteCode':'WRONG'};assert req('/projects/onboarding','lead',wrong)[0]>=400
  wrong={**accept,'clientEmail':'other@example.test'};assert req('/projects/onboarding','lead',wrong)[0]>=400
  assert req('/projects/onboarding','lead',accept)[0]==303
- assert req('/projects/launch','lead',{'projectId':'speech-pair'})[0]==303
+ assert approved_launch('lead')[0]==303
  run("update projects set invite_code='CHANGED' where id='speech-pair'")
  assert req('/projects/launch','lead',{'projectId':'speech-pair'})[0]==403
  run("update projects set invite_code='IMCIAD' where id='speech-pair'")

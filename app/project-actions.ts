@@ -87,6 +87,7 @@ export async function publishProject(form: FormData) {
   const visibility=form.get("listed")==="yes"?"listed":"draft";
   const values = {
     visibility,
+    externalAllowed:form.get("externalAllowed")==="yes"?1:0,
     evidenceRequired:form.get("evidenceRequired")==="yes"?1:0,
     title,
     targetMinutes,

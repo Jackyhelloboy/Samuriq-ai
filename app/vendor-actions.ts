@@ -19,62 +19,7 @@ import { and, eq, or, gte, desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { encryptBank } from "./bank-crypto";
 import { projectState, missedInfo } from "./project-state";
-export async function launchProject(form: FormData) {
-  await requireFeature("client_access");
-  const user = await getChatGPTUser();
-  if (!user) throw Error("Sign in first");
-  const id = String(form.get("projectId")),
-    db = getDb();
-  const row = await db
-    .select()
-    .from(applications)
-    .innerJoin(projects, eq(projects.id, applications.projectId))
-    .where(
-      and(
-        or(
-          eq(applications.userId, user.userId),
-          eq(applications.partnerEmail, user.email.toLowerCase()),
-        ),
-        eq(applications.projectId, id),
-      ),
-    )
-    .get();
-  if (
-    row?.applications.status !== "approved" ||
-    !row.projects.clientUrl ||
-    !row.applications.communityVerified ||
-    (row.projects.pair && !row.applications.partnerConfirmed)
-  )
-    throw Error("Project access is not approved");
-  await requireOnboarding(user.userId, row.projects);
-  if (projectState(row.projects) !== "online")
-    throw Error("This project is not online right now");
-  const last = await db
-    .select()
-    .from(progress)
-    .where(
-      and(
-        eq(progress.userId, row.applications.userId),
-        eq(progress.projectId, id),
-      ),
-    )
-    .orderBy(desc(progress.day))
-    .get();
-  if (missedInfo(last?.day, row.applications.created, row.projects).blocked)
-    throw Error(
-      "Access paused: you missed daily updates. Submit today's update in your workspace to restore access.",
-    );
-  const target = new URL(row.projects.clientUrl);
-  if (target.protocol !== "https:" || target.username || target.password)
-    throw Error("Invalid project destination");
-  await db.insert(launches).values({
-    id: crypto.randomUUID(),
-    userId: user.userId,
-    projectId: id,
-    created: new Date().toISOString(),
-  });
-  redirect(target.href);
-}
+export async function launchProject(form:FormData){const id=String(form.get('projectId'));await (await import('./project-access')).accessibleProject(id);redirect('/projects/work?id='+encodeURIComponent(id));}
 export async function reviewReport(form: FormData) {
   const operator = await requireOperator();
   const review = String(form.get("review")),

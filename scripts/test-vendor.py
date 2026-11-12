@@ -52,13 +52,13 @@ try:
  pair=form('/workspace','Confirm my permanent pair','partner');pair['consent']='yes';assert req('/workspace','partner',pair)[0]==303
  assert scalar("select count(*) from pair_claims")==2
  assert scalar("select count(*) from applications where partner_confirmed=1 and partner_email='partner@example.test'")==1
- duplicate=form('/workspace','Confirm my permanent pair','partner');duplicate['consent']='yes';assert req('/workspace','partner',duplicate)[0]>=400
+ duplicate={**pair,'leadId':'test-other','consent':'yes'};assert req('/workspace','partner',duplicate)[0]>=400
  assert scalar("select count(*) from pair_claims")==2
  assert 'Save partner invitation' not in req('/workspace','lead')[1]
  
  html=req('/workspace')[1];assert 'webrtcsg.shenfei-rec.com' not in html
- launch=form('/workspace','Open client workspace');code,body,headers=req('/workspace',data=launch);print('Launch status',code,'fields',list(launch));assert code==303 and 'webrtcsg.shenfei-rec.com' in headers['Location'];assert scalar('select count(*) from launches')==1
- assert req('/workspace','intruder',launch)[0]>=400
+ launch=form('/projects/work?id=speech-pair','Load client workspace');launch.update(mode='embed');code,body,headers=req('/projects/launch',data=launch);assert code==303 and 'webrtcsg.shenfei-rec.com' in headers['Location'];assert scalar('select count(*) from launches')==1
+ assert req('/projects/launch','intruder',launch)[0]>=400
  report=form('/workspace','Save daily update');report.update(projectId='speech-pair',status='completed',minutes='30',units='5',notes='Test proof',clientId='test-client')
  assert req('/workspace',data=report)[0]>=400
  report['proofUrl']='https://drive.google.com/file/d/test-proof/view';assert req('/workspace',data=report)[0]==303
@@ -93,7 +93,7 @@ try:
  controls.pop('reporting');controls.pop('client_access');controls.pop('bank')
  assert req('/admin/settings','owner',controls)[0]==303
  assert req('/workspace',data=report)[0]>=400
- assert req('/workspace',data=launch)[0]>=400
+ assert req('/projects/launch',data=launch)[0]>=400
  assert req('/workspace/payments',data=bank)[0]>=400
  for key in ['reporting','client_access','bank']:controls[key]='on'
  assert req('/admin/settings','owner',controls)[0]==303

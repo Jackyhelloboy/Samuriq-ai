@@ -201,7 +201,7 @@ export default async function Editor({
           <aside>
             <section className="suite-card">
               <span className="badge">03 · CLIENT ACCESS</span>
-              <h3>Work destination</h3>
+              <h3>Work destination</h3><label className="check"><input name="externalAllowed" type="checkbox" value="yes" defaultChecked={!!job?.externalAllowed}/>Allow opening the client platform in a separate tab</label><p>Off by default. Embedded access still requires the client to allow framing and recording permissions. This setting controls portal buttons; it cannot prevent direct visits to the client’s own address.</p>
               <p>
                 The client link and invite code are shown to approved applicants
                 in their workspace.

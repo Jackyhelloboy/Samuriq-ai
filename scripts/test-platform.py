@@ -43,6 +43,11 @@ def run(sql):
  c=db();c.execute(sql);c.commit();c.close()
 def ymd(d):
  import datetime;return (datetime.datetime.utcnow()+datetime.timedelta(hours=5,minutes=30,days=d)).strftime('%Y-%m-%d')
+def approved_launch(user='worker'):
+ f=form('/projects/work?id=speech-pair','Load client workspace',user)
+ f.update(mode='embed')
+ return req('/projects/launch',user,f)
+
 try:
  for i in range(60):
   try:
@@ -97,7 +102,7 @@ try:
  accept['clientEmail']='different@example.test';assert req('/projects/onboarding',data=accept)[0]>=400
  accept['clientEmail']='worker@example.test';assert req('/projects/onboarding',data=accept)[0]==303
  assert scalar("select client_email from onboarding where user_id='test-worker'")=='worker@example.test'
- assert req('/projects/launch','worker',{'projectId':'speech-pair'})[0]==303
+ assert approved_launch('worker')[0]==303
  assert req('/projects/launch','worker',{'projectId':'speech-pair'},origin='https://evil.example')[0]==403
  assert req('/projects/launch','other',{'projectId':'speech-pair'})[0]==403
  # Material changes invalidate previous acceptance
