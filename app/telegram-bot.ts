@@ -5,11 +5,8 @@ export const normHandle = (h: string) => h.trim().replace(/^@/, "").replace(/^ht
 export async function sendTelegram(chatId: string, text: string) {
   const token = bot().BOT_TOKEN;
   if (!token) return false;
-  const r = await fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text }),
-  });
-  return r.ok;
+  try{const r = await fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text }),signal:AbortSignal.timeout(8000),
+  });const result=await r.json() as {ok?:boolean};return r.ok&&result.ok===true;}catch{return false;}
 }
-

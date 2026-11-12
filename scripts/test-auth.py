@@ -25,7 +25,7 @@ CREATE TRIGGER synthetic_legacy_invite AFTER INSERT ON project_teams BEGIN INSER
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
-log=open('/tmp/samuriq-test-server.log','w'); server=subprocess.Popen(cli+['dev','--config','dist/server/wrangler.json','--local','--persist-to',state,'--ip','127.0.0.1','--port','8788','--inspector-port','0','--var','HINDI_JOIN_URL:https://t.me/+SyntheticPortalOnly','--var','ADMIN_EMAIL:owner@example.test','--var','PASSWORD_LOGIN_ONLY:1','--var','BOT_USERNAME:SamuriqRegressionBot','--var','TELEGRAM_WEBHOOK_SECRET:local-webhook-secret','--var','BANK_ENCRYPTION_KEY:'+('01'*32)],env=env,stdout=log,stderr=log)
+log=open('/tmp/samuriq-test-server.log','w'); server=subprocess.Popen(cli+['dev','--config','dist/server/wrangler.json','--local','--persist-to',state,'--ip','127.0.0.1','--port','8788','--inspector-port','0','--var','HINDI_JOIN_URL:https://t.me/+SyntheticPortalOnly','--var','ADMIN_EMAIL:owner@example.test','--var','PASSWORD_LOGIN_ONLY:1','--var','BOT_USERNAME:SamuriqRegressionBot','--var','TELEGRAM_WEBHOOK_SECRET:local-webhook-secret','--var','REMIND_SECRET:local-reminder-secret','--var','BANK_ENCRYPTION_KEY:'+('01'*32)],env=env,stdout=log,stderr=log)
 base='http://127.0.0.1:8788'
 class NoRedirect(U.HTTPRedirectHandler):
  def redirect_request(self,*args,**kw):return None
@@ -123,6 +123,19 @@ try:
   assert 'Owner console' not in b and 'Good to see you' not in b
  # A malformed session must not fall back to the browser owner identity.
  assert 'Owner console' not in req('/workspace','owner',cookie='sq_session=invalid')[1]
- print('PASS AUTH: normal password login for contributor, TL, helper and manager; session priority over host owner; stale workspace cleared; contributor denied owner settings; expired and malformed sessions cannot become owner; password-only public auth; client access page; archive isolation; one-time Telegram binding and replay/secret denial.')
+ # Evidence reminders use actual TL review records, including a zero-work review.
+ run("UPDATE projects SET evidence_required=1,archived_at='',active=1,target_start='',deadline='' WHERE id='speech-pair'")
+ run("INSERT INTO project_teams(id,project_id,leader_id,label,code,rate_paise,approved_rate_paise,created_by,created) VALUES ('reminder-team','speech-pair','access-review-tl','Isolated reminder team','REMINDER-TEST',0,0,'test','2026-11-12')")
+ run("INSERT INTO team_members(project_id,user_id,team_id,rate_paise,base_rate_paise,joined) VALUES ('speech-pair','test-missing','reminder-team',0,0,'2026-11-12')")
+ run("INSERT INTO telegram_links(handle,chat_id,created,user_id) VALUES ('legacy-missing','999','test',''),('user:access-review-tl','123','test','access-review-tl')")
+ run("INSERT INTO pair_reviews(project_id,lead_id,day,team_id,pair_id,sections,minutes,first_shots,second_shots,section_ids,attendance,feedback,actor,updated) VALUES ('speech-pair','test-worker','%s','reminder-team','pair-local',0,0,0,0,'','off','Zero work, actual reviewed day','test','test')"%ymd(0))
+ def reminders():
+  response=opener.open(U.Request(base+'/admin/remind',data=b'',headers={'Authorization':'Bearer local-reminder-secret'}),timeout=30)
+  return json.loads(response.read())
+ r=reminders();assert r['missing']==1 and r['teamLeaderNotices']==1 and r['notLinkedToBot']==1 and r['failed']==1,r
+ r=reminders();assert r['failed']==0,r
+ run("UPDATE projects SET archived_at='2026-11-12' WHERE id='speech-pair'")
+ assert reminders()['missing']==0
+ print('PASS AUTH: normal password login for contributor, TL, helper and manager; session priority over host owner; stale workspace cleared; contributor denied owner settings; expired and malformed sessions cannot become owner; password-only public auth; client access page; archive isolation; one-time Telegram binding and replay/secret denial; actual evidence/TL reminder scope; legacy-link exclusion; duplicate-attempt lease; archived work excluded.')
 finally:
  server.terminate();server.wait(timeout=10)
