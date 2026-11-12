@@ -86,6 +86,8 @@ try:
  bad={**review,'sectionIds':'S001\nS001'};assert req(path,'tl',bad)[0]>=400
  assert req(path,'tl',review)[0]==303
  assert scalar('select sections from pair_reviews')==2
+ run("insert into managers(user_id,granted_by,created) values('test-worker','test-owner','2026-01-01')")
+ assert '2 sections checked · 7 pair minutes' in req('/manager','worker')[1]
  assert req(path,'tl',review)[0]>=400 # stale update
  assert scalar("select count(*) from project_progress where user_id='test-lead'")==0 # no self-report changed or QC created
  assert 'Both participants have complete section evidence.' in req('/workspace/evidence','partner')[1]
@@ -150,6 +152,11 @@ try:
  assert scalar('select count(*) from support_tickets')==3
  assert scalar('select count(*) from pair_reviews')==1
  assert scalar('select count(*) from bank_details')==1
+ # Owner-directed escalations stay out of manager summaries.
+ run("insert into support_tickets(id,project_id,team_id,requester_id,subject,body,status,route,private_escalation,created,updated) values('owner-only','speech-pair','evidence-one','test-partner','OWNER PRIVATE SUBJECT','Synthetic private site issue','open','owner',1,'2026-01-01','2026-01-01')")
+ assert 'OWNER PRIVATE SUBJECT' not in req('/manager','worker')[1]
+ assert 'OWNER PRIVATE SUBJECT' not in req('/support','worker')[1]
+ assert 'OWNER PRIVATE SUBJECT' in req('/admin/dashboard','owner')[1]
  # Unattended retention surface accepts only authenticated owner identity, and rejects cross-origin writes.
  def mcp(user,origin=None):
   headers={'Content-Type':'application/json'}
