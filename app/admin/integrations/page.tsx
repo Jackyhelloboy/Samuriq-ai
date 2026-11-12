@@ -3,7 +3,7 @@ import { getDb } from "../../../db";
 import { integrations } from "../../../db/schema";
 import { Shell, Heading } from "../../components/shell";
 import { saveIntegration } from "../../suite-actions";
-import { settings } from "../../telegram";
+import { settings, adminUrl } from "../../telegram";
 import {
   Send,
   Camera,
@@ -41,7 +41,7 @@ export default async function Integrations({
             <thead><tr><th>Service</th><th>Status</th><th>Add these settings later</th></tr></thead>
             <tbody>
               {([
-                ["Telegram bot (auto-verify)", ["BOT_TOKEN", "TELEGRAM_WEBHOOK_SECRET"], "Until then: tick community verified by hand."],
+                ["Telegram contact linking & reminders", ["BOT_TOKEN", "TELEGRAM_WEBHOOK_SECRET"], "Until then: tick community verified by hand."],
                 ["Daily reminder scheduler", ["REMIND_SECRET", "BOT_TOKEN"], "Until then: use the Send reminders button in Team & targets."],
                 ["Bank detail encryption", ["BANK_ENCRYPTION_KEY"], "Required before people save bank details."],
                 ["Cashfree payouts", ["CASHFREE_CLIENT_ID", "CASHFREE_CLIENT_SECRET"], "On hold: prepare payouts manually from Payments."],
@@ -61,6 +61,7 @@ export default async function Integrations({
           </table>
         </div>
       </section>
+<section className="suite-card"><p className="eyebrow">TELEGRAM / COMMUNITY OPERATIONS</p><h2>Project spaces, under your control.</h2><p>Announcements are separate from project enrolment. Hindi and Telugu invites require Telegram admin approval. Match join requests to the trained website roster and confirmed Telegram username before admitting them. A Telegram join is not client-work approval.</p><div className="form-grid">{([['Project announcements','COMMUNITY_ADMIN_URL'],['Hindi projects','HINDI_ADMIN_URL'],['Telugu projects','TELUGU_ADMIN_URL']] as const).map(([label,key])=>{const href=adminUrl(settings()[key]);return <div key={key}><strong>{label}</strong><p>{href?<a className="button light" href={href} target="_blank" rel="noreferrer">Manage in Telegram ↗</a>:<span className="badge">Not configured</span>}</p></div>})}</div><p className="small-note">Only the Telegram account owner currently has channel admin rights. Website manager or TL roles do not automatically grant Telegram administration. Keep project invites inside the tutorial-gated flow. No account passwords or bot tokens are stored in source code.</p><a className="text-link" href="/admin/projects/workflow?id=speech-pair">Hindi training & community setup →</a></section>
 <div className="integration-grid">
         {[
           [

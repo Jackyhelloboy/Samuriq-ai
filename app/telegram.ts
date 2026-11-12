@@ -21,3 +21,6 @@ export function joinUrl(value?: string) {
 export function adminUrl(value?: string) {
   return value && /^https:\/\/web\.telegram\.org\/a\/#-\d+$/.test(value) ? value : null;
 }
+
+// Server-only resolution: private invitation URLs stay in runtime settings, never GitHub.
+export function projectCommunity(j:{id:string;communityUrl?:string}){return j.communityUrl||(j.id==='speech-pair'?joinUrl(settings().HINDI_JOIN_URL)||'':'');}

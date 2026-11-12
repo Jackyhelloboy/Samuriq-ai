@@ -2293,3 +2293,9 @@ html{font-size:16px}body{line-height:1.55}.premium-site.pro5{background:#f5f7fa}
 @media(max-width:600px){.pair-evidence-people{grid-template-columns:1fr}.pair-evidence-people article{padding:16px}.evidence-project-header h2{font-size:22px}.folder-blueprint{padding:12px}.invite-code-notice strong{font-size:25px}.evidence-entry{gap:16px}}
 
 .folder-blueprint span::before,.folder-blueprint small::before{content:'';display:inline-block;width:10px;height:7px;border-left:1px solid #84a99c;border-bottom:1px solid #84a99c;vertical-align:3px;margin-right:9px}
+
+/* Project brief: compact public offer, separate from private settlement records. */
+.card-compensation small{display:block;font-size:.72rem;font-weight:400;line-height:1.5;margin-top:4px;color:var(--muted,#667782)}
+.project-offer{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:20px;align-items:center;border-left:3px solid #2a6470}
+.project-offer>.small-note{grid-column:1/-1;margin:0}.offer-rates{display:grid;grid-template-columns:1fr 1fr;gap:16px}.offer-rates>div{display:flex;flex-direction:column;gap:6px;padding:16px;background:#edf4f4;border-radius:12px}.offer-rates strong{font-size:clamp(1.8rem,3vw,2.6rem);letter-spacing:-.04em}.offer-rates span{font-size:.8rem;line-height:1.5;color:#526671}
+@media(max-width:700px){.project-offer{grid-template-columns:1fr;gap:14px}.offer-rates{gap:10px}.offer-rates>div{padding:12px}}

@@ -25,7 +25,7 @@ CREATE TRIGGER synthetic_legacy_invite AFTER INSERT ON project_teams BEGIN INSER
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
-log=open('/tmp/samuriq-test-server.log','w'); server=subprocess.Popen(cli+['dev','--config','dist/server/wrangler.json','--local','--persist-to',state,'--ip','127.0.0.1','--port','8788','--inspector-port','0','--var','ADMIN_EMAIL:owner@example.test','--var','BANK_ENCRYPTION_KEY:'+('01'*32)],env=env,stdout=log,stderr=log)
+log=open('/tmp/samuriq-test-server.log','w'); server=subprocess.Popen(cli+['dev','--config','dist/server/wrangler.json','--local','--persist-to',state,'--ip','127.0.0.1','--port','8788','--inspector-port','0','--var','HINDI_JOIN_URL:https://t.me/+SyntheticPortalOnly','--var','ADMIN_EMAIL:owner@example.test','--var','BANK_ENCRYPTION_KEY:'+('01'*32)],env=env,stdout=log,stderr=log)
 base='http://127.0.0.1:8788'
 class NoRedirect(U.HTTPRedirectHandler):
  def redirect_request(self,*args,**kw):return None
@@ -137,6 +137,15 @@ try:
  assert scalar("select external_allowed from projects where id='speech-pair'")==0
  assert scalar("select onboarding_required from projects where id='speech-pair'")==1
  assert scalar("select hourly_rate from projects where id='speech-pair'")==oldrate
+ # Runtime community destinations are usable only after the existing training gate.
+ st,b,h=req('/projects/community?id=speech-pair','worker')
+ assert st==200 and 'Finish your project training.' in b and 'SyntheticPortalOnly' not in b
+ st,b,h=req('/projects/community?id=speech-pair',None)
+ assert st in (303,307) and 'SyntheticPortalOnly' not in str(h)
+ st,b,_=req('/api/project-readiness',None)
+ assert st==200 and json.loads(b)['communityConfigured'] and 'SyntheticPortalOnly' not in b
+ st,b,_=req('/projects',None)
+ assert st==200 and '₹250 / person / hour' in b and '₹500 / pair / hour' in b and 'ENROLLMENT OPEN' not in b and 'SyntheticPortalOnly' not in b
  assert scalar('select count(*) from payout_orders')==0
  print('PASS V7: consistent role demos; task-first contributor workspace; public client URL isolation; one-use hashed sessions; replay/expiry/account binding; approval rechecks; origin and iframe policy; explicit external opt-in; atomic concurrent claims; generation throttling; 12 synthetic demo requests across six local concurrent workers in %.2fs. This is not a production capacity guarantee.'%(time.monotonic()-start))
 finally:

@@ -1,0 +1,11 @@
+# Project community operations
+
+The owner connected Telegram and created a project announcements channel, its linked support community, and separate Hindi and Telugu project channels. Actual private invitation URLs live only in production runtime settings; do not copy them into a public repository. The website Hindi route resolves its project invite from HINDI_JOIN_URL when there is no per-project database override. Owner/manager forms prefill that destination; it can be saved with the real tutorials. Telegram joins require admin review; admission is manual until a scoped bot is explicitly provisioned and connected. No bot token is included in this release.
+
+Public status shows ACTIVE while work access continues to require tutorial completion, current agreement acceptance, permanent-pair checks, team approval and evidence-folder verification. Active describes enrolment availability, not permission to start client work. The real client tutorial video is still required. Never use unrelated placeholder tutorials.
+
+The Hindi public offer states laptop or Android mobile, stable internet, quiet environment, flexible time, permanent partner, and direct Samuriq rates of INR250 per person per client-QC-approved hour / INR500 per pair per client-QC-approved hour. Vendor members retain their separate accepted payroll terms. No historical contracts, internal team rates, QC entries, vendor commissions or settlements were changed. Earnings remain owner-private. Expected settlement is month end on working days after QC and review.
+
+Admins match the Telegram request to the contributor roster and website training state before approving. Telegram channels allow owner publishing only. Linked support community members cannot add users, pin messages or change chat info; stickers, music and polls were disabled to keep support focused. No unrelated contacts were invited or promoted. Website roles do not automatically assign Telegram permissions.
+
+Bot setup is separate: create an owner-controlled bot, keep privacy mode on, store BOT_TOKEN and TELEGRAM_WEBHOOK_SECRET as runtime secrets, configure the webhook with its secret, and validate contact linking/reminders with synthetic accounts. A bot cannot read client recording progress or grant website work access. Do not mark a contact link as community verification or client QC.

@@ -1,3 +1,4 @@
+import {projectCommunity} from '../../../telegram';
 import { requireOwner } from "../../../access";
 import { getDb } from "../../../../db";
 import { projects } from "../../../../db/schema";
@@ -246,7 +247,7 @@ export default async function Editor({
                 <input
                   name="communityUrl"
                   type="url"
-                  defaultValue={job?.communityUrl}
+                  defaultValue={job?projectCommunity(job):''}
                 />
               </label>
               <p>

@@ -46,7 +46,7 @@ export function ProjectCard({
         </span>
 
         <span className={"badge " + (state === "online" ? "approved" : "")}>
-          {j.enrollmentOnly&&state==='online'?'ENROLLMENT OPEN':stateLabel(state)}
+          {stateLabel(state)}
         </span>
       </div>
       <p className="card-discipline">{j.category}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
@@ -62,7 +62,7 @@ export function ProjectCard({
           {j.pair ? "Permanent pair" : "Individual"}
         </span>
       </div>
-      <div className="card-compensation">Remote projects · Approved participation</div>
+      <div className="card-compensation">{j.id==='speech-pair'?<><strong>₹250 / person / hour · ₹500 / pair / hour</strong><small>Client-QC-approved work · direct Samuriq rate</small></>:<>Remote projects · Approved participation</>}</div>
 
       {state==="online"&&!j.preview?(      <a
         href={
