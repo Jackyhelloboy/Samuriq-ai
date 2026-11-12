@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 
 type CommunityEnv = {
+  PROJECT_COMMUNITY_JOIN_URL?: string;
   HINDI_JOIN_URL?: string;
   TELUGU_JOIN_URL?: string;
   COMMUNITY_JOIN_URL?: string;
@@ -23,4 +24,4 @@ export function adminUrl(value?: string) {
 }
 
 // Server-only resolution: private invitation URLs stay in runtime settings, never GitHub.
-export function projectCommunity(j:{id:string;communityUrl?:string}){return j.communityUrl||(j.id==='speech-pair'?joinUrl(settings().HINDI_JOIN_URL)||'':'');}
+export function projectCommunity(j:{id:string;communityUrl?:string}){return j.communityUrl||(j.id==='speech-pair'?joinUrl(settings().PROJECT_COMMUNITY_JOIN_URL)||joinUrl(settings().HINDI_JOIN_URL)||'':'');}

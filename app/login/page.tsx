@@ -26,7 +26,7 @@ export default async function Login({
       <div>
         <p className="eyebrow">SAMURIQ ACCOUNT</p>
         <h1>
-          Your work.
+          Your work. {" "}
           <br />
           One secure place.
         </h1>
@@ -61,6 +61,7 @@ export default async function Login({
             value={q.return_to || ""}
           />
           <input
+            aria-label="Email"
             name="email"
             type="email"
             placeholder="Email"
@@ -68,6 +69,7 @@ export default async function Login({
             autoComplete="email"
           />
           <input
+            aria-label="Password"
             name="password"
             type="password"
             placeholder="Password"
@@ -87,12 +89,14 @@ export default async function Login({
             value={q.return_to || ""}
           />
           <input
+            aria-label="Full name"
             name="name"
             placeholder="Full name"
             required
             autoComplete="name"
           />
           <input
+            aria-label="Email"
             name="email"
             type="email"
             placeholder="Email"
@@ -100,6 +104,7 @@ export default async function Login({
             autoComplete="email"
           />
           <input
+            aria-label="Password"
             name="password"
             type="password"
             placeholder="Password (8+ characters)"

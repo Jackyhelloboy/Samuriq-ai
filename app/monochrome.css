@@ -33,3 +33,5 @@ body,.premium-site.pro5,.v6-suite,.v6-suite .suite-main,.v6-login{background:#ff
 .v7-suite.v6-suite .v7-project-focus,.v7-suite.v6-suite .v7-welcome,.v7-suite.v6-suite .v7-context-bar,.v7-suite.v6-suite .v7-project-icon,.v7-suite.v6-suite .person-initial,.v7-suite.v6-suite .v7-step>span{background:#fafafa;color:#151515;border-color:#e5e5e5}
 .v7-suite.v6-suite .v7-project-heading h2,.v7-suite.v6-suite .v7-delivery strong,.v7-suite.v6-suite .v7-project-facts strong,.v7-suite.v6-suite .v7-welcome h2{color:#151515!important}
 .v7-suite.v6-suite progress{accent-color:#222}.v7-suite.v6-suite .v7-project-summary,.v7-suite.v6-suite .v7-context-bar,.v7-suite.v6-suite .v7-delivery small,.v7-suite.v6-suite .v7-project-facts small,.v7-suite.v6-suite .v7-step small{color:#606060!important}
+
+.v6-login form h2{letter-spacing:-.02em;line-height:1.4}.v6-login h1{word-spacing:.015em}

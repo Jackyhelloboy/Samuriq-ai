@@ -1,3 +1,4 @@
+import {ensureTelegramSetup} from "../../telegram-setup";
 import { requireOwner } from "../../access";
 import { getDb } from "../../../db";
 import { integrations } from "../../../db/schema";
@@ -21,6 +22,7 @@ export default async function Integrations({
   await requireOwner();
   const q = await searchParams,
     rows = await getDb().select().from(integrations);
+  const telegramStatus=await ensureTelegramSetup();
   return (
     <Shell admin active="Integrations">
       <Heading
@@ -34,7 +36,7 @@ export default async function Integrations({
         </div>
       )}
             <section className="suite-card">
-        <h2>Service status</h2>
+        <h2>Service status</h2><p>Project Assistant bot: <strong>{telegramStatus.ready?"Webhook & profile verified":telegramStatus.state}</strong></p><a href="/workspace/telegram">Connect your own Telegram →</a>
         <p>Everything below works manually until you add the keys. Nothing breaks while a service is on hold.</p>
         <div className="table-scroll">
           <table className="suite-table">

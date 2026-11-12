@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-type BotEnv = { BOT_TOKEN?: string; TELEGRAM_WEBHOOK_SECRET?: string; REMIND_SECRET?: string; ADMIN_EMAIL?: string };
+type BotEnv = { BOT_TOKEN?: string; TELEGRAM_WEBHOOK_SECRET?: string; REMIND_SECRET?: string; ADMIN_EMAIL?: string; BOT_USERNAME?:string; TELEGRAM_WEBHOOK_URL?:string };
 export const bot = () => env as unknown as BotEnv;
 export const normHandle = (h: string) => h.trim().replace(/^@/, "").replace(/^https?:\/\/t\.me\//i, "").toLowerCase();
 export async function sendTelegram(chatId: string, text: string) {
