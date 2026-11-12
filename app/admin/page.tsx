@@ -96,7 +96,7 @@ export default async function Admin({
         .where(eq(progress.day, day))
     )[0].n;
   return (
-    <Shell admin active="Overview">
+    <Shell admin active="Applications">
       <Heading
         eyebrow="OPERATIONS OVERVIEW"
         title="Keep every project moving."

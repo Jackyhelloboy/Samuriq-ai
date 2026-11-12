@@ -1,3 +1,4 @@
+import ShareProject from "./share-project";
 import {
   ArrowUpRight,
   AudioLines,
@@ -61,6 +62,7 @@ export function ProjectCard({
         </span>
       </div>
       <div className="card-compensation">{j.rate}</div>
+      {state==="online"&&!j.preview&&<ShareProject compact path={"/projects/detail?id="+encodeURIComponent(j.id)} title={j.title}/>}
       {state==="online"&&!j.preview?(      <a
         href={
           "/projects/detail?id=" +

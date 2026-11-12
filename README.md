@@ -1,3 +1,11 @@
+# Samuriq AI — V6 Workspaces
+
+V6 adds a shared, responsive operations shell with a role-aware workspace selector, collapsible navigation, dedicated owner/manager delivery dashboards, active-project sharing, an authenticated action queue and an owner expense ledger. Existing contributor, TL, identity and payout permissions remain enforced on the server.
+
+Explore sample data at `/demo?role=manager`, `/demo?role=owner`, `/demo?role=tl` and `/demo?role=contributor`. Demo actions never modify live accounts, projects or payments.
+
+After building, run the five integration suites sequentially: `test-platform.py`, `test-vendor.py`, `test-pro5.py`, `test-leadership.py`, `test-v6.py` in `scripts/`. See OPERATIONS-GUIDE.md for setup and current integration limits.
+
 # Samuriq AI — Project Leadership & Payout Operations
 
 Extends Pro5 with project-specific TL workspaces, referral invitations, disclosed and locked member rates, private manager escalations, assigned tickets, daily TL reports, consented contact access and an immutable QC earnings ledger with separate contributor pay and TL commission.

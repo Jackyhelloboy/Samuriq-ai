@@ -1,0 +1,1 @@
+import {OperationsDashboard} from '../../components/operations-dashboard';export const dynamic='force-dynamic';export default async function Page({searchParams}:{searchParams:Promise<Record<string,string>>}){const q=await searchParams;return <OperationsDashboard owner project={q.project||''}/>}

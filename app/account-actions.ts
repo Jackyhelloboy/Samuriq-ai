@@ -1,4 +1,5 @@
 "use server";
+import {workspaceHome} from "./workspace-context";
 import { redirect } from "next/navigation";
 import { getDb } from "../db";
 import { accounts,participants } from "../db/schema";
@@ -59,5 +60,5 @@ export async function loginAccount(form: FormData) {
   const p=await getDb().select().from(participants).where(eq(participants.id,a.id)).get();
   if(p?.suspended)return back(to,"restricted");
   await startSession(a.id);
-  redirect(to);
+  redirect(String(form.get("return_to")||"").trim()?to:await workspaceHome());
 }

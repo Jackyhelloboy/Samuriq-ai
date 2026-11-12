@@ -1,3 +1,4 @@
+import {workspaceHome} from "../workspace-context";
 import { safeReturn } from "../auth-rate";
 import { staffRole } from "../access";
 import { getChatGPTUser } from "../chatgpt-auth";
@@ -16,11 +17,11 @@ export default async function Login({
   if (user) {
     const staff = await staffRole();
     redirect(
-      q.return_to ? safeReturn(q.return_to) : staff ? "/admin" : "/workspace",
+      q.return_to ? safeReturn(q.return_to) : await workspaceHome(),
     );
   }
   return (
-    <main className="login-page">
+    <main className="login-page v6-login">
       <Brand />
       <div>
         <p className="eyebrow">SAMURIQ ACCOUNT</p>
@@ -56,7 +57,7 @@ export default async function Login({
           <input
             type="hidden"
             name="return_to"
-            value={q.return_to || "/workspace"}
+            value={q.return_to || ""}
           />
           <input
             name="email"
@@ -82,7 +83,7 @@ export default async function Login({
           <input
             type="hidden"
             name="return_to"
-            value={q.return_to || "/workspace"}
+            value={q.return_to || ""}
           />
           <input
             name="name"

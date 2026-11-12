@@ -83,7 +83,7 @@ try:
  assert req('/admin/payments/reveal','owner')[0] in (404,405)
  assert scalar("select count(*) from bank_audit where action='revealed'")==1
 
- assert req('/login','owner')[2].get('Location')=='/admin'
+ assert req('/login','owner')[2].get('Location')=='/admin/dashboard'
  assert req('/login','worker')[2].get('Location')=='/workspace'
  assert 'Admin sign in' not in req('/')[1]
  controls=form('/admin/settings','Save platform controls','owner')

@@ -1,0 +1,3 @@
+import {staffRole} from './access';import {getChatGPTUser} from './chatgpt-auth';import {getDb} from '../db';import {projectTeams} from '../db/schema';import {and,eq} from 'drizzle-orm';
+export async function workspaceAccess(){const user=await getChatGPTUser(),staff=await staffRole(),leader=user?!!await getDb().select({id:projectTeams.id}).from(projectTeams).where(and(eq(projectTeams.leaderId,user.userId),eq(projectTeams.active,1))).get():false;return {user,staff,leader};}
+export async function workspaceHome(){const {staff,leader}=await workspaceAccess();return staff?.role==='owner'?'/admin/dashboard':staff?'/manager':leader?'/teams':'/workspace';}
