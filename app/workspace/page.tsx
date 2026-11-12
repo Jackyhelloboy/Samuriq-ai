@@ -1,3 +1,5 @@
+import {TeamDelegations} from "../components/team-delegations";
+import {PairTeamInvitation} from "../components/pair-team-invitation";
 import {baseRate,money} from "../team-access";
 import {MyTeams} from "../components/my-teams";
 import { ContentSlot } from "../components/content-slot";
@@ -133,7 +135,7 @@ export default async function Workspace({
     source = (query.source || "direct").slice(0, 100);
   return (
     <Shell active={query.edit ? "My profile" : "Overview"}>
-      <MyTeams/>
+      <MyTeams/><PairTeamInvitation/><TeamDelegations/>
       <Heading
         eyebrow="YOUR CONTRIBUTOR WORKSPACE"
         title={
@@ -148,7 +150,7 @@ export default async function Workspace({
           </a>
         }
       />
-      <ContentSlot slot="workspace" />
+      <ContentSlot slot="workspace" />{user&&<section className="suite-card evidence-entry"><div><span className="eyebrow">PAIR WORK / DAILY EVIDENCE</span><h2>Your uploads. Your TL’s verified record.</h2><p>Keep screenshots in your own Drive folder. Check attendance, section counts and team feedback here.</p></div><a className="button dark" href="/workspace/evidence">Evidence & attendance →</a></section>}
       {!user ? (
         <div className="onboarding-grid">
           <section className="suite-card">
@@ -490,7 +492,7 @@ export default async function Workspace({
                           </>
                         )}
                       </p>
-                      {a.status === "approved" &&
+                      {a.status === "approved" && !j.evidenceRequired &&
                         (() => {
                           const last = history.find(
                               (h) => h.project_progress.projectId === j.id,
@@ -756,7 +758,7 @@ export default async function Workspace({
                     <label>
                       Project
                       <select name="projectId">
-                        {approved.map(({ projects: j }) => (
+                        {approved.filter(m=>!m.projects.evidenceRequired).map(({ projects: j }) => (
                           <option key={j.id} value={j.id}>
                             {j.title}
                           </option>

@@ -1,7 +1,8 @@
 import { getChatGPTUser } from "./chatgpt-auth";
 import { getDb } from "../db";
-import { applications, projects, progress } from "../db/schema";
+import { applications, projects, progress,teamMembers,projectTeams,participants,evidenceFolders } from "../db/schema";
 import { and, eq, or, desc } from "drizzle-orm";
+import {pairContext} from "./evidence-access";
 import { requireFeature } from "./features";
 import { requireOnboarding } from "./onboarding-state";
 import { projectState, missedInfo } from "./project-state";
@@ -36,6 +37,15 @@ export async function accessibleProject(id: string) {
   await requireOnboarding(user.userId, row.projects);
   if (projectState(row.projects) !== "online")
     throw Error("This project is not currently online");
+  if(row.projects.evidenceRequired){
+    const pair=await pairContext(id,row.applications.userId),members=await db.select().from(teamMembers).where(eq(teamMembers.projectId,id)),first=members.find(m=>m.userId===pair.first.id),second=members.find(m=>m.userId===pair.second.id);
+    if(!first||!second||first.teamId!==second.teamId)throw Error("Both permanent partners must accept the same project team before client access");
+    const team=await db.select().from(projectTeams).where(eq(projectTeams.id,first.teamId)).get(),leader=team?await db.select().from(participants).where(eq(participants.id,team.leaderId)).get():null;
+    if(!team?.active||!leader||leader.suspended)throw Error("Your project team requires manager attention before work access");
+    const folders=await db.select().from(evidenceFolders).where(eq(evidenceFolders.projectId,id));
+    if([pair.first,pair.second].some(p=>!folders.find(f=>f.userId===p.id&&f.leadId===pair.a.userId&&f.verifiedBy)))throw Error("Connect both private evidence folders and ask the TL to check viewer access before starting");
+    return {user,...row};
+  }
   const last = await db
     .select()
     .from(progress)

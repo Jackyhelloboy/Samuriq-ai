@@ -10,6 +10,7 @@ UPDATE applications SET community_verified=1,partner_confirmed=1;
 INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES ('test-lead','New Lead','lead@example.test','','Hindi','general','2026-01-01'),('test-partner','Permanent Partner','partner@example.test','','Hindi','general','2026-01-01'),('test-other','Other Lead','other@example.test','','Hindi','general','2026-01-01');
 INSERT INTO applications(user_id,project_id,partner,partner_email,experience,status,created) VALUES ('test-lead','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01'),('test-other','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01');
 """
+sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
@@ -52,35 +53,19 @@ try:
  else:raise Exception('Server did not start')
  run("update projects set target_start='%s',deadline='%s' where id='speech-pair'"%(ymd(0),ymd(7)))
  run("update applications set created='%sT00:00:00Z'"%ymd(0))
- # Store only synthetic data in the disposable local database.
- def identity(user,pan,doc):
-  f=form('/workspace/payments','Submit PAN securely',user);f.update(legalName='Synthetic Test User',pan=pan,document=('test.pdf','%PDF-1.4\nSynthetic identity fixture '+doc),consent='yes');return req('/workspace/payments',user,f)
- assert identity('worker','ABCDE1234F','one')[0]==303
- assert identity('lead','ABCDE1234F','two')[2]['Location'].endswith('issue=duplicate-pan')
- assert identity('lead','FGHIJ5678K','one')[2]['Location'].endswith('issue=duplicate-document')
- assert identity('lead','FGHIJ5678K','two')[0]==303
- assert scalar('select count(*) from identity_records')==2
- encrypted=scalar("select encrypted from identity_records where user_id='test-worker'")
- assert 'ABCDE1234F' not in encrypted
- assert 'ABCDE1234F' not in req('/workspace/payments')[1]
- assert req('/admin/identity',None)[0]!=200
+ # PAN collection removed. Bank storage is independent and family sharing still needs owner consent.
+ assert 'name="pan"' not in req('/workspace/payments')[1]
+ assert 'type="file"' not in req('/workspace/payments')[1]
  assert req('/admin/identity','worker')[0]!=200
- assert req('/admin/identity/document','worker',{'userId':'test-worker','mode':'details'})[0]==403
- assert req('/admin/identity/document','owner',{'userId':'test-worker'},origin='https://evil.example')[0]==403
- assert req('/admin/identity/document','owner')[0] in (404,405)
- st,b,h=req('/admin/identity/document','owner',{'userId':'test-worker','mode':'details'});assert st==200 and 'ABCDE1234F' in b and 'no-store' in h['Cache-Control']
- st,b,h=req('/admin/identity/document','owner',{'userId':'test-worker'});assert st==200 and b.startswith('%PDF-') and 'attachment' in h['Content-Disposition']
  def bank(user,account='12345678901'):
   f=form('/workspace/payments','Save bank details',user);f.update(holder='Synthetic Test User',account=account,confirm=account,ifsc='TEST0123456',consent='yes');return f
  workerbank=bank('worker');assert req('/workspace/payments','worker',workerbank)[0]==303
+ assert scalar('select count(*) from identity_records')==0
  leadbank=bank('lead');assert req('/workspace/payments','lead',leadbank)[2]['Location'].endswith('issue=shared-bank')
  assert scalar('select count(*) from bank_details')==1
- family=form('/workspace/payments','Send family bank request','lead');family.update(holder='Synthetic Test User',account='12345678901',confirm='12345678901',ifsc='TEST0123456',consent='yes',reason='Synthetic family relationship review request for local test');assert req('/workspace/payments','lead',family)[0]==303
- review=form('/admin/identity','Record decision','owner');review.update(decision='approve',note='Synthetic reviewed family request',holderConsent='yes')
+ family=form('/workspace/payments','Send request for owner review','lead');family.update(holder='Synthetic Test User',account='12345678901',confirm='12345678901',ifsc='TEST0123456',consent='yes',reason='Synthetic family relationship review request for local test');assert req('/workspace/payments','lead',family)[0]==303
+ review=form('/admin/identity','Record owner decision','owner');review.update(decision='approve',note='Synthetic reviewed family request',holderConsent='yes')
  assert req('/admin/identity','worker',review)[0]>=400
- assert req('/admin/identity','owner',review)[0]>=400 # both documents must be reviewed
- for user in ['test-worker','test-lead']:
-  run("update identity_records set status='manual-reviewed' where user_id='%s'"%user)
  without={k:v for k,v in review.items() if k!='holderConsent'};assert req('/admin/identity','owner',without)[0]>=400
  assert req('/admin/identity','owner',review)[0]==303
  assert scalar('select count(*) from bank_details')==2 and scalar('select count(*) from family_grants')==1
@@ -118,12 +103,12 @@ try:
  st,val=action('startTutorial',['speech-pair']);assert st==200 and val;nonce=val['nonce']
  assert action('setVideoDuration',['speech-pair',nonce,20])[0]==200
  run("update onboarding set watched=10 where user_id='test-partner'")
- accept=form('/projects/onboarding?id=speech-pair','Accept and continue','partner');accept.update(projectId='speech-pair',clientEmail='partner@example.test',clientUsername='synthetic-client',terms='yes')
+ accept=form('/projects/onboarding?id=speech-pair','Accept and continue','partner');accept.update(projectId='speech-pair',clientEmail='partner@example.test',clientUsername='synthetic-client',terms='yes',inviteCode='IMCIAD')
  assert req('/projects/onboarding','partner',accept)[0]>=400
  run("update onboarding set position=10,last_tick=%d where user_id='test-partner'"%(int(time.time()*1000)-11000))
  assert action('recordPlayback',['speech-pair',nonce,20])[0]==200
  assert scalar("select watched from onboarding where user_id='test-partner'")==20
  assert req('/projects/onboarding','partner',accept)[0]==303
- print('PASS Pro5: encrypted identity/document round-trip; duplicate PAN and document rejection; owner-only identity access; family consent and two-identity review; manager isolation; closed project server guards; actual-duration tutorial gate.')
+ print('PASS payment policy: PAN collection absent; encrypted bank onboarding without identity documents; owner-only family consent review; manager isolation; closed project server guards; actual-duration tutorial gate.')
 finally:
  server.terminate();server.wait(timeout=10)

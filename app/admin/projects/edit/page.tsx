@@ -86,7 +86,7 @@ export default async function Editor({
             </section>
             <section className="suite-card">
               <span className="badge">02 · CLIENT REQUIREMENTS</span>
-              <h2>Make expectations clear.</h2>
+              <h2>Make expectations clear.</h2><label className="check"><input type="checkbox" name="evidenceRequired" value="yes" defaultChecked={!!job?.evidenceRequired}/>Use the TL-managed pair screenshot register. Contributors upload to Drive; TLs publish daily attendance, sections and feedback.</label>
               <label>
                 Eligibility, equipment, workflow and QC
                 <textarea

@@ -87,6 +87,7 @@ export async function publishProject(form: FormData) {
   const visibility=form.get("listed")==="yes"?"listed":"draft";
   const values = {
     visibility,
+    evidenceRequired:form.get("evidenceRequired")==="yes"?1:0,
     title,
     targetMinutes,
     hourlyRate,
@@ -110,6 +111,8 @@ export async function publishProject(form: FormData) {
     questions: value("questions").slice(0, 2000),
     active: form.get("active") === "1" && visibility==="listed" ? 1 : 0,
   };
+  if(values.evidenceRequired&&(!values.pair||!values.onboardingRequired||!values.inviteCode))throw Error("Pair evidence projects need permanent pairs, tutorial/terms onboarding and an invitation code");
+  if(values.active&&(!clientUrl||!communityUrl||(deadline&&deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("Set client/community links and a current schedule before activating");
   if (id) await getDb().update(projects).set(values).where(eq(projects.id, id));
   else
     await getDb()
@@ -212,4 +215,4 @@ export async function decideApplication(form: FormData) {
     );
   redirect("/admin");
 }
-export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&(!job.clientUrl||!job.communityUrl))throw Error("The owner must configure client and community links first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed"}).where(eq(projects.id,id));redirect("/admin/projects");}
+export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");if(active&&(!job.clientUrl||!job.communityUrl))throw Error("The owner must configure client and community links first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed"}).where(eq(projects.id,id));redirect("/admin/projects");}

@@ -1,8 +1,9 @@
 import { requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { onboarding, participants, projects } from "../../../db/schema";
-import { eq, desc, like, or } from "drizzle-orm";
+import { eq, desc, like, or, and } from "drizzle-orm";
 import { Shell, Heading, Empty } from "../../components/shell";
+import {tutorialEntries,lessonKey,onboardingVersion} from "../../onboarding-state";
 import { verifyTutorial } from "../../onboarding-actions";
 export const dynamic = "force-dynamic";
 export default async function Onboarding({
@@ -50,10 +51,11 @@ export default async function Onboarding({
         />
         <button>Search</button>
       </form>
-      {rows.map((row) => {
+      {await Promise.all(rows.map(async (row) => {
         const r = row.onboarding,
           p = row.participants,
           j = row.projects;
+        const version=await onboardingVersion(j),lessons=await Promise.all(tutorialEntries(j).map((url,i)=>getDb().select().from(onboarding).where(and(eq(onboarding.userId,p.id),eq(onboarding.projectId,lessonKey(j.id,i)),eq(onboarding.version,version))).get()));
         return (
           <section className="suite-card" key={r.userId + r.projectId}>
             <div className="section-kicker">
@@ -72,12 +74,13 @@ export default async function Onboarding({
               {r.watched} / {j.tutorialSeconds} seconds ·{" "}
               {r.clientUsername || "Client identity pending"}
             </p>
-            {!r.verified && !r.acceptedAt && (
+            <p>{lessons.filter(l=>l&&(l.verified||l.watched>=Math.max(j.tutorialSeconds,l.requiredSeconds))).length} / {tutorialEntries(j).length} required videos completed or verified.</p>
+            {!r.acceptedAt && (
               <form action={verifyTutorial}>
                 <input type="hidden" name="userId" value={p.id} />
                 <input type="hidden" name="projectId" value={j.id} />
                 <label>
-                  How was completion verified?
+                  How was every required video verified?
                   <textarea
                     name="note"
                     required
@@ -85,12 +88,12 @@ export default async function Onboarding({
                     maxLength={1000}
                   />
                 </label>
-                <button>Verify tutorial completion</button>
+                <button>Verify all required tutorial completion</button>
               </form>
             )}
           </section>
         );
-      })}
+      }))}
       {!rows.length && (
         <Empty title="No onboarding records">
           Records appear when contributors open a tutorial.

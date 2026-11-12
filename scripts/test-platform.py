@@ -10,6 +10,7 @@ UPDATE applications SET community_verified=1,partner_confirmed=1;
 INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES ('test-lead','New Lead','lead@example.test','','Hindi','general','2026-01-01'),('test-partner','Permanent Partner','partner@example.test','','Hindi','general','2026-01-01'),('test-other','Other Lead','other@example.test','','Hindi','general','2026-01-01');
 INSERT INTO applications(user_id,project_id,partner,partner_email,experience,status,created) VALUES ('test-lead','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01'),('test-other','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01');
 """
+sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
@@ -83,7 +84,7 @@ try:
     except Exception:pass
   return r.status,val,text
  st,val,text=action('startTutorial',['speech-pair']);assert st==200 and val and 'nonce' in val,(st,text[:300]);nonce=val['nonce']
- accept=form('/projects/onboarding?id=speech-pair','Accept and continue');accept.update(projectId='speech-pair',clientEmail='worker@example.test',clientUsername='test-client',terms='yes')
+ accept=form('/projects/onboarding?id=speech-pair','Accept and continue');accept.update(projectId='speech-pair',clientEmail='worker@example.test',clientUsername='test-client',terms='yes',inviteCode='IMCIAD')
  assert req('/projects/onboarding',data=accept)[0]>=400
  # A playback jump receives no credit, a replayed heartbeat cannot add duplicate time
  run("update onboarding set last_tick=%d where user_id='test-worker'"%(int(time.time()*1000)-6000))

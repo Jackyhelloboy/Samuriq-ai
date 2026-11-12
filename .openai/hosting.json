@@ -1,5 +1,8 @@
 {
   "d1": "DB",
   "r2": "PRIVATE_FILES",
-  "project_id": "appgprj_6af338b467088191b6be56fd5581dc77"
+  "project_id": "appgprj_6af338b467088191b6be56fd5581dc77",
+  "capabilities": [
+    "mcp"
+  ]
 }

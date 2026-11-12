@@ -42,7 +42,7 @@ export default async function Work({
         title={j.title}
         description="Open your client workspace, stay connected to your approved team and keep your daily record up to date."
       />
-      <div className="work-layout">
+      <div className="work-layout evidence-work-layout">
         <aside className="work-rail">
           <span className="badge approved">APPROVED TEAM</span>
           <h2>Ready to work.</h2>
@@ -76,8 +76,8 @@ export default async function Work({
               Open in a new tab ↗
             </button>
           </form>
-          <a className="button light" href="/workspace#progress">
-            Submit today’s report
+          <a className="button light" href={j.evidenceRequired?"/workspace/evidence":"/workspace#progress"}>
+            Evidence & daily record
           </a>
           <p>
             Client login happens on their platform. If embedding is blocked, use

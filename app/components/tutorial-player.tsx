@@ -179,9 +179,9 @@ export default function TutorialPlayer({
       {watched >= required && (
         <a
           className="button dark"
-          href={"/projects/onboarding?id=" + encodeURIComponent(projectId)}
+          href={"/projects/onboarding?id=" + encodeURIComponent(projectId.split("::lesson:")[0])}
         >
-          Continue to terms →
+          Review all tutorials & terms →
         </a>
       )}
       <p className="muted">
