@@ -1,7 +1,6 @@
 import { getDb } from "../db";
 import { integrations } from "../db/schema";
 export const featureDefinitions = [
-  ["preview_projects","Layout preview projects","Show clearly marked, closed sample cards. They never accept applications."],
   [
     "applications",
     "New applications",

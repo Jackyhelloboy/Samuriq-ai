@@ -1,0 +1,3 @@
+"use server";
+import {workspaceAccess} from './workspace-context';import {cookies} from 'next/headers';import {redirect} from 'next/navigation';
+export async function switchWorkspace(f:FormData){const a=await workspaceAccess(),role=String(f.get('workspace')||'');if(!a.user)throw Error('Sign in first');const allowed=role==='contributor'||role==='owner'&&a.staff?.role==='owner'||role==='manager'&&!!a.staff||role==='tl'&&a.leader||role==='helper'&&a.helper;if(!allowed)throw Error('Workspace not assigned');(await cookies()).set('sq_workspace',role,{httpOnly:true,secure:true,sameSite:'lax',path:'/',maxAge:2592000});redirect(({owner:'/admin/dashboard',manager:'/manager',tl:'/teams',helper:'/helper',contributor:'/workspace'} as Record<string,string>)[role]);}

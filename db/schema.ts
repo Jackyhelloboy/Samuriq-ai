@@ -1,3 +1,4 @@
+import {sql} from 'drizzle-orm';
 import {
   sqliteTable,
   text,
@@ -8,6 +9,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 export const participants = sqliteTable("participants", {
   id: text("id").primaryKey(),
+  username:text("username").notNull().default(""),
   phone:text("phone").notNull().default(""),
   phoneConsent:integer("phone_consent").notNull().default(0),
   suspended:integer("suspended").notNull().default(0),
@@ -22,7 +24,7 @@ export const participants = sqliteTable("participants", {
   device: text("device").notNull().default(""),
   approved: integer("approved").notNull().default(0),
   created: text("created").notNull(),
-});
+},t=>[uniqueIndex("participant_username_unique").on(t.username).where(sql`username <> ''`)]);
 export const reports = sqliteTable(
   "reports",
   {
@@ -41,6 +43,7 @@ export const projects = sqliteTable("projects", {
   category: text("category").notNull(),
   description: text("description").notNull(),
   requirements: text("requirements").notNull(),
+  uploadsRequired:integer("uploads_required").notNull().default(0),
   enrollmentOnly:integer("enrollment_only").notNull().default(0),
   workType:text("work_type").notNull().default("general"),
   workInstructions:text("work_instructions").notNull().default(""),
@@ -247,3 +250,6 @@ export const teamInvites=sqliteTable('team_invites',{id:text('id').primaryKey(),
 export const membershipHistory=sqliteTable('membership_history',{id:text('id').primaryKey(),userId:text('user_id').notNull(),projectId:text('project_id').notNull(),teamId:text('team_id').notNull(),effectiveFrom:text('effective_from').notNull(),effectiveTo:text('effective_to').notNull(),snapshot:text('snapshot').notNull(),actor:text('actor').notNull(),reason:text('reason').notNull(),created:text('created').notNull()},t=>[index('membership_history_lookup').on(t.userId,t.projectId,t.effectiveFrom,t.effectiveTo)]);
 export const teamTransfers=sqliteTable('team_transfers',{id:text('id').primaryKey(),projectId:text('project_id').notNull(),targetTeamId:text('target_team_id').notNull(),payload:text('payload').notNull(),cutoverDay:text('cutover_day').notNull(),reason:text('reason').notNull(),requestedBy:text('requested_by').notNull(),approvedBy:text('approved_by').notNull().default(''),status:text('status').notNull(),created:text('created').notNull(),completed:text('completed').notNull().default('')});
 export const projectRestrictions=sqliteTable('project_restrictions',{projectId:text('project_id').notNull(),userId:text('user_id').notNull(),state:text('state').notNull(),reason:text('reason').notNull(),actor:text('actor').notNull(),updated:text('updated').notNull()},t=>[primaryKey({columns:[t.projectId,t.userId]})]);
+
+export const evidenceItems=sqliteTable('evidence_items',{id:text('id').primaryKey(),projectId:text('project_id').notNull(),userId:text('user_id').notNull(),leadId:text('lead_id').notNull(),day:text('day').notNull(),sectionId:text('section_id').notNull(),hash:text('hash').notNull(),storageKey:text('storage_key').notNull(),mime:text('mime').notNull(),bytes:integer('bytes').notNull(),status:text('status').notNull().default('pending'),note:text('note').notNull().default(''),reviewer:text('reviewer').notNull().default(''),updated:text('updated').notNull(),created:text('created').notNull()},t=>[uniqueIndex('evidence_project_hash').on(t.projectId,t.hash),uniqueIndex('evidence_person_section').on(t.projectId,t.userId,t.sectionId).where(sql`status <> 'rejected'`),index('evidence_person_day').on(t.projectId,t.userId,t.day)]);
+export const memberFollowups=sqliteTable('member_followups',{id:text('id').primaryKey(),teamId:text('team_id').notNull(),userId:text('user_id').notNull(),day:text('day').notNull(),channel:text('channel').notNull(),outcome:text('outcome').notNull(),note:text('note').notNull(),nextAction:text('next_action').notNull(),actor:text('actor').notNull(),created:text('created').notNull()},t=>[index('followup_team_day').on(t.teamId,t.day)]);

@@ -1,5 +1,5 @@
 import {features} from "./features";
-import {previewProjects} from "./preview-projects";
+
 import { ProjectCard } from "./components/project-card";
 import { ContentSlot } from "./components/content-slot";
 import { Brand } from "./marks";
@@ -32,7 +32,7 @@ export default async function Home({
       .orderBy(desc(projects.created))
       .limit(50);
   const flags=await features();
-  const displayJobs=[...jobs,...(flags.preview_projects?previewProjects:[])];
+  const displayJobs=jobs;
   return (
     <div className="premium-site pro5">
       <header className="company-nav">
@@ -40,7 +40,7 @@ export default async function Home({
         <nav aria-label="Main navigation">
           <a href="#expertise">Expertise</a>
           <a href={board}>Opportunities</a>
-          <a href="/demo?role=manager">Workspace demo</a>
+
           <a href="#company">For businesses</a>
         </nav>
         <a className="nav-signin" href="/login">
@@ -60,7 +60,7 @@ export default async function Home({
               Explore real opportunities. Register once. Join an approved team
               and keep your work in view.
             </p>
-            <div className="hero-workspace-actions"><a className="button pearl" href="/projects">Find a project <ArrowUpRight size={16}/></a><a href="/demo?role=manager">Explore V6 workspaces <ArrowUpRight size={15}/></a></div>
+            <div className="hero-workspace-actions"><a className="button pearl" href="/projects">Find a project <ArrowUpRight size={16}/></a><a href="/workspace">My project workspace <ArrowUpRight size={15}/></a></div>
           </div>
           <img
             src="/images/team.jpg"

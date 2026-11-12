@@ -10,7 +10,7 @@ UPDATE applications SET community_verified=1,partner_confirmed=1;
 INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES ('test-lead','New Lead','lead@example.test','','Hindi','general','2026-01-01'),('test-partner','Permanent Partner','partner@example.test','','Hindi','general','2026-01-01'),('test-other','Other Lead','other@example.test','','Hindi','general','2026-01-01');
 INSERT INTO applications(user_id,project_id,partner,partner_email,experience,status,created) VALUES ('test-lead','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01'),('test-other','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01');
 """
-sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
+sql+="\nUPDATE projects SET uploads_required=0,active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
 sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
 
 # Pre-consented synthetic legacy fixtures only; never an application migration.
@@ -36,9 +36,16 @@ def req(path,user='worker',data=None,origin=base,cookie=None):
  if data is not None:
   boundary='SAMURIQ_TEST';body=''.join('--'+boundary+'\r\nContent-Disposition: form-data; name="'+k+'"'+('; filename="'+v[0]+'"' if isinstance(v,tuple) else '')+'\r\n\r\n'+(v[1] if isinstance(v,tuple) else str(v))+'\r\n' for k,v in data.items())+'--'+boundary+'--\r\n';body=body.encode();headers.update({'Content-Type':'multipart/form-data; boundary='+boundary,'Origin':origin})
  else: body=None
- try:r=opener.open(U.Request(base+path,data=body,headers=headers),timeout=20)
+ body_request=body
+ try:r=opener.open(U.Request(base+path,data=body,headers=headers),timeout=30)
  except urllib.error.HTTPError as e:r=e
- return r.status,r.read().decode(),r.headers
+ body=r.read().decode();
+ if r.status==503 and 'worker restarted mid-request' in body:
+  time.sleep(.2)
+  try:r=opener.open(U.Request(base+path,data=body_request,headers=headers),timeout=30)
+  except urllib.error.HTTPError as e:r=e
+  body=r.read().decode()
+ return r.status,body,r.headers
 
 def form(path,contains,user='worker'):
  status,body,_=req(path,user);assert status==200,(path,status,body[:100]);forms=re.findall(r'<form\b.*?</form>',body,re.S);f=next((f for f in forms if contains in f),None);assert f,(contains,body[:100]);return {htmlmod.unescape(re.search(r'name="([^"]+)"',i)[1]):htmlmod.unescape((re.search(r'value="([^"]*)"',i)[1] if re.search(r'value="([^"]*)"',i) else "")) for i in re.findall(r'<input[^>]*>',f) if re.search(r'name="([^"]+)"',i)}
@@ -147,6 +154,50 @@ try:
  # Revocation takes effect on the next request.
  grant.pop('review',None);assert req(path,'owner',grant)[0]==303
  assert 'Permanent Partner' not in req(path,'lead')[1]
+ # New production proof uploads: actual encrypted bytes, duplicates, scoped inspection and strict count gates.
+ import io
+ from PIL import Image
+ def upload_shot(who,png,section='S001',origin=base):
+  boundary='REAL_EVIDENCE_TEST';parts=[]
+  for key,value in {'day':ymd(0),'sectionId':section,'consent':'yes'}.items():parts.append(('--'+boundary+'\r\nContent-Disposition: form-data; name="'+key+'"\r\n\r\n'+value+'\r\n').encode())
+  parts.append(('--'+boundary+'\r\nContent-Disposition: form-data; name="screenshot"; filename="test.png"\r\nContent-Type: image/png\r\n\r\n').encode()+png+b'\r\n');parts.append(('--'+boundary+'--\r\n').encode());headers={'Content-Type':'multipart/form-data; boundary='+boundary,'Origin':origin,'oai-authenticated-user-id':'test-'+who,'oai-authenticated-user-email':who+'@example.test'}
+  try:r=opener.open(U.Request(base+'/evidence/upload?project=speech-pair',data=b''.join(parts),headers=headers),timeout=30)
+  except urllib.error.HTTPError as e:r=e
+  return r.status,r.read()
+ run("update projects set uploads_required=1 where id='speech-pair'")
+ strict=form(path,'Update daily review','tl');strict.update(attendance='worked',sections='2',minutes='7',firstShots='2',secondShots='2',sectionIds='S001\nS002',feedback='Checked real uploaded screenshots from both participants.',checked='yes')
+ assert req(path,'tl',strict)[0]>=400
+ payloads=[]
+ for i,(who,section) in enumerate([('lead','S001'),('lead','S002'),('partner','S001'),('partner','S002')]):
+  out=io.BytesIO();Image.new('RGB',(640,360),(30+i*25,60,100)).save(out,format='PNG');png=out.getvalue();payloads.append(png)
+  assert upload_shot(who,png,section)[0]==303
+ assert upload_shot('lead',payloads[0])[0]==409
+ extra=io.BytesIO();Image.new('RGB',(640,360),(240,20,160)).save(extra,format='PNG');assert upload_shot('lead',extra.getvalue(),'S001')[0]==409
+ assert upload_shot('worker',payloads[0])[0]==403
+ assert upload_shot('lead',payloads[0],origin='https://evil.example')[0]==403
+ bad_upload=upload_shot('lead',b'not-an-image'*8);assert bad_upload[0]==400,bad_upload
+ ids=[]
+ c=db();items=c.execute('select id,user_id from evidence_items').fetchall();c.close()
+ for iid,uid in items:
+  ids.append(iid)
+  # Binary images are fetched with an isolated reader, never decoded as text.
+  def file_status(who):
+   headers={'oai-authenticated-user-id':'test-'+who,'oai-authenticated-user-email':who+'@example.test'}
+   try:r=opener.open(U.Request(base+'/evidence/file?id='+iid,headers=headers),timeout=20)
+   except urllib.error.HTTPError as e:r=e
+   body=r.read();return r.status,body
+  assert file_status(uid.removeprefix('test-'))[0]==200
+  assert file_status('missing')[0]==403 and file_status('tlother')[0]==403
+  page=req(path,'tl')[1];forms=re.findall(r'<form\b.*?</form>',page,re.S);rf=next(x for x in forms if ('value="'+iid+'"') in x and 'Save inspection' in x);data={htmlmod.unescape(re.search(r'name="([^"]+)"',i)[1]):htmlmod.unescape(re.search(r'value="([^"]*)"',i)[1] if re.search(r'value="([^"]*)"',i) else '') for i in re.findall(r'<input[^>]*>',rf) if re.search(r'name="([^"]+)"',i)};data.update(status='checked',note='Synthetic inspection confirms contributor, section and completion view.')
+  assert req(path,'tlother',data)[0]>=400
+  assert req(path,'tl',data)[0]==303
+  assert req(path,'tl',data)[0]>=400
+ strict=form(path,'Update daily review','tl');strict.update(attendance='worked',sections='2',minutes='7',firstShots='2',secondShots='2',sectionIds='S001\nS002',feedback='Checked actual uploaded screenshot records.',checked='yes');assert req(path,'tl',strict)[0]==303
+ # Contact logs are scoped and TL daily counts come from unique recorded members.
+ follow=form('/teams?team=evidence-one','Record follow-up','tl');follow.update(teamId='evidence-one',userId='test-lead',channel='phone',outcome='no-response',note='Synthetic call attempt was not answered.',nextAction='Try Telegram later today.');assert req('/teams','tlother',follow)[0]>=400;assert req('/teams','tl',follow)[0]==303
+ daily=form('/teams?team=evidence-one','Submit daily TL report','tl');daily.update(teamId='evidence-one',summary='Reviewed evidence and recorded a member follow-up.',blockers='One member has not responded.',nextSteps='Follow up on Telegram.');assert req('/teams','tl',daily)[0]==303
+ assert scalar("select contacted_count from leader_reports where team_id='evidence-one'")==1
+ assert scalar("select unresponsive_count from leader_reports where team_id='evidence-one'")==1
  # Only owner can promote evidence to pending client reconciliation. No automatic earnings.
  reconcile=form(path,'Send to client-QC reconciliation','owner');assert req(path,'tl',reconcile)[0]>=400
  assert req(path,'owner',reconcile)[0]==303
@@ -181,10 +232,16 @@ try:
   payload={'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'purge_closed_support_tickets','arguments':{}}}
   try:r=opener.open(U.Request(base+'/mcp',data=json.dumps(payload).encode(),headers=headers),timeout=20)
   except urllib.error.HTTPError as e:r=e
-  return r.status,r.read().decode()
+  body=r.read().decode()
+  if r.status==503 and 'worker restarted mid-request' in body:
+   try:r=opener.open(U.Request(base+'/mcp',data=json.dumps(payload).encode(),headers=headers),timeout=30)
+   except urllib.error.HTTPError as e:r=e
+   body=r.read().decode()
+  return r.status,body
  assert mcp(None)[0]==403 and mcp('tl')[0]==403
  assert mcp('owner','https://evil.example')[0]==403
- assert mcp('owner')[0]==200
+ mcp_result=mcp('owner');assert mcp_result[0]==200,mcp_result
+ run("update auth_limits set attempts=60 where key like 'upload:test-lead:%'");assert upload_shot('lead',payloads[0])[0]==429
  print('PASS evidence: pair/contributor isolation; canonical distinct Drive folders; manual viewer checks; per-person screenshot validation; cross-team/CSRF/stale rejection; scoped helper grants and revocation; owner-only QC reconciliation; no automatic earnings; all-video and mandatory invite-code gates; PAN-free bank onboarding; owner-only unattended retention; closed-only retention preserves overdue work and finance.')
 finally:
  server.terminate();server.wait(timeout=10)

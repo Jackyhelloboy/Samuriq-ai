@@ -10,6 +10,7 @@ import { redirect } from "next/navigation";
 export async function register(form: FormData) {
   const user = await getChatGPTUser();
   if (!user) redirect("/signin-with-chatgpt?return_to=/workspace");
+  const username=String(form.get('username')||'').trim().toLowerCase();if(username&&!/^[a-z0-9](?:[a-z0-9._]{1,28})[a-z0-9]$/.test(username))throw Error('Use 3–30 letters, digits, dots or underscores; begin and end with a letter or digit');const existingProfile=await getDb().select().from(participants).where(eq(participants.id,user.userId)).get();const handle=username||existingProfile?.username||'member_'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(user.userId))),v=>v.toString(16).padStart(2,'0')).join('').slice(0,20);const handleOwner=await getDb().select().from(participants).where(eq(participants.username,handle)).get();if(handleOwner&&handleOwner.id!==user.userId)throw Error('That username is already taken');
   const name = String(form.get("name") || "")
       .trim()
       .slice(0, 100),
@@ -40,7 +41,7 @@ export async function register(form: FormData) {
     .insert(participants)
     .values({
       id: user.userId,
-      name,
+      username:handle,name,
       phone,phoneConsent,
       email: user.email,
       telegram,
@@ -54,7 +55,7 @@ export async function register(form: FormData) {
     })
     .onConflictDoUpdate({
       target: participants.id,
-      set: { name,phone,phoneConsent, telegram, language, project, skills, location, device },
+      set: { username:handle,name,phone,phoneConsent, telegram, language, project, skills, location, device },
     });
   const returnTo=String(form.get("return_to")||"");if(returnTo)redirect(safeReturn(returnTo));
   const next=String(form.get("next")||"");if(next){const e=await import("./enrollment");await e.requireApplicationPermission(user.userId,next);await e.assignDirect(user.userId,next);}

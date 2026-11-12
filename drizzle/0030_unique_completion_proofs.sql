@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `evidence_person_section` ON `evidence_items` (`project_id`,`user_id`,`section_id`) WHERE status <> 'rejected';

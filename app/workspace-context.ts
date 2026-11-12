@@ -1,3 +1,7 @@
+import {cookies} from 'next/headers';
 import {staffRole} from './access';import {getChatGPTUser} from './chatgpt-auth';import {getDb} from '../db';import {projectTeams,teamHelpers,teamMembers} from '../db/schema';import {and,eq} from 'drizzle-orm';
 export async function workspaceAccess(){const user=await getChatGPTUser(),staff=await staffRole(),db=getDb(),leader=user?!!await db.select({id:projectTeams.id}).from(projectTeams).where(and(eq(projectTeams.leaderId,user.userId),eq(projectTeams.active,1))).get():false,helper=user?!!await db.select({id:teamHelpers.teamId}).from(teamHelpers).innerJoin(projectTeams,eq(projectTeams.id,teamHelpers.teamId)).innerJoin(teamMembers,and(eq(teamMembers.teamId,teamHelpers.teamId),eq(teamMembers.userId,teamHelpers.userId))).where(and(eq(teamHelpers.userId,user.userId),eq(projectTeams.active,1))).get():false;return {user,staff,leader,helper};}
 export async function workspaceHome(){const {staff,leader,helper}=await workspaceAccess();return staff?.role==='owner'?'/admin/dashboard':staff?'/manager':leader?'/teams':helper?'/helper':'/workspace';}
+
+export async function selectedWorkspace(){const c=(await cookies()).get('sq_workspace')?.value;return ['owner','manager','tl','helper','contributor'].includes(c||'')?c:'';}
+export async function workspaceStaffRole(){const view=await selectedWorkspace();return ['contributor','tl','helper'].includes(view||'')?null:staffRole();}

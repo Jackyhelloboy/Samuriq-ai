@@ -73,7 +73,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
             <form action={register} className="profile-form"><input type="hidden" name="return_to" value={query.return_to||''}/>
               <input name="source" type="hidden" value={source} />
               <input name="next" type="hidden" value={query.next || ""} />
-              <div className="form-grid">
+              <div className="form-grid"><label>Unique username<input name="username" minLength={3} maxLength={30} pattern="[a-z0-9][a-z0-9._]{1,28}[a-z0-9]" defaultValue={profile?.username} placeholder="rayan_27"/><small>Letters, numbers, dots and underscores. Legal names can be shared; usernames cannot.</small></label>
                 <label>
                   Full name
                   <input

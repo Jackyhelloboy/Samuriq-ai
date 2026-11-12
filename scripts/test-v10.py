@@ -10,7 +10,7 @@ UPDATE applications SET community_verified=1,partner_confirmed=1;
 INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES ('test-lead','New Lead','lead@example.test','','Hindi','general','2026-01-01'),('test-partner','Permanent Partner','partner@example.test','','Hindi','general','2026-01-01'),('test-other','Other Lead','other@example.test','','Hindi','general','2026-01-01');
 INSERT INTO applications(user_id,project_id,partner,partner_email,experience,status,created) VALUES ('test-lead','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01'),('test-other','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01');
 """
-sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
+sql+="\nUPDATE projects SET uploads_required=0,active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
 sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
 
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
@@ -27,9 +27,16 @@ def req(path,user='worker',data=None,origin=base,cookie=None):
  if data is not None:
   boundary='SAMURIQ_TEST';body=''.join('--'+boundary+'\r\nContent-Disposition: form-data; name="'+k+'"'+('; filename="'+v[0]+'"' if isinstance(v,tuple) else '')+'\r\n\r\n'+(v[1] if isinstance(v,tuple) else str(v))+'\r\n' for k,v in data.items())+'--'+boundary+'--\r\n';body=body.encode();headers.update({'Content-Type':'multipart/form-data; boundary='+boundary,'Origin':origin})
  else: body=None
- try:r=opener.open(U.Request(base+path,data=body,headers=headers),timeout=20)
+ body_request=body
+ try:r=opener.open(U.Request(base+path,data=body,headers=headers),timeout=30)
  except urllib.error.HTTPError as e:r=e
- return r.status,r.read().decode(),r.headers
+ body=r.read().decode();
+ if r.status==503 and 'worker restarted mid-request' in body:
+  time.sleep(.2)
+  try:r=opener.open(U.Request(base+path,data=body_request,headers=headers),timeout=30)
+  except urllib.error.HTTPError as e:r=e
+  body=r.read().decode()
+ return r.status,body,r.headers
 
 def form(path,contains,user='worker'):
  status,body,_=req(path,user);assert status==200,(path,status,body[:100]);forms=re.findall(r'<form\b.*?</form>',body,re.S);f=next((f for f in forms if contains in f),None);assert f,(contains,body[:100]);return {htmlmod.unescape(re.search(r'name="([^"]+)"',i)[1]):htmlmod.unescape((re.search(r'value="([^"]*)"',i)[1] if re.search(r'value="([^"]*)"',i) else "")) for i in re.findall(r'<input[^>]*>',f) if re.search(r'name="([^"]+)"',i)}
@@ -65,7 +72,7 @@ try:
  st,b,h=req('/admin/dashboard','owner');assert st in (303,307) and '/agreements' in h.get('Location','')
  agree('owner','owner');assert scalar("select length(content_hash) from policy_acceptances where user_id='test-owner' and role='owner'")==64
  run("insert into managers(user_id,granted_by,created) values('test-worker','test-owner','2026-01-01')");agree('worker','manager')
- run("update projects set active=1,archived_at='',enrollment_only=0,pair=1,hourly_rate=500,target_minutes=840,evidence_required=1,onboarding_required=0,target_start='%s',deadline='%s' where id='speech-pair'"%(ymd(-7),ymd(7)))
+ run("update projects set uploads_required=0,active=1,archived_at='',enrollment_only=0,pair=1,hourly_rate=500,target_minutes=840,evidence_required=1,onboarding_required=0,target_start='%s',deadline='%s' where id='speech-pair'"%(ymd(-7),ymd(7)))
  for i,u in enumerate(['tlone','tltwo','tlthree','vendor','alice','bob','mallory','outsider']):
   run("insert into participants(id,name,email,telegram,language,project,phone,phone_consent,created) values('test-%s','Synthetic %s','%s@example.test','synthetic_user','Hindi','speech','+91000000%04d',1,'2026-01-01')"%(u,u,u,i+1))
  bad=form('/agreements?role=contributor','Accept current agreement','outsider');bad.update(role='owner',consent='yes',duties='yes');assert req('/agreements','outsider',bad)[0]>=400
@@ -141,6 +148,8 @@ try:
  assert req('/admin/policies','worker',f)[0]>=400;assert req('/admin/policies','owner',f)[0]==303
  assert req('/teams','tlone',daily)[0]>=400;agree('owner','owner');assert scalar("select count(*) from policy_acceptances where user_id='test-owner' and role='owner'")==2
  assert scalar('select count(*) from payout_orders')==0
+ privacy=form('/admin/policies','Publish privacy notice','owner');privacy.update(privacy='Synthetic privacy publication. '+('Data is private to authorized reviewers. '*8)+'<script>alert(1)</script>',confirmed='yes');assert req('/admin/policies','manager',privacy)[0]>=400;assert req('/admin/policies','owner',privacy)[0]==303
+ public_privacy=req('/privacy',None)[1];assert 'Synthetic privacy publication.' in public_privacy and '<script>alert(1)</script>' not in public_privacy and '&lt;script&gt;' in public_privacy
  print('PASS V10: real role agreement acceptance/reacceptance; balanced registration; expired/revoked/capped invites and atomic concurrent slots; cross-team denial; paired transfers; owner-only prospective payer changes; history-safe QC earnings after removal; block/restore; revoked helpers/sessions/folder verification; no public shares; daily counts; 100 scoped requests over eight workers in %.2fs. No real payments or external telemetry.'%elapsed)
 finally:
  server.terminate();server.wait(timeout=10)

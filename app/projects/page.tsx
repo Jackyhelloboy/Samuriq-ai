@@ -1,5 +1,5 @@
 import {features} from "../features";
-import {previewProjects} from "../preview-projects";
+
 import { ProjectCard } from "../components/project-card";
 import { ContentSlot } from "../components/content-slot";
 import { projectState, stateLabel } from "../project-state";
@@ -37,7 +37,7 @@ export default async function Projects({
       .limit(50)
       .offset((page - 1) * 50),
     total = (await db.select({ n: count() }).from(projects).where(filter))[0].n;
-  const flags=await features(),samples=flags.preview_projects&&page===1?previewProjects.filter(j=>(!category||j.category===category)&&(!term||(j.title+" "+j.description).toLowerCase().includes(term.toLowerCase()))):[];
+  const samples:typeof jobs=[];
   const params = new URLSearchParams({
     q: term,
     category,

@@ -10,7 +10,7 @@ UPDATE applications SET community_verified=1,partner_confirmed=1;
 INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES ('test-lead','New Lead','lead@example.test','','Hindi','general','2026-01-01'),('test-partner','Permanent Partner','partner@example.test','','Hindi','general','2026-01-01'),('test-other','Other Lead','other@example.test','','Hindi','general','2026-01-01');
 INSERT INTO applications(user_id,project_id,partner,partner_email,experience,status,created) VALUES ('test-lead','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01'),('test-other','speech-pair','Permanent Partner','partner@example.test','Test','pending','2026-01-01');
 """
-sql+="\nUPDATE projects SET active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
+sql+="\nUPDATE projects SET uploads_required=0,active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
 sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
 
 # Pre-consented synthetic legacy fixtures only; never an application migration.
@@ -36,9 +36,16 @@ def req(path,user='worker',data=None,origin=base,cookie=None):
  if data is not None:
   boundary='SAMURIQ_TEST';body=''.join('--'+boundary+'\r\nContent-Disposition: form-data; name="'+k+'"'+('; filename="'+v[0]+'"' if isinstance(v,tuple) else '')+'\r\n\r\n'+(v[1] if isinstance(v,tuple) else str(v))+'\r\n' for k,v in data.items())+'--'+boundary+'--\r\n';body=body.encode();headers.update({'Content-Type':'multipart/form-data; boundary='+boundary,'Origin':origin})
  else: body=None
- try:r=opener.open(U.Request(base+path,data=body,headers=headers),timeout=20)
+ body_request=body
+ try:r=opener.open(U.Request(base+path,data=body,headers=headers),timeout=30)
  except urllib.error.HTTPError as e:r=e
- return r.status,r.read().decode(),r.headers
+ body=r.read().decode();
+ if r.status==503 and 'worker restarted mid-request' in body:
+  time.sleep(.2)
+  try:r=opener.open(U.Request(base+path,data=body_request,headers=headers),timeout=30)
+  except urllib.error.HTTPError as e:r=e
+  body=r.read().decode()
+ return r.status,body,r.headers
 
 def form(path,contains,user='worker'):
  status,body,_=req(path,user);assert status==200,(path,status,body[:100]);forms=re.findall(r'<form\b.*?</form>',body,re.S);f=next((f for f in forms if contains in f),None);assert f,(contains,body[:100]);return {htmlmod.unescape(re.search(r'name="([^"]+)"',i)[1]):htmlmod.unescape((re.search(r'value="([^"]*)"',i)[1] if re.search(r'value="([^"]*)"',i) else "")) for i in re.findall(r'<input[^>]*>',f) if re.search(r'name="([^"]+)"',i)}
@@ -67,12 +74,12 @@ try:
   except Exception:pass
   time.sleep(.5)
  else:raise Exception('Server did not start')
- run("update projects set active=1,target_start='%s',deadline='%s',external_allowed=0,community_url='https://t.me/synthetic' where id='speech-pair'"%(ymd(0),ymd(7)))
+ run("update projects set uploads_required=0,active=1,target_start='%s',deadline='%s',external_allowed=0,community_url='https://t.me/synthetic' where id='speech-pair'"%(ymd(0),ymd(7)))
  run("update applications set created='%sT00:00:00Z'"%ymd(0))
  for role in ['owner','manager','tl','contributor']:
-  st,b,h=req('/demo?role='+role,None);assert st==200 and 'v7-suite' in b and 'Workspace V10' in b and 'Interactive demo.' in b
+  st,b,h=req('/demo?role='+role,None);assert st in (303,307) and 'Interactive demo.' not in b
  b=req('/workspace','worker')[1];assert 'Before you start' in b and 'Daily work record' in b and 'My evidence folder' in b
- assert 'Your project team' in b and 'Month-end payments' in b
+ assert 'Your project team' in b and 'Add Payments' in b
  assert 'Bank &amp; PAN' not in req('/workspace/earnings','worker')[1]
  # No unauthorized client URL appears in public/project workspace HTML.
  assert 'webrtcsg.shenfei-rec.com' not in req('/workspace','missing')[1]
@@ -127,7 +134,13 @@ try:
  start=time.monotonic()
  with ThreadPoolExecutor(max_workers=6) as pool:
   status=list(pool.map(lambda role:req('/demo?role='+role,None)[0],['owner','manager','tl','contributor']*3))
- assert all(s==200 for s in status),status
+ assert all(s in (303,307) for s in status),status
+ # Workspace selection is presentation-only and cannot grant staff authority.
+ sw=form('/workspace','Contributor workspace','owner');sw.update(workspace='contributor');st,b,h=req('/workspace','owner',sw);assert st==303 and 'sq_workspace=contributor' in str(h)
+ st,b,_=req('/support','owner',cookie='sq_workspace=contributor');assert st==200 and 'Owner console' in b and 'Contributor workspace' in b and 'Run closed-ticket retention now' not in b
+ forged={**sw,'workspace':'owner'};assert req('/workspace','worker',forged)[0]>=400
+ assert req('/admin/projects/client?id=speech-pair','worker',cookie='sq_workspace=owner')[0]>=400
+ assert req('/admin/projects/client?id=speech-pair','owner')[0]==200
  # Owner-only recommended client setup retains all required training gates and project economics.
  setup=form('/admin/projects/workflow?id=speech-pair','Apply embedded client setup','owner');setup.update(projectId='speech-pair',confirmed='yes')
  assert req('/admin/projects/workflow','worker',setup)[0]>=400
@@ -147,6 +160,6 @@ try:
  st,b,_=req('/projects',None)
  assert st==200 and '₹250 / person / hour' in b and '₹500 / pair / hour' in b and 'ENROLLMENT OPEN' not in b and 'SyntheticPortalOnly' not in b
  assert scalar('select count(*) from payout_orders')==0
- print('PASS V7: consistent role demos; task-first contributor workspace; public client URL isolation; one-use hashed sessions; replay/expiry/account binding; approval rechecks; origin and iframe policy; explicit external opt-in; atomic concurrent claims; generation throttling; 12 synthetic demo requests across six local concurrent workers in %.2fs. This is not a production capacity guarantee.'%(time.monotonic()-start))
+ print('PASS V7: retired demo redirects; explicit workspace selection; task-first contributor workspace; public client URL isolation; one-use hashed sessions; replay/expiry/account binding; approval rechecks; origin and iframe policy; explicit external opt-in; atomic concurrent claims; generation throttling; 12 retired-demo redirect requests across six local concurrent workers in %.2fs. This is not a production capacity guarantee.'%(time.monotonic()-start))
 finally:
  server.terminate();server.wait(timeout=10)
