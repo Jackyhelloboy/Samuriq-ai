@@ -1,9 +1,10 @@
 import {getDb} from "../db";
 import {participants} from "../db/schema";
 import {eq} from "drizzle-orm";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { sessionUser } from "./account";
+import {env} from "cloudflare:workers";
 
 export type ChatGPTUser = {
   userId: string;
@@ -23,11 +24,21 @@ const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
 async function rawUser(): Promise<ChatGPTUser | null> {
+  // An explicit account session always wins over the host browser identity.
+  const accountUser = await sessionUser().catch(() => null);
+  if (accountUser) return accountUser as ChatGPTUser;
+  const jar=await cookies();
+  // Never silently become the host owner after expiry, tampering or sign-out.
+  if(jar.get("sq_session")?.value||jar.get("sq_auth_signed_out")?.value)return null;
   const requestHeaders = await headers();
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);
-  if (!userId || !email) return (await sessionUser().catch(() => null)) as ChatGPTUser | null;
+  if (!userId || !email) return null;
 
+  const authSettings=env as unknown as {PASSWORD_LOGIN_ONLY?:string;ADMIN_EMAIL?:string};
+  // Keep the trusted platform owner recovery and maintenance identity available.
+  // All other users must create and use a password account in production.
+  if(authSettings.PASSWORD_LOGIN_ONLY==="1" && email.toLowerCase()!==authSettings.ADMIN_EMAIL?.toLowerCase())return null;
   const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
   const fullName =
     encodedFullName &&

@@ -22,11 +22,11 @@ export async function POST(request: Request) {
   }
   const rows = await teamRows("", indiaDay());
   const links = await getDb().select().from(telegramLinks),
-    map = new Map(links.map((l) => [l.handle, l.chatId]));
+    map = new Map(links.map((l) => [l.userId, l.chatId]));
   let sent = 0,
     unlinked = 0;
   for (const r of rows.filter((x) => !x.today)) {
-    const chat = map.get(normHandle(r.p.telegram));
+    const chat = map.get(r.p.id);
     if (!chat) {
       unlinked++;
       continue;

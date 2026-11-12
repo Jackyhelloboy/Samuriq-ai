@@ -1,0 +1,20 @@
+CREATE TABLE review_account_expiry (user_id TEXT PRIMARY KEY NOT NULL, expires INTEGER NOT NULL);
+--> statement-breakpoint
+INSERT INTO accounts(id,email,name,salt,hash,created) VALUES ('access-review-contributor','review.contributor@samuriq.example','Access review · contributor','1eecd19eec8be6dff4614f2234fd91e0','6b0b4917970127a73f063ab034e75d7007487f1bdcdd8de302d12636f3a5b8a3','2026-11-12T15:27:45.126335+00:00');
+INSERT INTO participants(id,name,email,telegram,language,project,created,source) VALUES ('access-review-contributor','Access review · contributor','review.contributor@samuriq.example','','Hindi','general','2026-11-12T15:27:45.126335+00:00','owner-requested-access-review');
+INSERT INTO review_account_expiry VALUES ('access-review-contributor',1794670065126);
+INSERT INTO accounts(id,email,name,salt,hash,created) VALUES ('access-review-tl','review.tl@samuriq.example','Access review · tl','9a752c287cb06e7924c31ab386103a83','390de3295443de9d9c341ca3902302c07e326cb566497dad828f3f2e03119113','2026-11-12T15:27:45.126335+00:00');
+INSERT INTO participants(id,name,email,telegram,language,project,created,source) VALUES ('access-review-tl','Access review · tl','review.tl@samuriq.example','','Hindi','general','2026-11-12T15:27:45.126335+00:00','owner-requested-access-review');
+INSERT INTO review_account_expiry VALUES ('access-review-tl',1794670065126);
+INSERT INTO accounts(id,email,name,salt,hash,created) VALUES ('access-review-helper','review.helper@samuriq.example','Access review · helper','0450fc7bd9c8596033579a4bf75c4999','f8bce886902cb04e1145aaa0175c1ab0fc2f30bba23a040c90f37822203cf2c7','2026-11-12T15:27:45.126335+00:00');
+INSERT INTO participants(id,name,email,telegram,language,project,created,source) VALUES ('access-review-helper','Access review · helper','review.helper@samuriq.example','','Hindi','general','2026-11-12T15:27:45.126335+00:00','owner-requested-access-review');
+INSERT INTO review_account_expiry VALUES ('access-review-helper',1794670065126);
+INSERT INTO accounts(id,email,name,salt,hash,created) VALUES ('access-review-manager','review.manager@samuriq.example','Access review · manager','2fd56c5d0ee538169f9c3385f3f7f27f','68d19c1ff0d940d0839b0762d6358bc58fff232eac2b642d9cd4f00b081f3c32','2026-11-12T15:27:45.126335+00:00');
+INSERT INTO participants(id,name,email,telegram,language,project,created,source) VALUES ('access-review-manager','Access review · manager','review.manager@samuriq.example','','Hindi','general','2026-11-12T15:27:45.126335+00:00','owner-requested-access-review');
+INSERT INTO review_account_expiry VALUES ('access-review-manager',1794670065126);
+INSERT INTO managers(user_id,granted_by,created) VALUES ('access-review-manager','owner-requested-review','2026-11-12T15:27:45.126335+00:00');
+INSERT INTO projects(id,title,category,description,requirements,client_url,invite_code,active,archived_at,created) VALUES ('access-review','Staff access review — no client work','Access review','Private temporary workspace for owner-requested role testing. No work or payments are generated.','No client work permitted.','','',1,'2026-11-12T15:27:45.126335+00:00','2026-11-12T15:27:45.126335+00:00');
+INSERT INTO project_teams(id,project_id,leader_id,label,code,rate_paise,approved_rate_paise,created_by,created) VALUES ('access-review-team','access-review','access-review-tl','Access review · isolated team','ACCESS-REVIEW',0,0,'owner-requested-review','2026-11-12T15:27:45.126335+00:00');
+INSERT INTO team_members(project_id,user_id,team_id,rate_accepted,rate_paise,base_rate_paise,joined) VALUES ('access-review','access-review-contributor','access-review-team',0,0,0,'2026-11-12T15:27:45.126335+00:00');
+INSERT INTO team_members(project_id,user_id,team_id,rate_accepted,rate_paise,base_rate_paise,joined) VALUES ('access-review','access-review-helper','access-review-team',0,0,0,'2026-11-12T15:27:45.126335+00:00');
+INSERT INTO team_helpers(team_id,user_id,scopes,granted_by,created) VALUES ('access-review-team','access-review-helper','tickets,contact','owner-requested-review','2026-11-12T15:27:45.126335+00:00');

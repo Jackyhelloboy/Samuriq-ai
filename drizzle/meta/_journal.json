@@ -218,6 +218,20 @@
       "when": 1794495202464,
       "tag": "0030_unique_completion_proofs",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "6",
+      "when": 1794497380284,
+      "tag": "0031_access_review",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "6",
+      "when": 1794497918456,
+      "tag": "0032_telegram_account_binding",
+      "breakpoints": true
     }
   ]
 }

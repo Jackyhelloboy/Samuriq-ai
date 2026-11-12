@@ -1,0 +1,10 @@
+import {cookies} from 'next/headers';
+import {env} from 'cloudflare:workers';
+import {requireChatGPTUser} from '../../chatgpt-auth';
+import {Shell,Heading} from '../../components/shell';
+import {getDb} from '../../../db';
+import {telegramLinks,telegramLinkCodes} from '../../../db/schema';
+import {eq,and} from 'drizzle-orm';
+import {createTelegramCode,telegramCodeHash} from '../../telegram-link-actions';
+export const dynamic='force-dynamic';
+export default async function Telegram(){const u=await requireChatGPTUser('/workspace/telegram'),db=getDb(),linked=await db.select().from(telegramLinks).where(eq(telegramLinks.userId,u.userId)).get(),code=(await cookies()).get('sq_telegram_code')?.value||'',record=code?await db.select().from(telegramLinkCodes).where(and(eq(telegramLinkCodes.codeHash,await telegramCodeHash(code)),eq(telegramLinkCodes.userId,u.userId))).get():null,valid=record&&!record.used&&record.expires>Date.now(),name=(env as unknown as {BOT_USERNAME?:string}).BOT_USERNAME,configured=!!name&&/^[A-Za-z0-9_]+bot$/i.test(name);return <Shell active="Connect Telegram"><Heading eyebrow="PRIVATE NOTIFICATIONS" title="Connect your own Telegram." description="One-time account verification keeps your project reminders connected to the right person."/><section className="suite-card"><h2>{linked?'Your Telegram is linked':'Link your account'}</h2><p>Telegram usernames alone are not used to verify your website identity. This connection does not approve a project or join a community.</p>{!configured?<p role="status">The owner is completing the Project Assistant bot setup. Project community links remain available after training.</p>:<><form action={createTelegramCode}><button>{linked?'Create a new connection code':'Create my connection code'}</button></form>{valid&&<><p>This private code expires in 10 minutes. Never share it with another person.</p><a className="button dark" href={'https://t.me/'+name+'?start='+code} target="_blank" rel="noreferrer">Open Project Assistant & press Start</a><p>If needed, send the bot: <code>/start {code}</code></p></>}</>}<a href="/workspace/client">Find your project work desk →</a></section></Shell>}

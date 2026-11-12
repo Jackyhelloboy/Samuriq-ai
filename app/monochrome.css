@@ -1,0 +1,35 @@
+/* Shared monochrome design: public pages, forms and every role workspace. */
+:root{--ink:#151515;--muted:#606060;--line:#e5e5e5;--paper:#fff;--surface:#fafafa;--accent:#151515;color-scheme:light}
+body,.premium-site.pro5,.v6-suite,.v6-suite .suite-main,.v6-login{background:#fff;color:#151515}
+.v6-suite .suite-sidebar{background:#fff!important;color:#151515!important;border-right:1px solid #e5e5e5}
+.v6-suite .suite-sidebar .brand,.v6-suite .suite-sidebar .brand small,.v6-suite .suite-sidebar nav a,.v6-suite .suite-sidebar .rail-tools a,.v6-suite .sidebar-label,.v6-suite .nav-section>summary{color:#333!important}
+.v6-suite .suite-sidebar nav a.selected,.v6-suite .suite-sidebar nav a:hover{background:#f0f0f0!important;color:#111!important;border-color:#111!important}
+.v6-suite .sidebar-note,.v6-suite .suite-card,.v6-suite .suite-stats,.v6-suite .dashboard-filter,.v6-suite .suite-top,.v6-suite .suite-foot,.v6-suite .workspace-options,.v6-suite .account-menu>div{background:#fff;color:#151515;border-color:#e5e5e5;box-shadow:none}
+.v6-suite .sidebar-note p,.v6-suite .sidebar-note strong,.v6-suite .suite-heading p,.v6-suite .suite-stats small,.v6-suite .suite-stats article>span,.v6-suite .eyebrow,.v6-suite .muted,.v6-suite .workspace-switcher small{color:#606060!important}
+.v6-suite .suite-heading h1,.v6-suite h2,.v6-suite h3,.v6-suite .suite-stats strong,.workspace-switcher strong{color:#151515}
+.v6-suite button,.v6-suite button.button,.v6-suite .button.dark,.v6-login button,.v6-login .button.dark,.pro5 .button.dark{background:#171717;color:#fff;border:1px solid #171717}
+.v6-suite .button.light,.v6-suite button.button.light{background:#fff;color:#151515;border:1px solid #d5d5d5}
+.v6-suite .workspace-options form{margin:0;max-width:none}
+.v6-suite .workspace-options .workspace-choice{background:#fff!important;color:#151515!important;border:0!important;border-radius:6px;min-height:64px;line-height:1.45;padding:12px 14px;gap:4px;box-shadow:none}
+.v6-suite .workspace-options .workspace-choice:hover,.v6-suite .workspace-options .workspace-choice:focus-visible{background:#f1f1f1!important;color:#111!important;outline:2px solid #aaa;outline-offset:-2px}
+.v6-suite .workspace-choice small{color:#5d5d5d!important;letter-spacing:0;font-size:12px;white-space:normal}
+.v6-suite .workspace-symbol,.v6-suite .account-avatar,.v6-suite .icon-tile{background:#f2f2f2;color:#222}
+.v6-suite input,.v6-suite select,.v6-suite textarea,.v6-login input{background:#fff;color:#171717;border-color:#d5d5d5}
+.v6-suite .suite-table th,.v6-suite .suite-table tbody tr:nth-child(even),.pair-evidence-people article,.folder-blueprint,.terms-text,.offer-rates>div,.work-rail,.invite-code-notice{background:#fafafa;color:#222;border-color:#e3e3e3}
+.invite-code-notice strong{color:#111}.suite-table td,.suite-table th{font-size:13px}.v6-suite .suite-card p{line-height:1.65}
+.pro5 .project-first-hero,.pro5 .business-section{background:#f7f7f7;color:#151515;border:1px solid #e5e5e5}.pro5 .project-first-hero p:last-child,.hero-workspace-actions>a:last-child{color:#555}.hero-workspace-actions>.button{background:#151515;color:white}.pro5 .opportunity-card{box-shadow:none;border-color:#e1e1e1}.v6-login h1,.v6-login form h2,.v6-login>.brand{color:#151515}.v6-login p,.v6-login small,.v6-login>a:last-child{color:#606060}
+.client-access-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:20px}.client-access-grid .suite-card{margin:0}.client-access-grid ol{padding-left:20px}.client-access-grid li{padding:5px 0}
+:focus-visible{outline:2px solid #222;outline-offset:3px}
+@media(max-width:760px){.v6-suite .mobile-drawer-close,.v6-suite .mobile-nav-toggle{background:#fff!important;color:#111!important;border-color:#ddd!important}.workspace-options{max-width:calc(100vw - 28px)}.v6-suite .suite-table td{font-size:12px}}
+.v7-suite.v6-suite{--v7-ink:#151515;--v7-muted:#606060;--v7-accent:#151515;--v7-line:#e5e5e5;background:#fff!important;color:#151515!important}
+.v7-suite.v6-suite .sidebar-note{background:#fafafa!important;border-color:#e5e5e5!important}
+.v7-suite.v6-suite .suite-card h2,.v7-suite.v6-suite .section-kicker h2,.v7-suite.v6-suite h3,.v7-suite.v6-suite .workspace-switcher strong{color:#151515!important}
+.v7-suite.v6-suite .suite-card p,.v7-suite.v6-suite .suite-card li,.v7-suite.v6-suite .suite-card small,.v7-suite.v6-suite .small-note{color:#606060!important}
+.v7-suite.v6-suite .button.dark,.v7-suite.v6-suite form>button,.v7-suite.v6-suite .v7-launch-toolbar button{background:#171717!important;color:#fff!important;border-color:#171717!important}
+.v7-suite.v6-suite .workspace-options form>.workspace-choice{background:#fff!important;color:#151515!important;border:0!important}
+.v7-suite.v6-suite .workspace-options form>.workspace-choice:hover{background:#f1f1f1!important}
+.v7-suite.v6-suite .button.light,.v7-suite.v6-suite button.button.light{background:#fff!important;color:#151515!important;border-color:#d5d5d5!important}
+.v7-suite.v6-suite .section-kicker>a,.v7-suite.v6-suite .v7-inline-help,.v7-suite.v6-suite .top-quick-links a,.v7-suite.v6-suite .suite-card a:not(.button),.v7-suite.v6-suite .v7-step strong{color:#222!important}
+.v7-suite.v6-suite .v7-project-focus,.v7-suite.v6-suite .v7-welcome,.v7-suite.v6-suite .v7-context-bar,.v7-suite.v6-suite .v7-project-icon,.v7-suite.v6-suite .person-initial,.v7-suite.v6-suite .v7-step>span{background:#fafafa;color:#151515;border-color:#e5e5e5}
+.v7-suite.v6-suite .v7-project-heading h2,.v7-suite.v6-suite .v7-delivery strong,.v7-suite.v6-suite .v7-project-facts strong,.v7-suite.v6-suite .v7-welcome h2{color:#151515!important}
+.v7-suite.v6-suite progress{accent-color:#222}.v7-suite.v6-suite .v7-project-summary,.v7-suite.v6-suite .v7-context-bar,.v7-suite.v6-suite .v7-delivery small,.v7-suite.v6-suite .v7-project-facts small,.v7-suite.v6-suite .v7-step small{color:#606060!important}

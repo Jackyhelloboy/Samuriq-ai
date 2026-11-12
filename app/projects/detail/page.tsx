@@ -28,7 +28,7 @@ export default async function Detail({
     .from(projects)
     .where(eq(projects.id, q.id || ""))
     .get();
-  if (!job)
+  if (!job || job.archivedAt)
     return (
       <Shell>
         <Heading

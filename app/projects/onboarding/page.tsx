@@ -21,7 +21,7 @@ export default async function Onboarding({
       .from(projects)
       .where(eq(projects.id, q.id || ""))
       .get();
-  if (!j)
+  if (!j || j.archivedAt)
     return (
       <Shell>
         <h1>Project unavailable</h1>

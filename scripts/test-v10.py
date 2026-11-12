@@ -91,7 +91,7 @@ try:
  import concurrent.futures
  with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:out=list(pool.map(lambda u:(u,req('/teams/join',u,dict(join))[0]),['bob','mallory']))
  winners=[u for u,st in out if st==303];assert len(winners)==1,out
- partner=winners[0];assert scalar('select used from team_invites')==2 and scalar('select count(*) from team_members')==2
+ partner=winners[0];assert scalar('select used from team_invites')==2 and scalar("select count(*) from team_members where project_id='speech-pair'")==2
  assert req('/teams/join','alice',join)[0]>=400 and scalar('select used from team_invites')==2
  update=form('/teams?team='+teams['tlone'],'Update invitation limits','tlone');update.update(teamId=teams['tlone'],inviteId=invite,expiresAt=expiry(),maxUses='3')
  assert req('/teams','tltwo',update)[0]>=400;assert req('/teams','tlone',update)[0]==303

@@ -131,7 +131,7 @@ export async function publishProject(form: FormData) {
 export async function applyProject(form: FormData) {
   await requireFeature("applications");
   const user = await getChatGPTUser();
-  if (!user) redirect("/signin-with-chatgpt?return_to=/projects");
+  if (!user) redirect("/login?return_to=/projects");
   await (await import("./policy")).requirePolicyRole(user.userId,"contributor");
   const db = getDb(),
     projectId = String(form.get("projectId"));
@@ -146,7 +146,7 @@ export async function applyProject(form: FormData) {
     .where(eq(participants.id, user.userId))
     .get();
   if (!profile) redirect("/workspace?next=" + encodeURIComponent(projectId));
-  if (!project?.active) throw Error("Applications are closed");
+  if (!project?.active || project.archivedAt) throw Error("Applications are closed");
   if (projectState(project) !== "online")
     throw Error("This project is paused. Its deadline has passed.");
   await (await import("./work-membership")).requireProjectAllowed(user.userId,projectId);

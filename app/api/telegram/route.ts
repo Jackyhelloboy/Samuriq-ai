@@ -1,29 +1,20 @@
-import { getDb } from "../../../db";
-import { applications, participants, telegramLinks } from "../../../db/schema";
-import { eq, sql } from "drizzle-orm";
-import { bot, normHandle, sendTelegram } from "../../telegram-bot";
-export const dynamic = "force-dynamic";
-// Telegram webhook. Anyone who messages the bot from the Telegram username they registered with is linked and community-verified.
-export async function POST(request: Request) {
-  const secret = bot().TELEGRAM_WEBHOOK_SECRET;
-  if (!secret || request.headers.get("x-telegram-bot-api-secret-token") !== secret)
-    return new Response("Forbidden", { status: 403 });
-  const update = (await request.json().catch(() => null)) as { message?: { chat?: { id?: number; type?: string }; from?: { username?: string } } } | null;
-  const chat = update?.message?.chat, username = update?.message?.from?.username;
-  if (!chat?.id || chat.type !== "private") return Response.json({ ok: true });
-  const chatId = String(chat.id);
-  if (!username) {
-    await sendTelegram(chatId, "Please set a Telegram username (Settings > Username) and message me again so I can verify your registration.");
-    return Response.json({ ok: true });
-  }
-  const handle = normHandle(username), db = getDb();
-  const rows = await db.select().from(participants).where(sql`lower(replace(${participants.telegram}, '@', '')) = ${handle}`);
-  if (!rows.length) {
-    await sendTelegram(chatId, "I could not find a Samuriq AI registration with the Telegram username @" + username + ". Register on the website first and use this exact username.");
-    return Response.json({ ok: true });
-  }
-  await db.insert(telegramLinks).values({ handle, chatId, created: new Date().toISOString() }).onConflictDoUpdate({ target: telegramLinks.handle, set: { chatId } });
-  await sendTelegram(chatId, "Telegram contact linked, " + rows[0].name + ". Coordinator verification and project approval are still required. Submit daily output in your website workspace.");
-  return Response.json({ ok: true });
+import {getDb} from '../../../db';
+import {telegramLinkCodes,telegramLinks} from '../../../db/schema';
+import {and,eq,gt} from 'drizzle-orm';
+import {bot,sendTelegram} from '../../telegram-bot';
+import {telegramCodeHash} from '../../telegram-link-actions';
+export const dynamic='force-dynamic';
+export async function POST(request:Request){
+ const secret=bot().TELEGRAM_WEBHOOK_SECRET;
+ if(!secret||request.headers.get('x-telegram-bot-api-secret-token')!==secret)return new Response('Forbidden',{status:403});
+ const raw=await request.text();if(raw.length>32768)return new Response('Too large',{status:413});
+ let update:{message?:{chat?:{id?:number;type?:string};text?:string}};try{update=JSON.parse(raw)}catch{return new Response('Invalid JSON',{status:400})}
+ const chat=update?.message?.chat;if(!chat?.id||chat.type!=='private')return Response.json({ok:true});
+ const code=update.message?.text?.match(/^\/start(?:@[A-Za-z0-9_]+)?\s+([a-f0-9]{48})$/)?.[1];
+ if(!code){await sendTelegram(String(chat.id),'Sign in to Samuriq AI, open Connect Telegram and create a private connection code. Telegram usernames alone cannot link an account.');return Response.json({ok:true})}
+ const db=getDb(),claimed=await db.update(telegramLinkCodes).set({used:1}).where(and(eq(telegramLinkCodes.codeHash,await telegramCodeHash(code)),eq(telegramLinkCodes.used,0),gt(telegramLinkCodes.expires,Date.now()))).returning();
+ if(!claimed.length){await sendTelegram(String(chat.id),'This connection code has expired or was already used. Generate a new code from your signed-in website account.');return Response.json({ok:true})}
+ const userId=claimed[0].userId,handle='user:'+userId;
+ await db.insert(telegramLinks).values({userId,handle,chatId:String(chat.id),created:new Date().toISOString()}).onConflictDoUpdate({target:telegramLinks.handle,set:{userId,chatId:String(chat.id),created:new Date().toISOString()}});
+ await sendTelegram(String(chat.id),'Your Samuriq account is linked for private reminders. Complete website training and wait for your TL approval before work. No password, OTP or bank details are needed here.');return Response.json({ok:true});
 }
-

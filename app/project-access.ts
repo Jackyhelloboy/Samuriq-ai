@@ -29,7 +29,7 @@ export async function accessibleProject(id: string) {
       )
       .get();
   if (
-    !row ||
+    !row || row.projects.archivedAt ||
     row.applications.status !== "approved" ||
     !row.applications.communityVerified ||
     (row.projects.pair && !row.applications.partnerConfirmed)

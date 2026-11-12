@@ -152,6 +152,7 @@ export const pairClaims = sqliteTable(
 );
 
 export const telegramLinks = sqliteTable("telegram_links", {
+  userId:text("user_id").notNull().default(""),
   handle: text("handle").primaryKey(),
   chatId: text("chat_id").notNull(),
   created: text("created").notNull(),
@@ -253,3 +254,7 @@ export const projectRestrictions=sqliteTable('project_restrictions',{projectId:t
 
 export const evidenceItems=sqliteTable('evidence_items',{id:text('id').primaryKey(),projectId:text('project_id').notNull(),userId:text('user_id').notNull(),leadId:text('lead_id').notNull(),day:text('day').notNull(),sectionId:text('section_id').notNull(),hash:text('hash').notNull(),storageKey:text('storage_key').notNull(),mime:text('mime').notNull(),bytes:integer('bytes').notNull(),status:text('status').notNull().default('pending'),note:text('note').notNull().default(''),reviewer:text('reviewer').notNull().default(''),updated:text('updated').notNull(),created:text('created').notNull()},t=>[uniqueIndex('evidence_project_hash').on(t.projectId,t.hash),uniqueIndex('evidence_person_section').on(t.projectId,t.userId,t.sectionId).where(sql`status <> 'rejected'`),index('evidence_person_day').on(t.projectId,t.userId,t.day)]);
 export const memberFollowups=sqliteTable('member_followups',{id:text('id').primaryKey(),teamId:text('team_id').notNull(),userId:text('user_id').notNull(),day:text('day').notNull(),channel:text('channel').notNull(),outcome:text('outcome').notNull(),note:text('note').notNull(),nextAction:text('next_action').notNull(),actor:text('actor').notNull(),created:text('created').notNull()},t=>[index('followup_team_day').on(t.teamId,t.day)]);
+
+export const reviewAccountExpiry=sqliteTable("review_account_expiry",{userId:text("user_id").primaryKey(),expires:integer("expires").notNull()});
+
+export const telegramLinkCodes=sqliteTable("telegram_link_codes",{codeHash:text("code_hash").primaryKey(),userId:text("user_id").notNull(),expires:integer("expires").notNull(),used:integer("used").notNull().default(0)});

@@ -1,0 +1,2 @@
+import {Brand} from './marks';
+export default function NotFound(){return <main className="access-message"><Brand/><p className="eyebrow">PAGE UNAVAILABLE</p><h1>Let’s get you back to work.</h1><p>This page may have moved or the link may be incomplete. Open your workspace or choose a project to continue.</p><div className="actions"><a className="button dark" href="/workspace">My workspace</a><a className="button light" href="/projects">Project board</a><a href="/support">Get support</a></div></main>}

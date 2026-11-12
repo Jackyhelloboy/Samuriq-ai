@@ -19,6 +19,7 @@ export default async function Projects({
     category = q.category || "",
     page = Math.max(1, Math.min(10000, Number(q.page) || 1));
   const filter = and(
+    eq(projects.archivedAt,""),
     or(eq(projects.active,1),eq(projects.visibility,"listed")),
     term
       ? or(

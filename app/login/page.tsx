@@ -1,7 +1,7 @@
 import {workspaceHome} from "../workspace-context";
 import { safeReturn } from "../auth-rate";
 import { staffRole } from "../access";
-import { getChatGPTUser } from "../chatgpt-auth";
+import { sessionUser } from "../account";
 import { loginAccount, createAccount } from "../account-actions";
 import { settings } from "../telegram";
 import { redirect } from "next/navigation";
@@ -13,7 +13,7 @@ export default async function Login({
   searchParams: Promise<Record<string, string>>;
 }) {
   const q = await searchParams;
-  const user = await getChatGPTUser();
+  const user = await sessionUser();
   if (user) {
     const staff = await staffRole();
     redirect(
@@ -39,12 +39,13 @@ export default async function Login({
             {(
               {
                 login: "Wrong email or password.",
+                expired: "This temporary review account has expired. Use your permanent account.",
                 restricted:"This account is restricted. Contact your project manager for a review.",
                 exists: "That email already has an account. Sign in instead.",
                 short: "Password must be at least 8 characters.",
                 details: "Enter your name and a valid email.",
                 admin:
-                  "That email is reserved for the owner. Use your existing sign-in or ChatGPT account.",
+                  "That email is reserved for the owner. Use your existing owner password sign-in.",
               } as Record<string, string>
             )[q.error] || "Something went wrong."}
           </p>
@@ -109,11 +110,7 @@ export default async function Login({
 
           <button className="button dark">Create account</button>
         </form>
-        <small>
-          <a href="/signin-with-chatgpt?return_to=/login">
-            Continue with ChatGPT instead
-          </a>
-        </small>
+        <small>Use your registered email and password. Staff permissions are assigned by management, never selected at sign-up.</small>
       </div>
       <a href="/">← Back to Samuriq AI</a>
     </main>

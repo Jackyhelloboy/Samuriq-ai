@@ -40,7 +40,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                 "/workspace?source=" + encodeURIComponent(source),
               )}
             >
-              Continue with ChatGPT
+              Sign in or create account
             </a>
           </section>
           <div className="onboarding-visual">
