@@ -18,6 +18,7 @@ export const participants = sqliteTable("participants", {
   telegram: text("telegram").notNull(),
   language: text("language").notNull(),
   project: text("project").notNull(),
+  primaryProjectId:text("primary_project_id").notNull().default(""),
   source: text("source").notNull().default("direct"),
   skills: text("skills").notNull().default(""),
   location: text("location").notNull().default(""),
@@ -61,6 +62,9 @@ export const projects = sqliteTable("projects", {
   communityUrl: text("community_url").notNull().default(""),
   evidenceRequired: integer("evidence_required").notNull().default(0),
   onboardingRequired: integer("onboarding_required").notNull().default(0),
+  telegramRequired:integer("telegram_required").notNull().default(0),
+  tutorialReference:integer("tutorial_reference").notNull().default(0),
+  sample:integer("sample").notNull().default(0),
   tutorialSeconds: integer("tutorial_seconds").notNull().default(60),
   terms: text("terms").notNull().default(""),
   introUrl: text("intro_url").notNull().default(""),
@@ -152,6 +156,7 @@ export const pairClaims = sqliteTable(
 );
 
 export const telegramLinks = sqliteTable("telegram_links", {
+  username:text("username").notNull().default(""),
   userId:text("user_id").notNull().default(""),
   handle: text("handle").primaryKey(),
   chatId: text("chat_id").notNull(),

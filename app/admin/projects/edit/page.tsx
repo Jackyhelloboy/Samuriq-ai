@@ -158,6 +158,8 @@ export default async function Editor({
                 />
                 Require tutorial and terms before applying
               </label>
+              <label className="check"><input type="checkbox" name="telegramRequired" value="yes" defaultChecked={!!job?.telegramRequired}/>Require bot-verified Telegram username before training and client access</label>
+              <label className="check"><input type="checkbox" name="tutorialReference" value="yes" defaultChecked={!!job?.tutorialReference}/>Label tutorials as reference material, pending client-specific training</label>
               <label>
                 Minimum tutorial playback (seconds)
                 <input

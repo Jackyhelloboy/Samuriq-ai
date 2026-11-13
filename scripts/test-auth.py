@@ -22,6 +22,8 @@ CREATE TRIGGER synthetic_policy_account AFTER INSERT ON accounts BEGIN INSERT OR
 CREATE TRIGGER synthetic_legacy_invite AFTER INSERT ON project_teams BEGIN INSERT INTO team_invites(id,team_id,code,expires_at,max_uses,created_by,created) VALUES ('fixture-'||NEW.id,NEW.id,NEW.code,4070908800000,1000,'fixture','2026-11-12T00:00:00Z'); END;
 """
 
+# Legacy fixtures isolate their existing workflows; Telegram gates are tested separately.
+sql+="\nUPDATE projects SET telegram_required=0;"
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr
@@ -109,7 +111,7 @@ try:
    st,b,h=req('/workspace/telegram',None,cookie=token+'; '+codeCookie)
    code=re.search(r'[?]start=([a-f0-9]{48})',b)[1]
    def webhook(text,chat=1234,secret='local-webhook-secret'):
-    payload=json.dumps({'message':{'chat':{'id':chat,'type':'private'},'from':{'username':'copied-name'},'text':text}}).encode()
+    payload=json.dumps({'message':{'chat':{'id':chat,'type':'private'},'from':{'id':chat,'username':'regression_user'},'text':text}}).encode()
     try:r=opener.open(U.Request(base+'/api/telegram',data=payload,headers={'Content-Type':'application/json','x-telegram-bot-api-secret-token':secret}),timeout=30)
     except urllib.error.HTTPError as e:r=e
     response_body=r.read().decode()

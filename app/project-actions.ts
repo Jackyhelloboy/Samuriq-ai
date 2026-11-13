@@ -98,6 +98,8 @@ export async function publishProject(form: FormData) {
     deadline,
     communityUrl,
     onboardingRequired,
+    telegramRequired:form.get("telegramRequired")==="yes"?1:0,
+    tutorialReference:form.get("tutorialReference")==="yes"?1:0,
     tutorialSeconds,
     terms,
     introUrl,
@@ -226,4 +228,4 @@ export async function decideApplication(form: FormData) {
     );
   redirect("/admin");
 }
-export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");if(active&&(!job.clientUrl||!job.communityUrl))throw Error("The owner must configure client and community links first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed",archivedAt:active?"":new Date().toISOString()}).where(eq(projects.id,id));redirect("/admin/projects");}
+export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&job.sample)throw Error("Sample projects stay closed. Create a real project with client requirements instead.");if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");if(active&&(!job.clientUrl||!job.communityUrl))throw Error("The owner must configure client and community links first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed",archivedAt:active?"":new Date().toISOString()}).where(eq(projects.id,id));redirect("/admin/projects");}

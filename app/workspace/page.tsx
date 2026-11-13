@@ -4,7 +4,9 @@ import SubmitButton from "../components/submit-button";
 import {RegistrationPolicy} from '../components/registration-policy';
 import {getChatGPTUser,chatGPTSignInPath} from '../chatgpt-auth';import {getDb} from '../../db';import {participants} from '../../db/schema';import {eq} from 'drizzle-orm';import {Shell,Heading} from '../components/shell';import {ContributorDashboard} from '../components/contributor-dashboard';import {register} from '../actions';import {ArrowUpRight,UserRound,CheckCircle2} from 'lucide-react';
 export const dynamic='force-dynamic';
+import {profileProjects} from "../profile-projects";
 export default async function Workspace({searchParams}:{searchParams:Promise<Record<string,string>>}){const query=await searchParams,user=await getChatGPTUser(),profile=user?await getDb().select().from(participants).where(eq(participants.id,user.userId)).get():null,source=(query.source||'direct').slice(0,100);if(user&&profile&&!query.edit&&!query.next)return <Shell active="Overview"><ContributorDashboard user={user} profile={profile} projectId={query.project}/></Shell>;
+  const projectOptions=user?await profileProjects(user.userId,profile):null;
   return (
     <Shell active={query.edit || query.next ? "My profile" : "Overview"}>
       <Heading
@@ -21,7 +23,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
           </a>
         }
       />
-      {query.error&&<p role="alert" className="notice">{({policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, Telegram username and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
+      {query.error&&<p role="alert" className="notice">{({"project-closed":"Choose an active project. Closed projects cannot be selected.","project-permission":"Your current TL must approve another project before you can switch.",policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, Telegram username and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
       {!user ? (
         <div className="onboarding-grid">
           <section className="suite-card">
@@ -101,29 +103,19 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                   </select>
                 </label>
                 <label>
-                  Telegram username <small>Optional</small>
+                  Telegram username <small>Verified through the bot after saving</small>
                   <input
                     name="telegram"
-                    pattern="@?[A-Za-z0-9_]{5,32}"
+                    pattern="@?[A-Za-z0-9_]{1,32}"
                     placeholder="@username"
                     defaultValue={profile?.telegram}
-                  />
+                  /><small>Telegram → Settings → Username. Typing a name here does not verify ownership.</small>
                 </label>
-                <label>
-                  Primary interest
-                  <select
-                    name="project"
-                    defaultValue={profile?.project || "general"}
-                  >
-                    <option value="general">Explore all AI projects</option>
-                    <option value="annotation">Data annotation</option>
-                    <option value="evaluation">AI evaluation</option>
-                    <option value="motion">Human motion & POV</option>
-                    <option value="speech">Speech & audio</option>
-                  </select>
-                </label>
+                <label>Primary interest<select name="primaryProject" defaultValue={projectOptions?.choices.some(j=>j.id===query.next&&!j.locked)?query.next:projectOptions?.selected||''}>{!projectOptions?.choices.length&&<option value="">No active projects</option>}{projectOptions?.choices.map(j=><option key={j.id} value={j.id} disabled={j.locked}>{j.title}{j.locked?' · TL permission required':''}</option>)}</select><small>Only active projects appear. Your first assigned project stays selected; another project needs your current TL’s permission.</small></label>
+                <input type="hidden" name="project" value={profile?.project||'general'}/>
+
               </div>
-              <div className="form-grid"><label>Project contact number<input name="phone" type="tel" required={!!query.next} maxLength={18} defaultValue={profile?.phone} placeholder="+91…"/></label><label className="check"><input name="phoneConsent" type="checkbox" required={!!query.next} value="yes" defaultChecked={!!profile?.phoneConsent}/>I allow my assigned team leader and authorized managers to contact me for project coordination. Staff phone numbers are not publicly shared.</label></div>
+              <div className="form-grid"><label>Project contact number<input name="phone" type="tel" required={!!query.next||(!profile&&!!projectOptions?.choices.length)} maxLength={18} defaultValue={profile?.phone} placeholder="+91…"/></label><label className="check"><input name="phoneConsent" type="checkbox" required={!!query.next||(!profile&&!!projectOptions?.choices.length)} value="yes" defaultChecked={!!profile?.phoneConsent}/>I allow my assigned team leader and authorized managers to contact me for project coordination. Staff phone numbers are not publicly shared.</label></div>
               <label>
                 Skills & experience
                 <textarea
@@ -152,7 +144,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
             />
             <h3>Built around your potential.</h3>
             {[
-              "Apply to multiple projects",
+              "One clear project at a time",
               "Review requirements before joining",
               "Access approved client workspaces",
               "Track your own daily contribution",

@@ -35,6 +35,7 @@ export default async function Onboarding({
         .where(eq(participants.id, user.userId))
         .get()
     : null;
+  const telegram= user?await (await import("../../telegram-identity")).telegramIdentity(user.userId):null;
   const version = await onboardingVersion(j),
     record = user
       ? await db
@@ -78,7 +79,7 @@ export default async function Onboarding({
         >
           Complete your profile
         </a>
-      ) : !url ? (
+      ) : j.telegramRequired&&!telegram?.username ? (<section className="suite-card telegram-gate"><span className="badge">NEXT · VERIFY TELEGRAM</span><h2>Connect Telegram before training.</h2><p>Open your Project Assistant bot and press Start. We verify the account and username automatically; typing a username is not proof.</p><a className="button dark" href={"/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+j.id)}>Verify my Telegram</a><p>Your project and progress stay saved while you switch apps.</p></section>) : !url ? (
         <div className="soft-note">
           Your coordinator is preparing this project’s tutorial. Please check
           back before applying.
@@ -86,7 +87,7 @@ export default async function Onboarding({
       ) : (
         <div className="workspace-columns">
           <section className="suite-card">
-            <h2>Complete every required tutorial</h2>
+            <h2>Complete every required tutorial</h2>{!!j.tutorialReference&&<p className="notice"><strong>Reference video — not client-issued training.</strong> This example is for orientation only. Management must confirm the actual client instructions before work approval. Drive playback needs coordinator confirmation.</p>}
             <p>Watch each video from beginning to end. Seeking and speed controls are disabled in the supported player. Drive and other external embeds require coordinator verification; the website cannot independently prove their full playback.</p>
             {await Promise.all(tutorialEntries(j).map(async(url,i)=>{const lesson=await db.select().from(onboarding).where(and(eq(onboarding.userId,user.userId),eq(onboarding.projectId,lessonKey(j.id,i)),eq(onboarding.version,version))).get();return <section className="tutorial-lesson" key={url}><div className="section-kicker"><h3>{i+1}. {url===j.registerUrl?'Registration guide':url===j.introUrl?'Project introduction':'Work tutorial'}</h3><span className={'badge '+(lesson&&(lesson.verified||lesson.watched>=Math.max(j.tutorialSeconds,lesson.requiredSeconds))?'approved':'')}>{lesson?.verified?'Coordinator verified':lesson&&lesson.watched>=Math.max(j.tutorialSeconds,lesson.requiredSeconds)?'Playback recorded':'Required'}</span></div><TutorialPlayer projectId={lessonKey(j.id,i)} url={url} seconds={Math.max(j.tutorialSeconds,lesson?.requiredSeconds||0)} initialWatched={lesson?.watched||0} mode={videoMode(url)}/></section>}))}
           </section>

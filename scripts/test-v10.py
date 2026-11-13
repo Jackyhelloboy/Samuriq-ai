@@ -13,6 +13,8 @@ INSERT INTO applications(user_id,project_id,partner,partner_email,experience,sta
 sql+="\nUPDATE projects SET uploads_required=0,active=1,onboarding_required=0,evidence_required=0 WHERE id='speech-pair';"
 sql+="\nUPDATE projects SET enrollment_only=0 WHERE id='speech-pair';"
 
+# Legacy fixtures isolate their existing workflows; Telegram gates are tested separately.
+sql+="\nUPDATE projects SET telegram_required=0;"
 path=pathlib.Path(state)/'seed.sql' ;path.write_text(sql)
 r=subprocess.run(cli+['d1','execute','DB','--config','dist/server/wrangler.json','--local','--persist-to',state,'--file',str(path)],env=env,capture_output=True,text=True)
 assert r.returncode==0,r.stderr

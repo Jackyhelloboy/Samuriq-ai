@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm";
 export type OnboardingProject = {
   id: string;
   onboardingRequired: number;
+  telegramRequired?:number;
   tutorialUrl: string;
   registerUrl: string;
   introUrl?:string;
@@ -33,6 +34,7 @@ export function tutorialEntries(j:OnboardingProject){return [...new Set([j.tutor
 export function lessonKey(id:string,index:number){return index===0?id:id+"::lesson:"+index;}
 export async function allLessonsComplete(userId:string,j:OnboardingProject){const version=await onboardingVersion(j),entries=tutorialEntries(j);if(!entries.length)return false;const rows=await Promise.all(entries.map((_,i)=>getDb().select().from(onboarding).where(and(eq(onboarding.userId,userId),eq(onboarding.projectId,lessonKey(j.id,i)),eq(onboarding.version,version))).get()));return rows.every(r=>r&&(r.verified||r.watched>=Math.max(j.tutorialSeconds,r.requiredSeconds)));}
 export async function requireOnboarding(userId: string, j: OnboardingProject) {
+  await (await import("./telegram-identity")).requireTelegramIdentity(userId,j);
   if (!j.onboardingRequired) return;
   const row = await getDb()
     .select()

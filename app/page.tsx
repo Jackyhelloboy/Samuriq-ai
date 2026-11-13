@@ -29,7 +29,7 @@ export default async function Home({
       .select()
       .from(projects)
       .where(and(eq(projects.archivedAt,""),or(eq(projects.active,1),eq(projects.visibility,"listed"))))
-      .orderBy(desc(projects.created))
+      .orderBy(desc(projects.active),desc(projects.created))
       .limit(50);
   const flags=await features();
   const displayJobs=jobs;

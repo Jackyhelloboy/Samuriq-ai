@@ -34,7 +34,7 @@ export default async function Projects({
       .select()
       .from(projects)
       .where(filter)
-      .orderBy(desc(projects.created))
+      .orderBy(desc(projects.active),desc(projects.created))
       .limit(50)
       .offset((page - 1) * 50),
     total = (await db.select({ n: count() }).from(projects).where(filter))[0].n;
@@ -99,7 +99,7 @@ export default async function Projects({
         <h3>
           {total} published {total === 1 ? "project" : "projects"}{samples.length>0&&" · "+samples.length+" layout previews"}
         </h3>
-        <span>Newest first</span>
+        <span>Active projects first</span>
       </div>
       <ContentSlot slot="projects" />
       <div className="opportunity-grid">

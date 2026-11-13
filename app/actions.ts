@@ -3,7 +3,7 @@ import {safeReturn} from "./auth-rate";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { settings } from "./telegram";
 import { getDb } from "../db";
-import { participants, reports } from "../db/schema";
+import { participants, reports, projects } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
@@ -12,15 +12,16 @@ export async function register(form: FormData) {
   const user = await getChatGPTUser();
   if (!user) redirect("/login?return_to=/workspace");
   const username=String(form.get('username')||'').trim().toLowerCase();if(username&&!/^[a-z0-9](?:[a-z0-9._]{1,28})[a-z0-9]$/.test(username))return fail('username');const existingProfile=await getDb().select().from(participants).where(eq(participants.id,user.userId)).get();const handle=username||existingProfile?.username||'member_'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(user.userId))),v=>v.toString(16).padStart(2,'0')).join('').slice(0,20);const handleOwner=await getDb().select().from(participants).where(eq(participants.username,handle)).get();if(handleOwner&&handleOwner.id!==user.userId)return fail('taken');
+  const linkedTelegram=await (await import("./telegram-identity")).telegramIdentity(user.userId);
   const name = String(form.get("name") || "")
       .trim()
       .slice(0, 100),
-    telegram = String(form.get("telegram") || "").trim();
+    telegram = linkedTelegram?.username?"@"+linkedTelegram.username:String(form.get("telegram") || "").trim();
   const language = String(form.get("language")),
     project = String(form.get("project"));
   if (
     !name ||
-    (telegram !== "" && !/^@?[A-Za-z0-9_]{5,32}$/.test(telegram)) ||
+    (telegram !== "" && !/^@?[A-Za-z0-9_]{1,32}$/.test(telegram)) ||
     !language.trim() ||
     language.length > 1000 ||
     !["speech", "motion", "annotation", "evaluation", "general"].includes(
@@ -29,6 +30,7 @@ export async function register(form: FormData) {
     form.get("consent") !== "yes"
   )
     return fail("details");
+  const requestedPrimary=String(form.get("primaryProject")||"").slice(0,100);let primaryProjectId=existingProfile?.primaryProjectId||"";if(requestedPrimary){const job=await getDb().select().from(projects).where(eq(projects.id,requestedPrimary)).get();if(!job||job.archivedAt||(await import("./project-state")).projectState(job)!=="online")return fail("project-closed");const e=await import("./enrollment");try{await e.requireApplicationPermission(user.userId,requestedPrimary);}catch(error){if(error instanceof e.EnrollmentError)return fail("project-permission");throw error;}primaryProjectId=requestedPrimary;}
   const phone=String(form.get("phone")||"").replace(/[\s()-]/g,"");
   if(phone&&!/^\+?[0-9]{8,15}$/.test(phone))return fail("phone");
   const phoneConsent=form.get("phoneConsent")==="yes"?1:0;
@@ -37,12 +39,12 @@ export async function register(form: FormData) {
   const skills = String(form.get("skills") || "").slice(0, 1500),
     location = String(form.get("location") || "").slice(0, 200),
     device = String(form.get("device") || "").slice(0, 100);
-  try{await (await import('./policy')).recordRegistrationPolicy(user,String(form.get('policyVersion')||''),form.get('platformPolicyConsent'));}catch(error){if(error instanceof Error&&/Read and accept the current platform agreement/i.test(error.message))return fail('policy');throw error;}const chosen=String(form.get('next')||'');if(chosen&&(!phone||!phoneConsent))return fail('phone-required');
+  try{await (await import('./policy')).recordRegistrationPolicy(user,String(form.get('policyVersion')||''),form.get('platformPolicyConsent'));}catch(error){if(error instanceof Error&&/Read and accept the current platform agreement/i.test(error.message))return fail('policy');throw error;}const chosen=String(form.get('next')||(!existingProfile?primaryProjectId:''));if(chosen&&(!phone||!phoneConsent))return fail('phone-required');
   try{await getDb()
     .insert(participants)
     .values({
       id: user.userId,
-      username:handle,name,
+      username:handle,name,primaryProjectId,
       phone,phoneConsent,
       email: user.email,
       telegram,
@@ -56,9 +58,10 @@ export async function register(form: FormData) {
     })
     .onConflictDoUpdate({
       target: participants.id,
-      set: { username:handle,name,phone,phoneConsent, telegram, language, project, skills, location, device },
+      set: { username:handle,name,primaryProjectId,phone,phoneConsent, telegram, language, project, skills, location, device },
     });}catch(error){const message=String(error)+String((error as {cause?:unknown})?.cause||"");if(/participant_username_unique|UNIQUE constraint failed: participants.username/i.test(message))return fail("taken");throw error;}
-  const next=String(form.get("next")||"");if(next){const e=await import("./enrollment");try{await e.requireApplicationPermission(user.userId,next);await e.assignDirect(user.userId,next);}catch(error){if(error instanceof e.EnrollmentError)redirect("/projects/detail?id="+encodeURIComponent(next)+"&notice="+error.code);throw error;}}
+  const next=String(form.get("next")||(!existingProfile?primaryProjectId:""));if(next){const e=await import("./enrollment");try{await e.requireApplicationPermission(user.userId,next);await e.assignDirect(user.userId,next);}catch(error){if(error instanceof e.EnrollmentError)redirect("/projects/detail?id="+encodeURIComponent(next)+"&notice="+error.code);throw error;}}
+  if(next){const job=await getDb().select().from(projects).where(eq(projects.id,next)).get();if(job?.telegramRequired&&!(await (await import("./telegram-identity")).telegramIdentity(user.userId))?.username)redirect("/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+next));}
   const returnTo=String(form.get("return_to")||"");if(returnTo)redirect(safeReturn(returnTo));
   redirect(next?"/projects/onboarding?id="+encodeURIComponent(next):"/workspace");
 }

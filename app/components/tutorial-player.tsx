@@ -131,7 +131,7 @@ export default function TutorialPlayer({
           tabIndex={-1}
           disablePictureInPicture
           onContextMenu={e=>e.preventDefault()}
-          onLoadedMetadata={()=>{if(video.current?.duration&&nonce.current)setVideoDuration(projectId,nonce.current,video.current.duration).then(r=>setRequired(r.requiredSeconds)).catch(e=>setMessage(e.message));}}
+          onLoadedMetadata={()=>{if(video.current&&initialWatched>0)video.current.currentTime=initialWatched;if(video.current?.duration&&nonce.current)setVideoDuration(projectId,nonce.current,video.current.duration).then(r=>setRequired(r.requiredSeconds)).catch(e=>setMessage(e.message));}}
           controlsList="nodownload noplaybackrate"
           playsInline
           onSeeking={() => {
@@ -175,6 +175,7 @@ export default function TutorialPlayer({
           </p>
         </>
       )}
+      {mode==="manual"&&<a className="button light" href="/support">Ask for tutorial verification →</a>}
       {message && <p role="status">{message}</p>}
       {watched >= required && (
         <a

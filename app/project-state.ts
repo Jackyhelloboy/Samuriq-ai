@@ -1,8 +1,9 @@
 export type ProjState = "soon" | "online" | "paused";
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
 // Online between start day and the deadline day (India time, end of day). Past the deadline the project is paused automatically.
-export function projectState(j: { active?: number | boolean; targetStart: string; deadline: string }): ProjState {
+export function projectState(j: { active?: number | boolean; sample?:number; targetStart: string; deadline: string }): ProjState {
   const t = today();
+  if(j.sample)return "paused";
   if(j.active===0||j.active===false)return "paused";
   if (j.deadline && t > j.deadline) return "paused";
   if (j.targetStart && t < j.targetStart) return "soon";

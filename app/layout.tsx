@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "./workspace-v7.css";
 import "./monochrome.css";
+import "./android.css";
 
 export const metadata: Metadata = {
   title: "Samuriq AI | Human Data & Project Opportunities",

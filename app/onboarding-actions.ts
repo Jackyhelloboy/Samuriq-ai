@@ -25,6 +25,7 @@ async function context(id: string) {
       .where(eq(participants.id, user.userId))
       .get();
   if (!original || !p) throw Error("Complete your profile first");
+  await (await import("./telegram-identity")).requireTelegramIdentity(user.userId,original);
   const entries=tutorialEntries(original);if(index>=entries.length)throw Error("Tutorial unavailable");const j={...original,tutorialUrl:entries[index],registerUrl:""};
   if(projectState(j)!=="online")throw Error("This project is closed");
   return { user, db, j, original, version: await onboardingVersion(original) };

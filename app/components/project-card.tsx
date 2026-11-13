@@ -21,6 +21,7 @@ type Job = {
   deadline: string;
   onboardingRequired?: number;
   preview?: boolean;
+  sample?:number;
   enrollmentOnly?:number;
 };
 export function ProjectCard({
@@ -49,7 +50,7 @@ export function ProjectCard({
           {stateLabel(state)}
         </span>
       </div>
-      <p className="card-discipline">{j.category}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
+      <p className="card-discipline">{j.category}{!!j.sample&&<span className="preview-label">SAMPLE · CLOSED</span>}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
       <h2>{j.title}</h2>
       <p className="card-excerpt">{j.description}</p>
       <div className="card-facts">
@@ -64,7 +65,7 @@ export function ProjectCard({
       </div>
       <div className="card-compensation">{j.id==='speech-pair'?<><strong>₹250 / person / hour · ₹500 / pair / hour</strong><small>Client-QC-approved work · direct Samuriq rate</small></>:<>Remote projects · Approved participation</>}</div>
 
-      {state==="online"&&!j.preview?(      <a
+      {state==="online"&&!j.preview&&!j.sample?(      <a
         href={
           "/projects/detail?id=" +
           encodeURIComponent(j.id) +
@@ -74,7 +75,7 @@ export function ProjectCard({
         className="card-apply"
       >
         Select project <ArrowUpRight size={18} />
-      </a>):<div className="card-apply card-closed" aria-disabled="true"><span>{j.preview?"Preview only · no applications":"Project closed"}</span><span aria-hidden="true">—</span></div>}
+      </a>):<div className="card-apply card-closed" aria-disabled="true"><span>{j.sample?"Sample project · closed":j.preview?"Preview only · no applications":"Project closed"}</span><span aria-hidden="true">—</span></div>}
     </article>
   );
 }
