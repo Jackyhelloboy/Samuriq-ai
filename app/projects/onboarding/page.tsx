@@ -1,8 +1,8 @@
 import {projectState} from "../../project-state";
 import { getChatGPTUser, chatGPTSignInPath } from "../../chatgpt-auth";
 import { getDb } from "../../../db";
-import { projects, onboarding, participants } from "../../../db/schema";
-import { and, eq } from "drizzle-orm";
+import { projects, onboarding, participants, applications } from "../../../db/schema";
+import { and, eq, or } from "drizzle-orm";
 import { Shell, Heading } from "../../components/shell";
 import { onboardingVersion, videoMode,tutorialEntries,lessonKey,allLessonsComplete } from "../../onboarding-state";
 import TutorialPlayer from "../../components/tutorial-player";
@@ -35,6 +35,7 @@ export default async function Onboarding({
         .where(eq(participants.id, user.userId))
         .get()
     : null;
+  const application=user?await db.select().from(applications).where(and(eq(applications.projectId,j.id),or(eq(applications.userId,user.userId),eq(applications.partnerEmail,user.email.toLowerCase())))).get():null;
   const telegram= user?await (await import("../../telegram-identity")).telegramIdentity(user.userId):null;
   const version = await onboardingVersion(j),
     record = user
@@ -57,13 +58,11 @@ export default async function Onboarding({
       <Heading
         eyebrow="PROJECT ONBOARDING"
         title={j.title}
-        description="Complete the tutorial, confirm your project identity, then accept the current requirements."
+        description="Watch the video, accept the terms and submit once. Your client desk is the next screen."
       />
+      {q.error&&<p className="notice" role="alert">Check your partner’s separate email and your availability before submitting. Your recorded tutorial progress is saved.</p>}
       <div className="onboarding-steps">
-        <span>01 · Profile</span>
-        <span>02 · Tutorial</span>
-        <span>03 · Terms</span>
-        <span>04 · Approval & community</span>
+        <span>1 · Watch</span><span>2 · Agree & submit</span><span>3 · Client desk</span>
       </div>
       {!user ? (
         <a
@@ -87,29 +86,29 @@ export default async function Onboarding({
       ) : (
         <div className="workspace-columns">
           <section className="suite-card">
-            <h2>Complete every required tutorial</h2>{!!j.tutorialReference&&<p className="notice"><strong>Reference video — not client-issued training.</strong> This example is for orientation only. Management must confirm the actual client instructions before work approval. Drive playback needs coordinator confirmation.</p>}
-            <p>Watch each video from beginning to end. Seeking and speed controls are disabled in the supported player. Drive and other external embeds require coordinator verification; the website cannot independently prove their full playback.</p>
+            <h2>Complete every required tutorial</h2>{!!j.tutorialReference&&<p className="notice"><strong>Reference video — not client-issued training.</strong> This example is for orientation only. Management must confirm the actual client instructions before work approval. Playback is recorded in this player; you do not need to open Drive.</p>}
+            <p>Watch from beginning to end in this player. Your progress is saved and the form below unlocks automatically. External providers that do not report playback still require coordinator verification.</p>
             {await Promise.all(tutorialEntries(j).map(async(url,i)=>{const lesson=await db.select().from(onboarding).where(and(eq(onboarding.userId,user.userId),eq(onboarding.projectId,lessonKey(j.id,i)),eq(onboarding.version,version))).get();return <section className="tutorial-lesson" key={url}><div className="section-kicker"><h3>{i+1}. {url===j.registerUrl?'Registration guide':url===j.introUrl?'Project introduction':'Work tutorial'}</h3><span className={'badge '+(lesson&&(lesson.verified||lesson.watched>=Math.max(j.tutorialSeconds,lesson.requiredSeconds))?'approved':'')}>{lesson?.verified?'Coordinator verified':lesson&&lesson.watched>=Math.max(j.tutorialSeconds,lesson.requiredSeconds)?'Playback recorded':'Required'}</span></div><TutorialPlayer projectId={lessonKey(j.id,i)} url={url} seconds={Math.max(j.tutorialSeconds,lesson?.requiredSeconds||0)} initialWatched={lesson?.watched||0} mode={videoMode(url)}/></section>}))}
           </section>
           <aside>
-            <section className="suite-card">
-              <h2>Project agreement</h2>{j.inviteCode&&<div className="invite-code-notice"><span className="eyebrow">MANDATORY TASK INVITATION CODE</span><strong>{j.inviteCode}</strong><p>Enter this code when registering on the client platform. Without this task invitation code, you will not be able to access work under our project. Your TL must confirm registration evidence.</p></div>}
+            <section className="suite-card" id="project-agreement">
+              <h2>Agree, submit & open your client desk</h2>{j.inviteCode&&<div className="invite-code-notice"><span className="eyebrow">MANDATORY TASK INVITATION CODE</span><strong>{j.inviteCode}</strong><p>Enter this code when registering on the client platform. Without this task invitation code, you will not be able to access work under our project. Your TL must confirm registration evidence.</p></div>}
               <div className="terms-text">{j.terms || j.requirements}</div>
-              {record?.acceptedAt ? (
+              {record?.acceptedAt && application ? (
                 <>
                   <p className="notice">
                     Onboarding accepted {record.acceptedAt.slice(0, 10)}.
                   </p>
                   <a
                     className="button dark"
-                    href={"/projects/detail?id=" + encodeURIComponent(j.id)}
+                    href={"/projects/work?id=" + encodeURIComponent(j.id)+"&launch=1"}
                   >
-                    Continue to project application →
+                    Open my client workspace →
                   </a>
                 </>
               ) : (
                 <form action={acceptOnboarding}>
-                  <input type="hidden" name="projectId" value={j.id} />
+                  <input type="hidden" name="projectId" value={j.id} /><input type="hidden" name="submitApplication" value={!application?"yes":"no"}/><input type="hidden" name="consent" value="yes"/>
                   <label>
                     Email for the client platform
                     <input
@@ -125,6 +124,8 @@ export default async function Onboarding({
                       name="clientUsername"
                       required
                       maxLength={100}
+                      defaultValue={record?.clientUsername||p.username}
+                      readOnly={!!record?.acceptedAt}
                       disabled={!complete}
                     />
                   </label>
@@ -135,6 +136,7 @@ export default async function Onboarding({
                     automatically.
                   </p>
                   {j.inviteCode&&<label>Type the mandatory task invite code<input name="inviteCode" required disabled={!complete} autoComplete="off" placeholder={j.inviteCode}/></label>}
+                  {!application&&<><input type="hidden" name="communityHandle" value={telegram?.username?'@'+telegram.username:p.telegram||p.username}/>{j.pair===1&&<><label>Permanent partner’s name<input name="partner" required disabled={!complete} maxLength={100}/></label><label>Partner’s separate sign-in email<input name="partnerEmail" type="email" required disabled={!complete}/><small>Your partner must confirm through their own website account.</small></label></>}<label>Availability & project answers<textarea name="experience" required disabled={!complete} maxLength={2000} rows={2} placeholder="When can you work? Include any answers requested in the project brief." defaultValue={p.skills}/></label>{j.questions&&<p className="preserve">{j.questions}</p>}</>}
                   <label className="check">
                     <input
                       type="checkbox"
@@ -143,10 +145,9 @@ export default async function Onboarding({
                       required
                       disabled={!complete}
                     />
-                    I have completed the tutorial and agree to this project’s
-                    requirements and QC terms.
+                    I completed the tutorial, agree to the project requirements and QC terms, and submit these details. My partner must consent separately.
                   </label>
-                  <button disabled={!complete}>Accept and continue</button>
+                  <button disabled={!complete}>Accept and continue · submit & open client desk</button><p className="small-note">Approved contributors go straight to the embedded client. If approval, partner confirmation or folder checks are pending, the next screen shows exactly what remains.</p>
                   {!complete && (
                     <p>
                       Terms unlock only after all required videos have recorded playback or coordinator

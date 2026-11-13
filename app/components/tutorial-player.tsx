@@ -1,4 +1,6 @@
 "use client";
+import {useRouter} from "next/navigation";
+import {tutorialMediaUrl} from "../tutorial-media";
 import { useEffect, useRef, useState } from "react";
 import { startTutorial, recordPlayback, setVideoDuration } from "../onboarding-actions";
 import { embedUrl } from "../project-state";
@@ -15,6 +17,7 @@ export default function TutorialPlayer({
   initialWatched: number;
   mode: string;
 }) {
+  const router=useRouter(),refreshed=useRef(false);
   const [required,setRequired]=useState(seconds),[started,setStarted]=useState(false),[playerReady,setPlayerReady]=useState(false);
   const [watched, setWatched] = useState(initialWatched),
     [message, setMessage] = useState(""),
@@ -73,6 +76,7 @@ export default function TutorialPlayer({
       try {
         const r = await recordPlayback(projectId, nonce.current, position);
         setWatched(r.watched);
+        if(position>r.position+1){furthest.current=r.position;if(mode==="direct"&&video.current)video.current.currentTime=r.position;else player.current?.seekTo(r.position,true);}
       } catch (e: any) {
         setMessage(e.message);
       } finally {
@@ -121,13 +125,17 @@ export default function TutorialPlayer({
       player.current?.destroy?.();
     };
   }, [mode, ready, url]);
+  useEffect(()=>{if(watched>=required&&required>0&&!refreshed.current){refreshed.current=true;router.refresh();}},[watched,required,router]);
   const e = embedUrl(url);
   return (
     <div className="tutorial-player">
       {mode === "direct" ? (
         <video
           ref={video}
-          src={url}
+          src={tutorialMediaUrl(url)}
+          preload="metadata"
+          onPause={()=>setStarted(false)}
+          onError={()=>{setStarted(false);setMessage("The video could not load. Check your connection and reload this page; recorded progress is saved.")}}
           tabIndex={-1}
           disablePictureInPicture
           onContextMenu={e=>e.preventDefault()}
@@ -170,7 +178,7 @@ export default function TutorialPlayer({
           <p>
             {Math.min(watched, required)} / {required} seconds recorded.{" "}
             {watched >= required
-              ? "Tutorial complete. Refresh to continue to terms."
+              ? "Tutorial complete. Your terms below are now unlocked."
               : "No pause, skip or speed buttons are provided. Keep this page visible while the tutorial plays."}
           </p>
         </>
@@ -180,9 +188,9 @@ export default function TutorialPlayer({
       {watched >= required && (
         <a
           className="button dark"
-          href={"/projects/onboarding?id=" + encodeURIComponent(projectId.split("::lesson:")[0])}
+          href="#project-agreement"
         >
-          Review all tutorials & terms →
+          Continue to terms below ↓
         </a>
       )}
       <p className="muted">

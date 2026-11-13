@@ -1,0 +1,1 @@
+export function tutorialMediaUrl(raw:string){try{const u=new URL(raw);if(u.origin==='https://samuriq-ai-recording-community.thinladle2.chatgpt.site'&&/^\/media\/[a-zA-Z0-9_.-]+\.(mp4|webm|ogg)$/.test(u.pathname))return u.pathname;}catch{}return raw;}

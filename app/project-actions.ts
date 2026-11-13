@@ -130,7 +130,7 @@ export async function publishProject(form: FormData) {
       });
   redirect("/admin/projects");
 }
-export async function applyProject(form: FormData) {
+export async function submitProjectApplication(form: FormData) {
   await requireFeature("applications");
   const user = await getChatGPTUser();
   if (!user) redirect("/login?return_to=/projects");
@@ -189,8 +189,8 @@ export async function applyProject(form: FormData) {
       created: new Date().toISOString(),
     })
     .onConflictDoNothing();
-  redirect("/projects");
 }
+export async function applyProject(form:FormData){await submitProjectApplication(form);redirect("/projects/work?id="+encodeURIComponent(String(form.get("projectId")))+"&launch=1");}
 export async function decideApplication(form: FormData) {
   await requireOperator();
   const status = String(form.get("status"));

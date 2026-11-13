@@ -9,6 +9,7 @@ import {
   participants,
   clientClaims,
   operationAudit,
+  applications,
 } from "../db/schema";
 import { and, eq, or } from "drizzle-orm";
 import { onboardingVersion, videoMode, tutorialEntries, lessonKey, allLessonsComplete } from "./onboarding-state";
@@ -41,8 +42,7 @@ export async function startTutorial(id: string) {
       and(eq(onboarding.userId, user.userId), eq(onboarding.projectId, id)),
     )
     .get();
-  if (row?.version === version)
-    return { nonce: row.nonce, watched: row.watched };
+  if (row?.version === version){await db.update(onboarding).set({position:row.watched,lastTick:Date.now()}).where(and(eq(onboarding.userId,user.userId),eq(onboarding.projectId,id),eq(onboarding.version,version)));return { nonce: row.nonce, watched: row.watched };}
   const nonce = crypto.randomUUID();
   await db
     .insert(onboarding)
@@ -91,11 +91,11 @@ export async function recordPlayback(
     elapsed = (now - row.lastTick) / 1000,
     next = Math.floor(position);
   if (!Number.isFinite(next) || next < 0 || elapsed < 4)
-    return { watched: row.watched };
+    return { watched: row.watched, position:row.position };
   const advance = next - row.position,
     credit =
       advance >= 0 && advance <= elapsed + 3
-        ? Math.min(advance, Math.floor(elapsed), 12)
+        ? Math.min(advance, Math.ceil(elapsed), 12)
         : 0;
   const watched = Math.min(
     Math.max(j.tutorialSeconds,row.requiredSeconds),
@@ -105,7 +105,7 @@ export async function recordPlayback(
     .update(onboarding)
     .set({
       watched,
-      position: credit > 0 ? Math.max(row.position, next) : row.position,
+      position: row.position + Math.max(0,credit),
       lastTick: now,
     })
     .where(
@@ -116,7 +116,7 @@ export async function recordPlayback(
         eq(onboarding.nonce, nonce),
       ),
     );
-  return { watched };
+  return { watched,position:row.position+Math.max(0,credit) };
 }
 export async function acceptOnboarding(form: FormData) {
   const id = String(form.get("projectId")),
@@ -170,6 +170,9 @@ export async function acceptOnboarding(form: FormData) {
   if (existing && existing.userId !== user.userId)
     throw Error("That client username is already registered for this project");
   if(j.inviteCode&&String(form.get("inviteCode")||"").trim()!==j.inviteCode)throw Error("Enter the mandatory client task invitation code exactly as shown");
+  const application=await db.select().from(applications).where(and(eq(applications.projectId,id),or(eq(applications.userId,user.userId),eq(applications.partnerEmail,user.email.toLowerCase())))).get();
+  const combined=form.get('submitApplication')==='yes'&&!application;
+  if(combined){await (await import('./features')).requireFeature('applications');await (await import('./enrollment')).requireApplicationPermission(user.userId,id);await (await import('./work-membership')).requireProjectAllowed(user.userId,id);const partner=String(form.get('partner')||'').trim(),email=String(form.get('partnerEmail')||'').trim().toLowerCase();if((j.pair&&(!partner||!/^\S+@\S+\.\S+$/.test(email)||email===user.email.toLowerCase()))||!String(form.get('experience')||'').trim()||form.get('consent')!=='yes')redirect('/projects/onboarding?id='+encodeURIComponent(id)+'&error=application');}
   const acceptedAt = new Date().toISOString();
   await db.batch([
     existing
@@ -212,7 +215,8 @@ export async function acceptOnboarding(form: FormData) {
       created: acceptedAt,
     }),
   ]);
-  redirect("/projects/community?id=" + encodeURIComponent(id));
+  if(combined)await (await import("./project-actions")).submitProjectApplication(form);
+  redirect("/projects/work?id=" + encodeURIComponent(id)+"&launch=1");
 }
 export async function verifyTutorial(form: FormData) {
   const staff = await requireOperator(),

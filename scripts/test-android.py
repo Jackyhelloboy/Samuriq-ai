@@ -95,7 +95,13 @@ try:
   payload=json.dumps({'message':{'chat':{'id':chat,'type':'private'},'from':{'id':chat if fromid is None else fromid,'username':username},'text':text or '/start '+code}}).encode()
   try:r=opener.open(U.Request(base+'/api/telegram',data=payload,headers={'Content-Type':'application/json','x-telegram-bot-api-secret-token':secret}),timeout=30)
   except urllib.error.HTTPError as e:r=e
-  return r.status,r.read().decode()
+  response=r.read().decode()
+  if r.status==503 and 'worker restarted mid-request' in response:
+   time.sleep(.2)
+   try:r=opener.open(U.Request(base+'/api/telegram',data=payload,headers={'Content-Type':'application/json','x-telegram-bot-api-secret-token':secret}),timeout=30)
+   except urllib.error.HTTPError as e:r=e
+   response=r.read().decode()
+  return r.status,response
  code='a'*48;makecode('worker',code)
  assert webhook(code,secret='wrong')[0]==403
  assert webhook(code,fromid=999)[0]==200 and scalar("SELECT used FROM telegram_link_codes WHERE user_id='test-worker'")==0
@@ -104,7 +110,7 @@ try:
  assert scalar("SELECT telegram FROM participants WHERE id='test-worker'")=='@android_member'
  st,b,_=req('/api/telegram/me','worker');assert json.loads(b)['verified'] and json.loads(b)['username']=='@android_member' and '12345' not in b
  assert 'android_member' not in req('/api/telegram/me','other')[1]
- st,b,_=req('/projects/onboarding?id=speech-pair','worker');assert st==200 and 'Reference video' in b and 'coordinator confirmation' in b
+ st,b,_=req('/projects/onboarding?id=speech-pair','worker');assert st==200 and 'Reference video' in b and 'Playback is recorded in this player' in b
  # Replays cannot bind another chat; the same Telegram identity cannot register a second site account.
  assert webhook(code,chat=99999)[0]==200 and scalar("SELECT chat_id FROM telegram_links WHERE user_id='test-worker'")=='12345'
  another='b'*48;makecode('other',another);assert webhook(another)[0]==200

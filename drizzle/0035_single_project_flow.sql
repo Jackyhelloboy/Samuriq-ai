@@ -1,0 +1,1 @@
+UPDATE projects SET tutorial_url='https://samuriq-ai-recording-community.thinladle2.chatgpt.site/media/orientation-reference.mp4',tutorial_seconds=61,enrollment_only=CASE WHEN client_url<>'' AND terms<>'' THEN 0 ELSE enrollment_only END WHERE id='speech-pair' AND tutorial_url='https://drive.google.com/file/d/1-3M8fVkwz0uuFKnknMTH_CnxrMkL4QDX/view?usp=sharing';

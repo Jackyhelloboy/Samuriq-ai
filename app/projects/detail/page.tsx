@@ -84,6 +84,7 @@ export default async function Detail({
       <Heading
         eyebrow={job.category}
         title={job.title}
+        action={<a className="button dark" href={"/projects/work?id="+job.id+"&launch=1"}>Open client website →</a>}
 
         description={
           job.location +
@@ -98,7 +99,7 @@ export default async function Detail({
       {membership&&!membership.rateAccepted&&<section className="suite-card"><h2>Your team assignment is ready.</h2>{membership.effectiveFrom&&<p>Payment assignment effective {membership.effectiveFrom}. Earlier work retains its recorded beneficiary and rate.</p>}{membership.vendorFrom?<><span className="badge">VENDOR-MANAGED PAYROLL</span><p>Your vendor receives the Samuriq settlement and is responsible for your individual payment. The owner's vendor budget is not your individual offer.</p><p className="preserve">{membership.payrollTerms||'Your vendor must provide written payroll terms before you can accept.'}</p></>:<p>Your individual contractual rate is {money(membership.ratePaise)} per client-QC-approved hour. Payment follows QC, owner review and your accepted terms.</p>}<form action={acceptAssignedRate}><input type="hidden" name="projectId" value={job.id}/>{membership.vendorFrom?<input type="hidden" name="termsVersion" value={await contractVersion(membership)}/>:<input type="hidden" name="rate" value={membership.ratePaise}/>}<label className="check"><input type="checkbox" name="consent" value="yes" required/>I accept my assigned team’s private terms and understand who is responsible for paying me.</label><button disabled={!!membership.vendorFrom&&membership.payrollTerms.length<20}>Accept assigned team terms</button></form></section>}
       <div className="workspace-columns">
         <section className="suite-card" style={{ gridColumn: "1 / -1" }}>
-          <h2>Status and videos</h2>
+          <h2>Start your project</h2>
           <p>
             <span
               className={
@@ -117,48 +118,10 @@ export default async function Detail({
               Applications and updates are closed.
             </p>
           )}
-          {(
-            [
-              ["Introduction", job.introUrl],
-              ["How to register", job.registerUrl],
-              ["Tutorial: how to do the work", job.tutorialUrl],
-            ] as [string, string][]
-          )
-            .filter(([, u]) => u)
-            .map(([t, u]) => {
-              const e = embedUrl(u);
-              return (
-                <div key={t} style={{ margin: "16px 0" }}>
-                  <h3>{t}</h3>
-                  {e ? (
-                    <div style={{ position: "relative", paddingTop: "56.25%" }}>
-                      <iframe
-                        src={e}
-                        title={t}
-                        allowFullScreen
-                        loading="lazy"
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          width: "100%",
-                          height: "100%",
-                          border: 0,
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <a
-                      className="button light"
-                      href={u}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Open video ↗
-                    </a>
-                  )}
-                </div>
-              );
-            })}
+          <p>Watch the tutorial in your project setup so your viewing progress is saved. Videos watched in Drive or a separate preview do not complete this step.</p>
+          <a className="button dark" href={'/projects/onboarding?id='+encodeURIComponent(job.id)}>Watch tutorial, accept terms & submit →</a>
+          <a className="button light" href={'/projects/work?id='+encodeURIComponent(job.id)+'&launch=1'}>Open my client workspace</a>
+
         </section>
         <section className="suite-card">
           <h2>Project overview</h2>
@@ -188,8 +151,8 @@ export default async function Detail({
                   Follow your application and daily progress from your
                   workspace.
                 </p>
-                <a className="button dark" href="/workspace">
-                  Open my workspace
+                <a className="button dark" href={"/projects/work?id="+job.id+"&launch=1"}>
+                  Open my client workspace
                 </a>
               </>
             ) : locks.length ? (<p>Application locked until your current TL approves your request above.</p>) : !job.active || !flags.applications ? (

@@ -131,7 +131,7 @@ try:
    st,b,h=req('/admin/security','owner',cookie=token)
    assert 'Save my password' not in b and st!=200
    st,b,h=req('/workspace/client','owner',cookie=token)
-   assert st==200 and 'Find your project' in b and 'Healthcare conversation recording' in b and 'webrtcsg.shenfei-rec.com' not in b
+   assert st==200 and 'Open your client workspace' in b and 'Healthcare conversation recording' in b and 'webrtcsg.shenfei-rec.com' not in b
   if role=='contributor':
    def profileForm():
     st,b,_=req('/workspace?edit=1',None,cookie=token);assert st==200
