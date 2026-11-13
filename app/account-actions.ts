@@ -6,7 +6,7 @@ import { accounts,participants,reviewAccountExpiry } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { hashPassword, randomHex, startSession } from "./account";
 import { bot } from "./telegram-bot";
-import { authLimit, safeReturn as safe } from "./auth-rate";
+import { AuthRateLimitError,authLimit, safeReturn as safe } from "./auth-rate";
 const back = (to: string, err: string) =>
   redirect("/login?error=" + err + "&return_to=" + encodeURIComponent(to));
 export async function createAccount(form: FormData) {
@@ -20,7 +20,7 @@ export async function createAccount(form: FormData) {
     pw = String(form.get("password") || "");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name)
     return back(to, "details");
-  await authLimit(email);
+  try{await authLimit(email)}catch(e){if(e instanceof AuthRateLimitError)return back(to,"rate");throw e;}
   if (pw.length < 8 || pw.length > 128) return back(to, "short");
   const admin = bot().ADMIN_EMAIL?.toLowerCase();
   if (admin && email === admin) return back(to, "admin");
@@ -29,7 +29,7 @@ export async function createAccount(form: FormData) {
     return back(to, "exists");
   const id = "pw_" + crypto.randomUUID(),
     salt = randomHex(16);
-  await db
+  try{await db
     .insert(accounts)
     .values({
       id,
@@ -38,7 +38,7 @@ export async function createAccount(form: FormData) {
       salt,
       hash: await hashPassword(pw, salt),
       created: new Date().toISOString(),
-    });
+    });}catch(e){const text=String(e)+String((e as {cause?:unknown})?.cause||"");if(/account_email_in_use|UNIQUE constraint failed: accounts.email/i.test(text))return back(to,"exists");throw e;}
   await startSession(id);
   redirect(to);
 }
@@ -48,7 +48,7 @@ export async function loginAccount(form: FormData) {
       .trim()
       .toLowerCase(),
     pw = String(form.get("password") || "");
-  await authLimit(email);
+  try{await authLimit(email)}catch(e){if(e instanceof AuthRateLimitError)return back(to,"rate");throw e;}
   if (pw.length > 128) return back(to, "login");
   const a = await getDb()
     .select()

@@ -235,7 +235,7 @@ export default async function Home({
           <Brand />
           <p>Human data. Real possibility.</p>
         </div>
-        <nav aria-label="Footer navigation">
+        <nav aria-label="Footer navigation"><a href="/india">India locations & languages</a>
           <a href="#expertise">Expertise</a>
           <a href={board}>Project opportunities</a>
           <a href="/login">Your workspace</a>

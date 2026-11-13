@@ -1,5 +1,5 @@
 import {routeWaitingApplicants} from "../../leader-actions";
-import { requireOperator } from "../../access";
+import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import {
   applications,

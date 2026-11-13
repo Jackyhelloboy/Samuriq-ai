@@ -1,4 +1,4 @@
-import { requireOwner } from "../../access";
+import { requireOwnerView as requireOwner } from "../../access";
 import { features, featureDefinitions } from "../../features";
 import { saveFeatures } from "../../control-actions";
 import { Shell, Heading } from "../../components/shell";

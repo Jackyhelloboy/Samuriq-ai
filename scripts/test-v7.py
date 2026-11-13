@@ -139,7 +139,7 @@ try:
  sw=form('/workspace','Contributor workspace','owner');sw.update(workspace='contributor');st,b,h=req('/workspace','owner',sw);assert st==303 and 'sq_workspace=contributor' in str(h)
  st,b,_=req('/support','owner',cookie='sq_workspace=contributor');assert st==200 and 'Owner console' in b and 'Contributor workspace' in b and 'Run closed-ticket retention now' not in b
  forged={**sw,'workspace':'owner'};assert req('/workspace','worker',forged)[0]>=400
- assert req('/admin/projects/client?id=speech-pair','worker',cookie='sq_workspace=owner')[0]>=400
+ denied,content,denied_headers=req('/admin/projects/client?id=speech-pair','worker',cookie='sq_workspace=owner');assert denied in (303,307) and '/access-denied' in denied_headers.get('Location','') and 'webrtcsg.shenfei-rec.com' not in content
  assert req('/admin/projects/client?id=speech-pair','owner')[0]==200
  # Owner-only recommended client setup retains all required training gates and project economics.
  setup=form('/admin/projects/workflow?id=speech-pair','Apply embedded client setup','owner');setup.update(projectId='speech-pair',confirmed='yes')

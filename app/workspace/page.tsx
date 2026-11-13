@@ -1,9 +1,12 @@
+import {safeReturn} from "../auth-rate";
+import ProfilePreferences from "../components/profile-preferences";
+import SubmitButton from "../components/submit-button";
 import {RegistrationPolicy} from '../components/registration-policy';
 import {getChatGPTUser,chatGPTSignInPath} from '../chatgpt-auth';import {getDb} from '../../db';import {participants} from '../../db/schema';import {eq} from 'drizzle-orm';import {Shell,Heading} from '../components/shell';import {ContributorDashboard} from '../components/contributor-dashboard';import {register} from '../actions';import {ArrowUpRight,UserRound,CheckCircle2} from 'lucide-react';
 export const dynamic='force-dynamic';
-export default async function Workspace({searchParams}:{searchParams:Promise<Record<string,string>>}){const query=await searchParams,user=await getChatGPTUser(),profile=user?await getDb().select().from(participants).where(eq(participants.id,user.userId)).get():null,source=(query.source||'direct').slice(0,100);if(user&&profile&&!query.edit)return <Shell active="Overview"><ContributorDashboard user={user} profile={profile} projectId={query.project}/></Shell>;
+export default async function Workspace({searchParams}:{searchParams:Promise<Record<string,string>>}){const query=await searchParams,user=await getChatGPTUser(),profile=user?await getDb().select().from(participants).where(eq(participants.id,user.userId)).get():null,source=(query.source||'direct').slice(0,100);if(user&&profile&&!query.edit&&!query.next)return <Shell active="Overview"><ContributorDashboard user={user} profile={profile} projectId={query.project}/></Shell>;
   return (
-    <Shell active={query.edit ? "My profile" : "Overview"}>
+    <Shell active={query.edit || query.next ? "My profile" : "Overview"}>
       <Heading
         eyebrow="YOUR CONTRIBUTOR WORKSPACE"
         title={
@@ -18,6 +21,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
           </a>
         }
       />
+      {query.error&&<p role="alert" className="notice">{({policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, Telegram username and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
       {!user ? (
         <div className="onboarding-grid">
           <section className="suite-card">
@@ -37,7 +41,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
               className="button dark"
               target="_top"
               href={chatGPTSignInPath(
-                "/workspace?source=" + encodeURIComponent(source),
+                "/workspace?source=" + encodeURIComponent(source)+(query.next?"&next="+encodeURIComponent(query.next)+"&edit=1":query.edit?"&edit=1":"")+(query.return_to?"&return_to="+encodeURIComponent(safeReturn(query.return_to)):""),
               )}
             >
               Sign in or create account
@@ -58,7 +62,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
             </div>
           </div>
         </div>
-      ) : !profile || query.edit ? (
+      ) : !profile || query.edit || query.next ? (
         <div className="onboarding-grid">
           <section className="suite-card">
             <div className="section-kicker">
@@ -83,25 +87,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                     defaultValue={profile?.name || user.displayName}
                   />
                 </label>
-                <label>
-                  Languages you speak
-                  <input
-                    name="language"
-                    required
-                    maxLength={80}
-                    placeholder="English, Hindi, Telugu…"
-                    defaultValue={profile?.language}
-                  />
-                </label>
-                <label>
-                  City / country
-                  <input
-                    name="location"
-                    maxLength={100}
-                    placeholder="Hyderabad, India"
-                    defaultValue={profile?.location}
-                  />
-                </label>
+                <ProfilePreferences language={profile?.language||""} location={profile?.location||""}/>
                 <label>
                   Your equipment
                   <select
@@ -155,9 +141,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
               </label>
               <RegistrationPolicy/><div className="form-footer">
                 <a href="/privacy">Privacy information</a>
-                <button>
-                  Save my profile <ArrowUpRight size={16} />
-                </button>
+                <SubmitButton pendingLabel="Saving profile…">Save my profile <ArrowUpRight size={16}/></SubmitButton>
               </div>
             </form>
           </section>

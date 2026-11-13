@@ -1,0 +1,2 @@
+import {Brand} from '../marks';
+export default function AccessDenied(){return <main className="access-message"><Brand/><p className="eyebrow">ACCESS RESTRICTED</p><h1>This workspace isn’t assigned to your account.</h1><p>Sign in with the correct account or ask your manager to review your role. Changing a workspace menu or URL does not grant additional permissions.</p><div className="actions"><a className="button dark" href="/workspace">My workspace</a><a className="button light" href="/login">Account sign-in</a><a href="/support">Contact support</a></div></main>}

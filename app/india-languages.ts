@@ -1,0 +1,2 @@
+// Eighth Schedule languages, English and regional suggestions; custom entry is supported.
+export const INDIA_LANGUAGES=['Assamese','Bengali','Bodo','Dogri','English','Gujarati','Hindi','Kannada','Kashmiri','Konkani','Maithili','Malayalam','Manipuri (Meitei)','Marathi','Nepali','Odia','Punjabi','Sanskrit','Santali','Sindhi','Tamil','Telugu','Urdu','Bhili','Bhojpuri','Chhattisgarhi','Garhwali','Gondi','Haryanvi','Ho','Indian Sign Language','Khasi','Kokborok','Kumaoni','Ladakhi','Magahi','Marwari','Mizo','Rajasthani','Tulu'] as const;

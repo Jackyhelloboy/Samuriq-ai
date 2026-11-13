@@ -1,4 +1,4 @@
-import { requireOwner } from "../../access";
+import { requireOwnerView as requireOwner } from "../../access";
 import { getDb } from "../../../db";
 import { participants, managers, operationAudit } from "../../../db/schema";
 import { like, or, desc } from "drizzle-orm";

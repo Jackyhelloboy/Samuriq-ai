@@ -1,4 +1,4 @@
-import { requireOwner } from "../../access";
+import { requireOwnerView as requireOwner } from "../../access";
 import { Shell, Heading } from "../../components/shell";
 import { importProjects } from "../../control-actions";
 export const dynamic = "force-dynamic";

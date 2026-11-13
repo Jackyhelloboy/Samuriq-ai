@@ -4,11 +4,13 @@ import type { ConnectorBinding } from "../lib/connector-contract.mjs";
 
 const worker = {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
-    // Reject cross-origin writes before framework action dispatch. Let the HTTP
-    // runtime own the unread request stream; cancelling it here can abort the
-    // connection and disrupt the next request in the local Worker runtime.
+    // Reject cross-origin writes before framework dispatch. Drain only declared
+    // small bodies so a rejected form cannot stall the next local Worker request.
+    // Large/unknown bodies are left to the HTTP runtime, without parsing them.
     const origin=request.headers.get('origin');
     if(!['GET','HEAD','OPTIONS'].includes(request.method)&&origin&&origin!==new URL(request.url).origin){
+      const size=Number(request.headers.get('content-length')||0);
+      if(size>0&&size<=8192)await request.arrayBuffer();
       return new Response('Invalid origin',{status:403,headers:{'Cache-Control':'no-store'}});
     }
     if(Number(request.headers.get('content-length')||0)>4*1024*1024){

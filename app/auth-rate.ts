@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { getDb } from "../db";
 import { authLimits } from "../db/schema";
 import { eq, sql } from "drizzle-orm";
+export class AuthRateLimitError extends Error {constructor(){super("Too many sign-in attempts. Please wait 15 minutes before trying again.");}}
 export async function authLimit(email: string) {
   const h = await headers(),
     ip = h.get("cf-connecting-ip") || "unknown",
@@ -24,7 +25,7 @@ export async function authLimit(email: string) {
     })
     .returning();
   if (rows[0].attempts > 12)
-    throw Error("Too many sign-in attempts. Try again in 15 minutes.");
+    throw new AuthRateLimitError();
 }
 export function safeReturn(v: unknown) {
   const raw = String(v || "/workspace");

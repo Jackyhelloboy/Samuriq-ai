@@ -1,5 +1,5 @@
 import {ensureTelegramSetup} from "../../telegram-setup";
-import { requireOwner } from "../../access";
+import { requireOwnerView as requireOwner } from "../../access";
 import { getDb } from "../../../db";
 import { integrations } from "../../../db/schema";
 import { Shell, Heading } from "../../components/shell";

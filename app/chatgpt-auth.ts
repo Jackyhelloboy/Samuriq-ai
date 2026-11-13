@@ -1,3 +1,4 @@
+import {cache} from "react";
 import {getDb} from "../db";
 import {participants} from "../db/schema";
 import {eq} from "drizzle-orm";
@@ -105,4 +106,4 @@ function safeDecodeURIComponent(value: string): string | null {
 }
 
 
-export async function getChatGPTUser():Promise<ChatGPTUser|null>{const user=await rawUser();if(!user)return null;const p=await getDb().select({suspended:participants.suspended}).from(participants).where(eq(participants.id,user.userId)).get();if(p?.suspended)return null;return user;}
+export const getChatGPTUser=cache(async function getCurrentUser():Promise<ChatGPTUser|null>{const user=await rawUser();if(!user)return null;const p=await getDb().select({suspended:participants.suspended}).from(participants).where(eq(participants.id,user.userId)).get();if(p?.suspended)return null;return user;});

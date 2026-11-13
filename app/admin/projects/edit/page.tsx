@@ -1,5 +1,5 @@
 import {projectCommunity} from '../../../telegram';
-import { requireOwner } from "../../../access";
+import { requireOwnerView as requireOwner } from "../../../access";
 import { getDb } from "../../../../db";
 import { projects } from "../../../../db/schema";
 import { eq } from "drizzle-orm";

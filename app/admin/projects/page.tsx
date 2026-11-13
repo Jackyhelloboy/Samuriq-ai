@@ -1,4 +1,4 @@
-import { requireOperator } from "../../access";
+import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
 import { desc, like, count } from "drizzle-orm";

@@ -232,6 +232,13 @@
       "when": 1794497918456,
       "tag": "0032_telegram_account_binding",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "6",
+      "when": 1794532657720,
+      "tag": "0033_unique_account_emails",
+      "breakpoints": true
     }
   ]
 }

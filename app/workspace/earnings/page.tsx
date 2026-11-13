@@ -1,1 +1,1 @@
-import {requireOwner} from '../../access';import {redirect} from 'next/navigation';export const dynamic='force-dynamic';export default async function Earnings(){await requireOwner();redirect('/admin/payouts');}
+import {requireOwnerView as requireOwner} from '../../access';import {redirect} from 'next/navigation';export const dynamic='force-dynamic';export default async function Earnings(){await requireOwner();redirect('/admin/payouts');}

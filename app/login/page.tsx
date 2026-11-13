@@ -1,3 +1,4 @@
+import SubmitButton from "../components/submit-button";
 import {workspaceHome} from "../workspace-context";
 import { safeReturn } from "../auth-rate";
 import { staffRole } from "../access";
@@ -39,6 +40,7 @@ export default async function Login({
             {(
               {
                 login: "Wrong email or password.",
+                rate: "Too many sign-in attempts. Please wait 15 minutes before trying again. Your account and project data are safe.",
                 expired: "This temporary review account has expired. Use your permanent account.",
                 restricted:"This account is restricted. Contact your project manager for a review.",
                 exists: "That email already has an account. Sign in instead.",
@@ -76,7 +78,7 @@ export default async function Login({
             required
             autoComplete="current-password"
           />
-          <button className="button dark">Sign in</button>
+          <SubmitButton className="button dark" pendingLabel="Signing in…">Sign in</SubmitButton>
         </form>
         <form
           action={createAccount}
@@ -113,7 +115,7 @@ export default async function Login({
             autoComplete="new-password"
           />
 
-          <button className="button dark">Create account</button>
+          <SubmitButton className="button dark" pendingLabel="Creating account…">Create account</SubmitButton>
         </form>
         <small>Use your registered email and password. Staff permissions are assigned by management, never selected at sign-up.</small>
       </div>
