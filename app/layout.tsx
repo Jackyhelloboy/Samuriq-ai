@@ -3,6 +3,7 @@ import "./globals.css";
 import "./workspace-v7.css";
 import "./monochrome.css";
 import "./android.css";
+import "./getting-started.css";
 
 export const metadata: Metadata = {
   title: "Samuriq AI | Human Data & Project Opportunities",
