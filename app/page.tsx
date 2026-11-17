@@ -1,5 +1,3 @@
-import {features} from "./features";
-
 import { ProjectCard } from "./components/project-card";
 import { ContentSlot } from "./components/content-slot";
 import { Brand } from "./marks";
@@ -12,7 +10,6 @@ import {
   ScanEye,
   Layers3,
   Move3d,
-  ArrowRight,
 } from "lucide-react";
 export const dynamic = "force-dynamic";
 export default async function Home({
@@ -30,24 +27,23 @@ export default async function Home({
       .from(projects)
       .where(and(eq(projects.archivedAt,""),or(eq(projects.active,1),eq(projects.visibility,"listed"))))
       .orderBy(desc(projects.active),desc(projects.created))
-      .limit(50);
-  const flags=await features();
+      .limit(12);
   const displayJobs=jobs;
   return (
     <div className="premium-site pro5">
+      <a className="skip-to-content" href="#main-content">Skip to main content</a>
       <header className="company-nav">
         <Brand />
         <nav aria-label="Main navigation">
-          <a href="#expertise">Expertise</a>
           <a href={board}>Opportunities</a>
-
+          <a href="#how-to-start">How to start</a>
           <a href="#company">For businesses</a>
         </nav>
         <a className="nav-signin" href="/login">
           Sign in <ArrowUpRight size={17} />
         </a>
       </header>
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <section className="project-first-hero">
           <div>
             <p className="eyebrow">SAMURIQ AI · HUMAN INTELLIGENCE AT WORK</p>
@@ -60,12 +56,20 @@ export default async function Home({
               Explore real opportunities. Register once. Join an approved team
               and keep your work in view.
             </p>
-            <div className="hero-workspace-actions"><a className="button pearl" href="/projects">Find a project <ArrowUpRight size={16}/></a><a href="/workspace">My project workspace <ArrowUpRight size={15}/></a></div>
+            <div className="hero-workspace-actions"><a className="button pearl" href={board}>Find a project <ArrowUpRight size={16}/></a><a href="/workspace">Continue my work <ArrowUpRight size={15}/></a></div>
           </div>
           <img
             src="/images/team.jpg"
             alt="Professionals collaborating on a project"
           />
+        </section>
+        <section className="getting-started" id="how-to-start" aria-labelledby="getting-started-title">
+          <div className="section-kicker"><div><p className="eyebrow">YOUR NEXT STEP</p><h2 id="getting-started-title">Start here. Keep it simple.</h2></div></div>
+          <div className="getting-started-grid">
+            <a href={board}><span className="getting-started-number">01</span><h3>Find an opportunity</h3><p>Check requirements and available projects before applying.</p><strong>Browse projects <ArrowUpRight size={16}/></strong></a>
+            <a href="/login"><span className="getting-started-number">02</span><h3>Create your account</h3><p>Register once, or sign in with your existing account.</p><strong>Sign in or register <ArrowUpRight size={16}/></strong></a>
+            <a href="/workspace"><span className="getting-started-number">03</span><h3>Continue your project</h3><p>Find your next task, team updates and support in your workspace.</p><strong>Open my workspace <ArrowUpRight size={16}/></strong></a>
+          </div>
         </section>
         <section className="home-project-board">
           <div className="section-kicker">
@@ -90,6 +94,7 @@ export default async function Home({
           {!jobs.length && (
             <p>New projects will appear when applications open.</p>
           )}
+          {jobs.length === 12 && <a className="text-link" href={board}>View all projects and filters <ArrowUpRight size={16}/></a>}
         </section>{" "}
         <section className="statement-strip">
           <span>BUILT FOR THE WORK THAT MATTERS</span>

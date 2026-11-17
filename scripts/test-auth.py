@@ -79,6 +79,8 @@ try:
  import hashlib
  local_pw='IsolatedAuthRegression-2026!'
  local_hash=hashlib.pbkdf2_hmac('sha256',local_pw.encode(),b'local-only',100000).hex()
+ # Refresh only disposable review fixtures; production expiry rules stay intact.
+ run('UPDATE review_account_expiry SET expires='+str(int(time.time()*1000)+3600000))
  run("UPDATE accounts SET salt='local-only',hash='"+local_hash+"' WHERE id LIKE 'access-review-%'")
  # Host identities are not an alternate public login in password-only mode.
  assert 'Good to see you' not in req('/workspace','worker')[1]

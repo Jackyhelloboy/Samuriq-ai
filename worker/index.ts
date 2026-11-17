@@ -1,9 +1,11 @@
 import handler from "vinext/server/fetch-handler";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
+import { sanitizeHostedRequest } from "../lib/hosting-request.mjs";
 
 const worker = {
   async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+    request = sanitizeHostedRequest(request, (env as unknown as { SAMURIQ_HOSTING_MODE?: string }).SAMURIQ_HOSTING_MODE);
     // Reject cross-origin writes before framework dispatch. Drain only declared
     // small bodies so a rejected form cannot stall the next local Worker request.
     // Large/unknown bodies are left to the HTTP runtime, without parsing them.
