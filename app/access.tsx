@@ -27,4 +27,4 @@ export async function requireOperator() {
 
 // View guards provide a deliberate recovery route; mutation guards above remain strict.
 export async function requireOwnerView(){const staff=await staffRole();if(!staff){if(await getChatGPTUser())redirect('/access-denied');redirect(chatGPTSignInPath('/admin/dashboard'));}if(staff.role!=='owner')redirect('/access-denied');await (await import('./policy')).requirePolicyRole(staff.user.userId,'owner',true);return staff.user;}
-export async function requireOperatorView(){const staff=await staffRole();if(!staff){if(await getChatGPTUser())redirect('/access-denied');redirect(chatGPTSignInPath('/manager'));}await (await import('./policy')).requirePolicyRole(staff.user.userId,staff.role,true);return staff;}
+export async function requireOperatorView(returnTo="/manager"){const staff=await staffRole();if(!staff){if(await getChatGPTUser())redirect('/access-denied');redirect(chatGPTSignInPath(returnTo));}await (await import('./policy')).requirePolicyRole(staff.user.userId,staff.role,true);return staff;}
