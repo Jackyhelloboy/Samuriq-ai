@@ -69,7 +69,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 assert request(path)[0] == 200, path
             forged = {'oai-authenticated-user-id': 'test-owner', 'oai-authenticated-user-email': 'owner@example.test'}
             status, response_body, headers = request('/admin/dashboard', headers=forged)
-            assert status in (302, 303, 307, 308) and '/login' in headers.get('Location', ''), (status, headers, re.sub('<[^>]+>', ' ', response_body)[-3000:])
+            assert status in (302, 303, 307, 308) and '/login?return_to=%2Fadmin%2Fdashboard' in headers.get('Location', ''), (status, headers, re.sub('<[^>]+>', ' ', response_body)[-3000:])
             try:
                 response = opener.open(urllib.request.Request(base + '/login', data=b'test', headers={'Origin': 'https://attacker.example'}))
             except urllib.error.HTTPError as error:
