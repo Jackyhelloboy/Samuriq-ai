@@ -23,12 +23,17 @@ export default async function Home({
     ),
     board = "/projects?source=" + source,
     jobs = await getDb()
-      .select()
+      .select({
+        id: projects.id, title: projects.title, category: projects.category,
+        description: projects.description, location: projects.location, pair: projects.pair,
+        rate: projects.rate, active: projects.active, visibility: projects.visibility,
+        sample: projects.sample, targetStart: projects.targetStart, deadline: projects.deadline,
+      })
       .from(projects)
       .where(and(eq(projects.archivedAt,""),or(eq(projects.active,1),eq(projects.visibility,"listed"),eq(projects.visibility,"paused"))))
       .orderBy(desc(projects.active),desc(projects.created))
       .limit(12);
-  const displayJobs=jobs.filter(j=>!j.sample), examples=jobs.filter(j=>j.sample);
+  const hasLiveListings = jobs.some(job => !job.sample);
   return (
     <div className="premium-site pro5">
       <a className="skip-to-content" href="#main-content">Skip to main content</a>
@@ -73,7 +78,7 @@ export default async function Home({
           </div>
           <ContentSlot slot="home" />
           <div className="opportunity-grid">
-            {displayJobs.map((j) => (
+            {jobs.map((j) => (
               <ProjectCard
                 key={j.id}
                 job={j}
@@ -81,8 +86,7 @@ export default async function Home({
               />
             ))}
           </div>
-          {!!examples.length&&<details open className="project-examples"><summary>Explore sample projects ({examples.length})</summary><div className="opportunity-grid">{examples.map(j=><ProjectCard key={j.id} job={j} source={decodeURIComponent(source)}/>)}</div></details>}
-          {!displayJobs.length && (
+          {!hasLiveListings && (
             <p>New projects will appear when applications open.</p>
           )}
           {jobs.length === 12 && <a className="text-link" href={board}>View all projects and filters <ArrowUpRight size={16}/></a>}
@@ -190,7 +194,7 @@ export default async function Home({
           <p className="eyebrow">FOR AI TEAMS & PROJECT PARTNERS</p>
           <div>
             <h2>
-              project.
+              Your project.
               <br />
               <em>Our human focus.</em>
             </h2>
