@@ -8,6 +8,9 @@ import {
   index,
 } from "drizzle-orm/sqlite-core";
 export const participants = sqliteTable("participants", {
+  skillLevel:text("skill_level").notNull().default(""),
+  mobileOs:text("mobile_os").notNull().default(""),
+  osVersion:text("os_version").notNull().default(""),
   id: text("id").primaryKey(),
   username:text("username").notNull().default(""),
   phone:text("phone").notNull().default(""),

@@ -28,7 +28,7 @@ export default async function Home({
       .where(and(eq(projects.archivedAt,""),or(eq(projects.active,1),eq(projects.visibility,"listed"))))
       .orderBy(desc(projects.active),desc(projects.created))
       .limit(12);
-  const displayJobs=jobs;
+  const displayJobs=jobs.filter(j=>!j.sample), examples=jobs.filter(j=>j.sample);
   return (
     <div className="premium-site pro5">
       <a className="skip-to-content" href="#main-content">Skip to main content</a>
@@ -46,20 +46,20 @@ export default async function Home({
       <main id="main-content" tabIndex={-1}>
         <section className="project-first-hero">
           <div>
-            <p className="eyebrow">SAMURIQ AI · HUMAN INTELLIGENCE AT WORK</p>
+            <p className="eyebrow">PROJECT OPPORTUNITIES</p>
             <h1>
-              Your skills.
+              Work in your language.
               <br />
-              <em>Your next project.</em>
+              <em>Join your team.</em>
             </h1>
             <p>
-              Find work in your language, on the devices you own. Apply on the website and meet your project team on WhatsApp.
+              Explore individual and paired projects, check the equipment you need, or join a team with your invitation code.
             </p>
-            <div className="hero-workspace-actions"><a className="button pearl" href={board}>Find a project <ArrowUpRight size={16}/></a><a href="/workspace">Continue my work <ArrowUpRight size={15}/></a></div>
+            <div className="hero-workspace-actions"><a className="button pearl" href={board}>Find a project <ArrowUpRight size={16}/></a><a href="/join">Use an invitation <ArrowUpRight size={15}/></a></div>
           </div>
           <img
-            src="/images/team.jpg"
-            alt="Professionals collaborating on a project"
+            src="/images/recording-studio.webp" width={1280} height={853} fetchPriority="high"
+            alt="A contributor speaking into a microphone at a home workstation"
           />
         </section>
         <section className="home-project-board">
@@ -72,7 +72,7 @@ export default async function Home({
             </a>
           </div>
           <ContentSlot slot="home" />
-          <div className="opportunity-grid">
+          <div className={"opportunity-grid"+(displayJobs.length===1?" single-opportunity":"")}>
             {displayJobs.map((j) => (
               <ProjectCard
                 key={j.id}
@@ -81,7 +81,8 @@ export default async function Home({
               />
             ))}
           </div>
-          {!jobs.length && (
+          {!!examples.length&&<details className="project-examples"><summary>Explore sample projects ({examples.length})</summary><div className="opportunity-grid">{examples.map(j=><ProjectCard key={j.id} job={j} source={decodeURIComponent(source)}/>)}</div></details>}
+          {!displayJobs.length && (
             <p>New projects will appear when applications open.</p>
           )}
           {jobs.length === 12 && <a className="text-link" href={board}>View all projects and filters <ArrowUpRight size={16}/></a>}
@@ -89,7 +90,7 @@ export default async function Home({
 
         <section className="expertise-section" id="expertise">
           <div className="editorial-heading">
-            <p className="eyebrow">01 — OUR EXPERTISE</p>
+            <p className="eyebrow">PROJECT CATEGORIES</p>
             <h2>
               Human understanding.
               <br />
@@ -126,7 +127,7 @@ export default async function Home({
               const Glyph = Icon as typeof AudioLines;
               return (
                 <article key={String(t)}>
-                  <span className="expertise-number">0{i + 1}</span>
+                  
                   <Glyph size={28} strokeWidth={1.2} />
                   <div>
                     <h3>{String(t)}</h3>
@@ -150,7 +151,7 @@ export default async function Home({
             <span>HUMAN EXPERTISE, COORDINATED.</span>
           </div>
           <div className="delivery-copy">
-            <p className="eyebrow">03 — A CLEAR WAY TO WORK</p>
+            <p className="eyebrow">HOW PROJECTS WORK</p>
             <h2>
               From first connection
               <br />
@@ -189,7 +190,7 @@ export default async function Home({
           <p className="eyebrow">FOR AI TEAMS & PROJECT PARTNERS</p>
           <div>
             <h2>
-              Your next project.
+              Join your team.
               <br />
               <em>Our human focus.</em>
             </h2>

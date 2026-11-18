@@ -2,7 +2,7 @@ import { and, eq, or } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { applications, projects, participants } from "../../../db/schema";
 import { requireChatGPTUser } from "../../chatgpt-auth";
-import { db, groupEligibility, recruitment, validGroup } from "../../recruitment/data";
+import { db, groupEligibility, memberBrief, validGroup } from "../../recruitment/data";
 import { projectState } from "../../project-state";
 import { Shell, Heading } from "../../components/shell";
 import { redirect } from "next/navigation";
@@ -12,7 +12,7 @@ export default async function Group({searchParams}:{searchParams:Promise<{id?:st
   const id=(await searchParams).id || "";
   const user=await requireChatGPTUser("/projects/group?id="+encodeURIComponent(id));
   const project=await getDb().select().from(projects).where(eq(projects.id,id)).get();
-  const brief=await recruitment(id);
+  const brief=await memberBrief(id,user.userId);
   if (!project || project.archivedAt || projectState(project)!=="online" || !brief || !validGroup(brief.group_url)) redirect("/projects");
   const p=await getDb().select().from(participants).where(eq(participants.id,user.userId)).get();
   const application=await getDb().select().from(applications).where(and(eq(applications.projectId,id),or(eq(applications.userId,user.userId),and(eq(applications.partnerEmail,user.email.toLowerCase()),eq(applications.partnerConfirmed,1))))).orderBy(applications.created).get();

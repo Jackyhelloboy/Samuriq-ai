@@ -40,17 +40,17 @@ export function ProjectCard({
           : Layers3,
     state = projectState(j);
   return (
-    <article className="opportunity-card" id={"project-" + j.id}>
+    <article className={"opportunity-card "+(state==="online"?"project-open":"project-closed")} id={"project-" + j.id}>
       <div className="project-card-top">
         <span className="project-glyph">
           <Icon size={26} strokeWidth={1.4} />
         </span>
 
         <span className={"badge " + (state === "online" ? "approved" : "")}>
-          {stateLabel(state)}
+          {state==="online"?"Applications open":stateLabel(state)}
         </span>
       </div>
-      <p className="card-discipline">{j.category}{!!j.sample&&<span className="preview-label">SAMPLE · CLOSED</span>}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
+      <p className="card-discipline">{j.category}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
       <h2>{j.title}</h2>
       <p className="card-excerpt">{j.description}</p>
       <div className="card-facts">
@@ -63,7 +63,7 @@ export function ProjectCard({
           {j.pair ? "Permanent pair" : "Individual"}
         </span>
       </div>
-      <div className="card-compensation">{j.id==='speech-pair'?<><strong>₹250 / person / hour · ₹500 / pair / hour</strong><small>Client-QC-approved work · direct Samuriq rate</small></>:<>Remote projects · Approved participation</>}</div>
+      <div className="card-compensation">{j.id==='speech-pair'?<><strong>₹250 / person / hour · ₹500 / pair / hour</strong><small>Client-QC-approved work · direct Samuriq rate</small></>:<>{j.rate||"Rate available in the project brief"}</>}</div>
 
       {!j.preview&&!j.sample?(      <a
         href={
@@ -74,7 +74,7 @@ export function ProjectCard({
         }
         className="card-apply"
       >
-        {state==="online"?"Select project":"View project details"} <ArrowUpRight size={18} />
+        {state==="online"?"View requirements":"View project details"} <ArrowUpRight size={18} />
       </a>):<div className="card-apply card-closed" aria-disabled="true"><span>{j.sample?"Sample project · closed":j.preview?"Preview only · no applications":"Project closed"}</span><span aria-hidden="true">—</span></div>}
     </article>
   );

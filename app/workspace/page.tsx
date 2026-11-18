@@ -1,3 +1,4 @@
+import MobileEquipment from "../components/mobile-equipment";
 import {websiteOnly} from "../deployment-mode";
 import {safeReturn} from "../auth-rate";
 import ProfilePreferences from "../components/profile-preferences";
@@ -24,7 +25,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
           </a>
         }
       />
-      {query.error&&<p role="alert" className="notice">{({"project-closed":"Choose an active project. Closed projects cannot be selected.","project-permission":"Your current TL must approve another project before you can switch.",policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, profile and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
+      {query.error&&<p role="alert" className="notice">{({equipment:"Enter the mobile operating system version shown in your phone settings.","project-closed":"Choose an active project. Closed projects cannot be selected.","project-permission":"Your current TL must approve another project before you can switch.",policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, profile and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
       {!user ? (
         <div className="onboarding-grid">
           <section className="suite-card">
@@ -91,18 +92,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                   />
                 </label>
                 <ProfilePreferences language={profile?.language||""} location={profile?.location||""}/>
-                <label>
-                  Your equipment
-                  <select
-                    name="device"
-                    defaultValue={profile?.device || "Android phone"}
-                  >
-                    <option>Android phone</option>
-                    <option>iPhone</option>
-                    <option>Laptop / desktop</option>
-                    <option>Phone and computer</option>
-                  </select>
-                </label>
+                <MobileEquipment initial={profile?.device||""} platform={profile?.mobileOs||""} version={profile?.osVersion||""}/>
                 {!websiteOnly()&&<label>
                   Telegram username <small>Verified through the bot after saving</small>
                   <input
@@ -132,6 +122,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                 agree to the use of my profile and project reports for
                 participation coordination.
               </label>
+              <label>Project experience<select name="skillLevel" defaultValue={profile?.skillLevel||""}><option value="">Choose a level (optional)</option>{["New to project work","Experienced contributor","Team coordination experience"].map(l=><option key={l}>{l}</option>)}</select></label>
               <RegistrationPolicy/><div className="form-footer">
                 <a href="/privacy">Privacy information</a>
                 <SubmitButton pendingLabel="Saving profile…">Save my profile <ArrowUpRight size={16}/></SubmitButton>

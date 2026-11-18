@@ -216,7 +216,7 @@ export async function acceptOnboarding(form: FormData) {
     }),
   ]);
   if(combined)await (await import("./project-actions")).submitProjectApplication(form);
-  if(combined && (await (await import("./recruitment/data")).recruitment(id))?.group_url) redirect("/projects/group?id="+encodeURIComponent(id));
+  if(combined && (await (await import("./recruitment/data")).memberBrief(id,user.userId))?.group_url) redirect("/projects/group?id="+encodeURIComponent(id));
   redirect("/projects/work?id=" + encodeURIComponent(id)+"&launch=1");
 }
 export async function verifyTutorial(form: FormData) {

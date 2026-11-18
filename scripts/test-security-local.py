@@ -164,7 +164,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-security-') as state:
                 for path in ['/admin/export', '/admin/registrations', '/admin/team/export']:
                     assert request(path, cookie=sessions[name])[0] == 403, (name, path)
             profile = form('/workspace?edit=1', 'Save my profile', sessions['outsider'])
-            profile.update(name='Synthetic Outsider', username='audit_outsider', language='Hindi', project='general', primaryProject='', phone='+19999999999', phoneConsent='yes', consent='yes', next='')
+            profile.update(name='Synthetic Outsider', username='audit_outsider', device='iPhone', osVersion='18.4', language='Hindi', project='general', primaryProject='', phone='+19999999999', phoneConsent='yes', consent='yes', next='')
             assert request('/workspace?edit=1', profile, sessions['outsider'])[0] in [303, 307]
             with database() as db:
                 assert db.execute("SELECT telegram FROM participants WHERE id='audit-outsider'").fetchone()[0] == ''
@@ -214,6 +214,13 @@ with tempfile.TemporaryDirectory(prefix='samuriq-security-') as state:
             assert request(directory,review,sessions['manager'])[0] in (303,307)
             status,_,hdr=request(group,cookie=sessions['alice'])
             assert hdr.get('Location')==invite,(status,hdr)
+            team_page='/teams?team=audit-team'
+            group_settings=form(team_page,'Save team group',sessions['leader'])
+            team_group='https://chat.whatsapp.com/SyntheticTeamFixture'
+            group_settings.update(groupUrl=team_group,teamId='audit-team')
+            assert request(team_page,group_settings,sessions['leader'])[0] in (303,307)
+            assert team_group.encode() not in request('/projects/detail?id=audit-individual')[1]
+            assert request(group,cookie=sessions['alice'])[2].get('Location')==team_group
             with database() as db:
                 assert db.execute("SELECT count(*) FROM group_visits WHERE user_id='audit-alice'").fetchone()[0]==1
                 db.execute("UPDATE participants SET language='Tamil' WHERE id='audit-alice'")
@@ -232,6 +239,35 @@ with tempfile.TemporaryDirectory(prefix='samuriq-security-') as state:
             assert request('/evidence/upload?project=audit-individual', fields, sessions['alice'])[0] == 409
             assert request('/evidence/upload?project=audit-individual', fields, sessions['outsider'])[0] == 403
             assert b'Send using Cashfree' not in request('/admin/payouts', cookie=sessions['owner'])[1]
+            # Account-bound staff invitations use the same forms members use in production.
+            issuer='/admin/invitations'
+            with database() as db:
+                assert db.execute("SELECT mobile_os,os_version FROM participants WHERE id='audit-outsider'").fetchone()==('iOS','18.4')
+                db.execute("UPDATE participants SET username='audit_bob' WHERE id='audit-bob'")
+                db.execute("UPDATE projects SET hourly_rate=10 WHERE id='audit-individual'")
+                for n in ('outsider','bob'):
+                    db.execute("INSERT OR IGNORE INTO verified_mailboxes VALUES (?,1)",(n+'@example.test',))
+            exported=request('/admin/recruitment/export?version=18',cookie=sessions['owner'])
+            assert exported[0]==200 and b'audit_outsider' in exported[1] and b'18.4' in exported[1] and b'audit_bob' not in exported[1]
+            for role,person,dest in [('tl','outsider','/teams'),('helper','bob','/helper'),('manager','alice','/manager')]:
+                create=form(issuer,'Generate invitation code',sessions['owner'])
+                create.update(role=role,username='audit_'+person,project='audit-individual',label='West team',team='audit-team',permissions='tickets')
+                issued=request(issuer,create,sessions['owner'])
+                code=re.search(rb'SQ-[A-F0-9]{24}',issued[1])
+                assert code,(role,issued[0])
+                accept=form('/join','Continue with code',sessions[person])
+                accept['code']=code[0].decode()
+                denied=request('/join',accept,sessions['leader'])
+                assert 'Location' not in denied[2] and b'unavailable for your account' in denied[1]
+                success=request('/join',accept,sessions[person])
+                assert success[0] in (303,307) and success[2]['Location'].endswith(dest),(role,success[0])
+                assert b'unavailable for your account' in request('/join',accept,sessions[person])[1]
+            with database() as db:
+                t=db.execute("SELECT id FROM project_teams WHERE leader_id='audit-outsider'").fetchone()[0]
+                assert db.execute("SELECT count(*) FROM team_invites WHERE team_id=? AND max_uses=50",(t,)).fetchone()[0]==1
+                assert db.execute("SELECT scopes FROM team_helpers WHERE team_id='audit-team' AND user_id='audit-bob'").fetchone()[0]=='tickets'
+                assert db.execute("SELECT count(DISTINCT reference) FROM staff_ids WHERE user_id IN ('audit-outsider','audit-alice')").fetchone()[0]==2
+            print('PASS staff code issuance, account binding, one-time redemption, scoped helper assignment, leader invitation creation, OS tracking and matching CSV.')
             second_owner, _ = login('owner')
             change = form('/admin/security', 'Save my password', sessions['owner'])
             change.update(currentPassword=password, password='Synthetic-New-Audit-Password-2026!', confirm='Synthetic-New-Audit-Password-2026!')

@@ -191,7 +191,7 @@ export async function submitProjectApplication(form: FormData) {
     })
     .onConflictDoNothing();
 }
-export async function applyProject(form:FormData){await submitProjectApplication(form);const id=String(form.get("projectId"));if((await (await import("./recruitment/data")).recruitment(id))?.group_url) redirect("/projects/group?id="+encodeURIComponent(id));redirect("/projects/work?id="+encodeURIComponent(String(form.get("projectId")))+"&launch=1");}
+export async function applyProject(form:FormData){await submitProjectApplication(form);const id=String(form.get("projectId"));if((await (await import("./recruitment/data")).memberBrief(id,(await getChatGPTUser())?.userId))?.group_url) redirect("/projects/group?id="+encodeURIComponent(id));redirect("/projects/work?id="+encodeURIComponent(String(form.get("projectId")))+"&launch=1");}
 export async function decideApplication(form: FormData) {
   await requireOperator();
   const status = String(form.get("status"));
