@@ -67,6 +67,14 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             assert status == 200 and 'Start here. Keep it simple.' in body and 'Skip to main content' in body
             for path in ['/projects', '/login', '/privacy', '/favicon.svg']:
                 assert request(path)[0] == 200, path
+            # Check header-based size admission before body consumption: evidence
+            # must reach authorization, while ordinary forms reject the same size.
+            for path, expected in [('/evidence/upload', 403), ('/login', 413)]:
+                try:
+                    response = opener.open(urllib.request.Request(base + path, data=b'', headers={'Origin': base, 'Content-Type': 'application/octet-stream', 'Content-Length': str(5 * 1024 * 1024)}), timeout=30)
+                except urllib.error.HTTPError as error:
+                    response = error
+                assert response.status == expected, (path, response.status)
             forged = {'oai-authenticated-user-id': 'test-owner', 'oai-authenticated-user-email': 'owner@example.test'}
             status, response_body, headers = request('/admin/dashboard', headers=forged)
             assert status in (302, 303, 307, 308) and '/login?return_to=%2Fadmin%2Fdashboard' in headers.get('Location', ''), (status, headers, re.sub('<[^>]+>', ' ', response_body)[-3000:])
