@@ -20,6 +20,7 @@ export default async function Group({searchParams}:{searchParams:Promise<{id?:st
   const mailbox=await db().prepare("SELECT 1 FROM verified_mailboxes WHERE email=?").bind(user.email.toLowerCase()).first();
   if (application.status==="approved" && (!project.pair || application.partnerConfirmed) && await groupEligibility(brief,p,user.email)) {
     await requireProjectAllowed(user.userId,id);
+    if (!await (await import("../../policy")).hasPolicy(user.userId,"contributor")) redirect("/agreements?role=contributor&return_to="+encodeURIComponent("/projects/group?id="+id));
     await db().prepare("INSERT OR IGNORE INTO group_visits VALUES(?,?,?)").bind(id,user.userId,new Date().toISOString()).run();
     redirect(brief.group_url);
   }

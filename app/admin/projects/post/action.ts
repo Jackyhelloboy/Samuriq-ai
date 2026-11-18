@@ -3,13 +3,14 @@ import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { getDb } from "../../../../db";
 import { projects } from "../../../../db/schema";
-import { requireOperator } from "../../../access";
+import { postEditor } from "../../../project-editor";
 import { postFields, postVersion, type PublicPost } from "./fields";
 
 export async function savePublicPost(form: FormData) {
-  await requireOperator();
+  const team=String(form.get("team") || "");
   const id = String(form.get("id") ?? "");
-  const editor = "/admin/projects/post?id=" + encodeURIComponent(id);
+  await postEditor(id,team);
+  const editor = "/admin/projects/post?id=" + encodeURIComponent(id)+"&team="+encodeURIComponent(team);
   const db = getDb();
   const original = await db.select().from(projects).where(eq(projects.id, id)).get();
   if (!original) redirect("/admin/projects");

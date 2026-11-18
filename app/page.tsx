@@ -25,7 +25,7 @@ export default async function Home({
     jobs = await getDb()
       .select()
       .from(projects)
-      .where(and(eq(projects.archivedAt,""),or(eq(projects.active,1),eq(projects.visibility,"listed"))))
+      .where(and(eq(projects.archivedAt,""),or(eq(projects.active,1),eq(projects.visibility,"listed"),eq(projects.visibility,"paused"))))
       .orderBy(desc(projects.active),desc(projects.created))
       .limit(12);
   const displayJobs=jobs.filter(j=>!j.sample), examples=jobs.filter(j=>j.sample);
@@ -48,18 +48,18 @@ export default async function Home({
           <div>
             <p className="eyebrow">PROJECT OPPORTUNITIES</p>
             <h1>
-              Work in your language.
+              Find your next
               <br />
-              <em>Join your team.</em>
+              <em>project.</em>
             </h1>
             <p>
-              Explore individual and paired projects, check the equipment you need, or join a team with your invitation code.
+              Browse speech, annotation and evaluation work. Choose a project that fits your language, equipment and availability.
             </p>
             <div className="hero-workspace-actions"><a className="button pearl" href={board}>Find a project <ArrowUpRight size={16}/></a><a href="/join">Use an invitation <ArrowUpRight size={15}/></a></div>
           </div>
           <img
-            src="/images/recording-studio.webp" width={1280} height={853} fetchPriority="high"
-            alt="A contributor speaking into a microphone at a home workstation"
+            src="/images/team-1200.webp" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 50vw" width={1200} height={800} fetchPriority="high"
+            alt="Professionals collaborating on a project"
           />
         </section>
         <section className="home-project-board">
@@ -72,7 +72,7 @@ export default async function Home({
             </a>
           </div>
           <ContentSlot slot="home" />
-          <div className={"opportunity-grid"+(displayJobs.length===1?" single-opportunity":"")}>
+          <div className="opportunity-grid">
             {displayJobs.map((j) => (
               <ProjectCard
                 key={j.id}
@@ -81,7 +81,7 @@ export default async function Home({
               />
             ))}
           </div>
-          {!!examples.length&&<details className="project-examples"><summary>Explore sample projects ({examples.length})</summary><div className="opportunity-grid">{examples.map(j=><ProjectCard key={j.id} job={j} source={decodeURIComponent(source)}/>)}</div></details>}
+          {!!examples.length&&<details open className="project-examples"><summary>Explore sample projects ({examples.length})</summary><div className="opportunity-grid">{examples.map(j=><ProjectCard key={j.id} job={j} source={decodeURIComponent(source)}/>)}</div></details>}
           {!displayJobs.length && (
             <p>New projects will appear when applications open.</p>
           )}
@@ -190,7 +190,7 @@ export default async function Home({
           <p className="eyebrow">FOR AI TEAMS & PROJECT PARTNERS</p>
           <div>
             <h2>
-              Join your team.
+              project.
               <br />
               <em>Our human focus.</em>
             </h2>

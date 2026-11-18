@@ -25,7 +25,7 @@ export default async function Projects({
     eq(projects.archivedAt,""),
     q.language ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.languages<>'' AND instr(', '||r.languages||', ', ', '||${q.language}||', ')=0)` : undefined,
     q.device ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.devices<>'' AND instr(', '||r.devices||', ', ', '||${q.device}||', ')=0)` : undefined,
-    or(eq(projects.active,1),eq(projects.visibility,"listed")),
+    or(eq(projects.active,1),eq(projects.visibility,"listed"),eq(projects.visibility,"paused")),
     term
       ? or(
           like(projects.title, "%" + term + "%"),

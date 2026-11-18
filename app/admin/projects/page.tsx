@@ -1,7 +1,7 @@
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
-import { desc, like, count } from "drizzle-orm";
+import { desc, like, count, and, ne } from "drizzle-orm";
 import { toggleProject } from "../../project-actions";
 import { Shell, Heading, Empty } from "../../components/shell";
 import { Plus, Search, ArrowUpRight } from "lucide-react";
@@ -16,7 +16,7 @@ export default async function AdminProjects({
     term = (q.q || "").slice(0, 100),
     page = Math.max(1, Math.min(10000, Number(q.page) || 1)),
     db = getDb();
-  const filter = term ? like(projects.title, "%" + term + "%") : undefined;
+  const filter = and(ne(projects.visibility,"removed"),term ? like(projects.title, "%" + term + "%") : undefined);
   const jobs = await db
     .select()
     .from(projects)
@@ -49,7 +49,7 @@ export default async function AdminProjects({
         <input
           name="q"
           defaultValue={term}
-          placeholder="Search your projects…"
+          aria-label="Search projects by title" placeholder="Search your projects…"
         />
         <button>
           <Search size={16} />
@@ -61,60 +61,28 @@ export default async function AdminProjects({
           <h2>{total} projects</h2>
           <span>20 per page</span>
         </div>
-        <div className="table-scroll">
-          <table className="suite-table">
-            <thead>
-              <tr>
-                <th>Project</th>
-                <th>Type / location</th>
-                <th>Status</th>
-                <th>Manage</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobs.map((j) => (
-                <tr key={j.id}>
-                  <td>
-                    <strong>{j.title}</strong>
-                    <small>{j.rate}</small>
-                  </td>
-                  <td>
-                    {j.category}
-                    <small>
-                      {j.location} · {j.pair ? "Pair" : "Individual"}
-                    </small>
-                  </td>
-                  <td>
-                    <span className={"badge " + (j.active ? "approved" : "")}>
-                      {j.active ? "ACTIVE" : j.visibility==="listed"?"CLOSED":"DRAFT"}
-                    </span>
-                  </td>
-                  <td><a className="text-link" href={"/admin/projects/post?id=" + encodeURIComponent(j.id)}>Edit public post</a> <a className="text-link" href={"/admin/projects/workflow?id="+j.id}>Training & evidence</a>
-                    {operator.role==="owner"&&<a
-                      className="text-link"
-                      href={"/admin/projects/edit?id=" + j.id}
-                    >
-                      Edit brief
-                    </a>}
-                    <form action={toggleProject}>
-                      <input name="id" type="hidden" value={j.id} />
-                      <input
-                        name="active"
-                        type="hidden"
-                        value={j.active ? "0" : "1"}
-                      />
-                      <button className="table-button">
-                        {j.active ? "Close project" : "Activate project"}
-                      </button>
-                    </form>
-                    <a href={"/projects/detail?id=" + j.id}>
-                      View <ArrowUpRight size={12} />
-                    </a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="portfolio-grid">
+          {jobs.map(j=><article className="portfolio-card" key={j.id}>
+            <header><span className="card-discipline">{j.category}</span>
+              <span className="badge">{j.active?"Active":j.visibility==="paused"?"Paused":j.archivedAt||j.visibility==="listed"?"Closed":"Draft"}</span></header>
+            <h3>{j.title}</h3><p>{j.location} · {j.pair?"Pair":"Individual"}</p><p>{j.rate}</p>
+            <div className="portfolio-links">
+              <a href={"/admin/projects/post?id="+encodeURIComponent(j.id)}>Edit public post</a>
+              <a href={"/admin/projects/workflow?id="+encodeURIComponent(j.id)}>Training & evidence</a>
+              {operator.role==="owner" && <a href={"/admin/projects/edit?id="+encodeURIComponent(j.id)}>Edit brief</a>}
+            </div>
+            <form action={toggleProject} className="portfolio-controls">
+              <input name="id" type="hidden" value={j.id}/>
+              {j.active ? <button name="mode" value="pause">Pause project</button> :
+                !j.sample && <button name="mode" value="activate">{j.visibility==="paused"?"Resume project":"Activate project"}</button>}
+              {!j.archivedAt && <button name="mode" value="close">Close project</button>}
+            </form>
+            {operator.role==="owner" && <details><summary>Delete project</summary>
+              <form action={toggleProject} className="invite-form"><input type="hidden" name="id" value={j.id}/>
+                <p>This removes the listing from the board and portfolio. Work and payment history is retained.</p>
+                <label>Type the project title to confirm<input name="confirm" required autoComplete="off"/></label>
+                <button name="mode" value="delete">Confirm deletion</button></form></details>}
+          </article>)}
         </div>
         {!jobs.length && (
           <Empty title="Start your project portfolio">

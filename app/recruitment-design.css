@@ -23,3 +23,25 @@
 .project-examples{padding-block:1rem;border-top:1px solid #cfd9d4}
 .project-examples summary{color:#36544a;cursor:pointer;font-weight:600}
 @media(min-width:860px){.single-opportunity{grid-template-columns:1fr}.single-opportunity .opportunity-card{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(16rem,.65fr);column-gap:clamp(2rem,5vw,5rem);min-height:0}.single-opportunity .project-card-top,.single-opportunity .card-discipline,.single-opportunity h2,.single-opportunity .card-excerpt{grid-column:1}.single-opportunity .card-facts{grid-column:2;grid-row:2}.single-opportunity .card-compensation{grid-column:2;grid-row:3}.single-opportunity .card-apply{grid-column:2;grid-row:4;align-self:end}}
+
+/* Keep the recruitment board consistent across public and signed-in views. */
+.pro5 main{max-width:1520px;margin-inline:auto}
+.pro5 .project-first-hero{margin:clamp(12px,2.5vw,40px);overflow:hidden;border:1px solid #d9ded7;border-radius:18px;background:#f3f4ed;min-height:0}
+.pro5 .project-first-hero>div{padding:clamp(24px,4vw,64px)}
+.pro5 .project-first-hero h1{color:#132c27;font-size:clamp(2.75rem,5.6vw,5.75rem);line-height:1.01}
+.pro5 .project-first-hero h1 em{color:#375747}
+.pro5 .project-first-hero p,.pro5 .hero-workspace-actions>a:last-child{color:#33453e}
+.pro5 .hero-workspace-actions a{display:inline-flex;align-items:center;min-height:44px;font-size:.95rem;font-weight:600}
+.pro5 .project-first-hero img{display:block;max-height:520px;min-height:100%;object-position:center}
+.pro5 .home-project-board{padding:clamp(20px,3vw,48px) clamp(16px,2.5vw,40px)}
+.pro5 .opportunity-grid,.suite .opportunity-grid,.portfolio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:clamp(14px,2vw,26px);align-items:stretch}
+.pro5 .opportunity-card,.suite .opportunity-card,.portfolio-card{background:#fff;color:#172a24;border:1px solid #bac9c0;border-radius:16px;padding:clamp(20px,2vw,32px);min-width:0;overflow-wrap:anywhere;box-shadow:0 4px 16px #172a2408}
+.opportunity-card .card-excerpt,.opportunity-card .card-facts,.opportunity-card .card-discipline,.portfolio-card p{color:#40544c;font-size:.95rem}
+.portfolio-card{display:flex;flex-direction:column;gap:.8rem}.portfolio-card h3,.portfolio-card p{margin:0}
+.portfolio-card header,.portfolio-links,.portfolio-controls{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+.portfolio-card header{justify-content:space-between}.portfolio-links{margin-top:auto}.portfolio-card a{text-decoration:underline;text-underline-offset:3px}
+.portfolio-card details{border-top:1px solid #cbd6cf;padding-top:.65rem}.portfolio-card summary{cursor:pointer}
+:where(a,button,summary,input,textarea,select):focus-visible{outline:3px solid #136e68;outline-offset:3px}
+.v7-suite.v6-suite .suite-card p,.v7-suite.v6-suite .suite-card small,.v6-suite .suite-heading p,.v6-suite .muted{color:#414d48!important}
+.suite label,.suite input::placeholder,.v6-login input::placeholder{color:#47534d}
+@media(max-width:760px){.pro5 .project-first-hero{grid-template-columns:1fr}.pro5 .project-first-hero img{min-height:0;height:clamp(150px,46vw,275px)}.portfolio-controls button{flex:1}}

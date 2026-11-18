@@ -21,6 +21,7 @@ type Job = {
   deadline: string;
   onboardingRequired?: number;
   preview?: boolean;
+  visibility?: string;
   sample?:number;
   enrollmentOnly?:number;
 };
@@ -47,7 +48,7 @@ export function ProjectCard({
         </span>
 
         <span className={"badge " + (state === "online" ? "approved" : "")}>
-          {state==="online"?"Applications open":stateLabel(state)}
+          {j.sample?"Sample project":j.visibility==="paused"?"Temporarily paused":state==="online"?"Applications open":stateLabel(state)}
         </span>
       </div>
       <p className="card-discipline">{j.category}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
@@ -63,7 +64,7 @@ export function ProjectCard({
           {j.pair ? "Permanent pair" : "Individual"}
         </span>
       </div>
-      <div className="card-compensation">{j.id==='speech-pair'?<><strong>₹250 / person / hour · ₹500 / pair / hour</strong><small>Client-QC-approved work · direct Samuriq rate</small></>:<>{j.rate||"Rate available in the project brief"}</>}</div>
+      <div className="card-compensation">{j.rate || "See the project brief for compensation"}</div>
 
       {!j.preview&&!j.sample?(      <a
         href={
