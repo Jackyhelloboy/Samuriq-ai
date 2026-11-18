@@ -1,0 +1,14 @@
+.v6-login .account-form{scroll-margin-top:24px;min-width:0}
+.v6-login .account-form label{display:grid;gap:6px;font-size:14px;color:#333}
+.v6-login .account-form input{width:100%;min-width:0;box-sizing:border-box;min-height:46px;font-size:16px}
+.v6-login .account-form>p{font-size:14px;margin:0 0 6px;line-height:1.5}
+.v6-login .account-form a{color:#222;text-decoration:underline;text-underline-offset:3px}
+.v6-login .account-password{display:grid;gap:6px}
+.v6-login .account-password-control{display:flex;align-items:stretch;gap:8px;min-width:0}
+.v6-login .account-password-control input{flex:1;width:0}
+.v6-login .account-password-control .password-visibility{flex:0 0 auto;background:#fff;color:#222;border:1px solid #bbb;font-size:13px;padding:8px 10px;min-height:46px;border-radius:5px}
+.v6-login .account-form small{font-size:13px;line-height:1.5}
+.v6-login .account-form :focus-visible{outline:3px solid #555;outline-offset:3px}
+.v6-login .account-form button[type=submit]{min-height:46px;font-size:15px}
+.v6-login .account-form{margin-top:0!important}
+@media(max-width:760px){.v6-login .account-form{max-width:none!important;width:100%;box-sizing:border-box}.v6-login .account-form h2{font-size:22px}.v6-login>div>small{font-size:13px;line-height:1.6}}
