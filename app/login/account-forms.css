@@ -12,3 +12,20 @@
 .v6-login .account-form button[type=submit]{min-height:46px;font-size:15px}
 .v6-login .account-form{margin-top:0!important}
 @media(max-width:760px){.v6-login .account-form{max-width:none!important;width:100%;box-sizing:border-box}.v6-login .account-form h2{font-size:22px}.v6-login>div>small{font-size:13px;line-height:1.6}}
+
+.v6-login.login-page{width:100%;min-height:100svh;box-sizing:border-box;padding:clamp(18px,4vw,64px);background:#f3f5ef;color:#162b25}
+.v6-login.login-page>div{display:block;width:min(100%,38rem);margin:clamp(1rem,3vw,3rem) auto;box-sizing:border-box;background:white;border:1px solid #c6d2c9;border-radius:18px;padding:clamp(20px,4vw,48px)}
+.v6-login.login-page>div>h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.04;color:#172d26;margin:.5em 0}
+.v6-login.login-page>div>p,.v6-login.login-page>div>small{color:#405147;line-height:1.6}
+.v6-login .account-tabs{display:flex;gap:5px;padding:4px;margin:20px 0;border:1px solid #c8d3cc;background:#f0f3ef;border-radius:10px}
+.v6-login .account-tabs a{flex:1;text-align:center;padding:10px 4px;color:#29483a;border-radius:7px;font-weight:650}
+.v6-login .account-tabs a:first-child,.v6-login:has(#create-account:target) .account-tabs a:last-child{color:#fff;background:#234434}
+.v6-login:has(#create-account:target) .account-tabs a:first-child{color:#29483a;background:transparent}
+.v6-login.login-page .account-form{display:grid;width:100%;max-width:none;gap:14px;box-sizing:border-box;padding:0;margin:0;background:transparent;border:0;box-shadow:none}
+.v6-login #create-account:not(:target),.v6-login:has(#create-account:target) #sign-in{display:none}
+.v6-login .account-form fieldset{border:1px solid #c6d2c9;border-radius:10px;padding:16px;min-width:0;display:grid;gap:12px}
+.v6-login .account-form legend{padding:0 6px;font-weight:650;color:#203d31}
+.v6-login .account-form :is(input,select,textarea){width:100%;max-width:100%;box-sizing:border-box;color:#172b23;background:white;border:1px solid #85958a;border-radius:6px;font-size:1rem;padding:10px 12px}
+.v6-login .signup-verification{display:grid;gap:8px}.v6-login .signup-verification>button{justify-self:start;padding:9px 14px}
+.v6-login .account-error,.v6-login [role=alert]{color:#852e25!important}
+.v6-login.login-page>div>small{display:block;margin-top:18px}

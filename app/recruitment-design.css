@@ -45,3 +45,23 @@
 .v7-suite.v6-suite .suite-card p,.v7-suite.v6-suite .suite-card small,.v6-suite .suite-heading p,.v6-suite .muted{color:#414d48!important}
 .suite label,.suite input::placeholder,.v6-login input::placeholder{color:#47534d}
 @media(max-width:760px){.pro5 .project-first-hero{grid-template-columns:1fr}.pro5 .project-first-hero img{min-height:0;height:clamp(150px,46vw,275px)}.portfolio-controls button{flex:1}}
+
+.pro5 main{width:100%;max-width:none;box-sizing:border-box}
+.pro5 .business-section{margin:clamp(12px,2.5vw,40px);padding:clamp(22px,4vw,68px);border-radius:18px;border:1px solid #c4d0c7;background:#edf2eb;color:#163429}
+.pro5 .business-section>div:first-of-type{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);align-items:center;gap:clamp(18px,5vw,88px)}
+.pro5 .business-section h2{font-size:clamp(2.4rem,5vw,5rem);color:#182f25}
+.pro5 .business-section h2 em{color:#365b47}
+.pro5 .business-section aside{max-width:46ch;margin:0}
+.pro5 .business-section aside p,.pro5 .business-section .eyebrow,.pro5 .business-principles span{color:#364c40;opacity:1}
+.pro5 .business-section aside p{font-size:clamp(1rem,1.2vw,1.18rem);line-height:1.6}
+.pro5 .business-principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr));gap:14px;border-color:#acbcb0}
+.pro5 .business-section .button.pearl{background:#214432;color:white}
+.pro5 .business-principles span,.pro5 .company-footer a{font-size:.94rem}
+.pro5,.suite,.suite-main,.suite-content,.v6-login{min-width:0;box-sizing:border-box}
+.pro5 :is(img,video),.suite :is(img,video){max-width:100%}
+.suite .suite-card,.suite .form-grid>*{min-width:0}
+@media(max-width:700px){.pro5 .business-section>div:first-of-type{grid-template-columns:1fr}.pro5 .business-principles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pro5 .expertise-list article{grid-template-columns:auto minmax(0,1fr)}
+.pro5 .expertise-list p,.pro5 .editorial-heading>p:last-child,.pro5 .delivery-copy li p{font-size:1rem;line-height:1.65;color:#405047}
+.pro5 .company-nav,.pro5 .company-footer{box-sizing:border-box;max-width:100%}
+@media(max-width:480px){.pro5 .company-footer{flex-wrap:wrap}.pro5 .company-footer nav{flex-wrap:wrap}}

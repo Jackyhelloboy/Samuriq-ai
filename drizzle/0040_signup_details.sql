@@ -1,0 +1,10 @@
+CREATE TABLE signup_details (
+  account_id TEXT PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+  age INTEGER CHECK(age BETWEEN 1 AND 120),
+  address TEXT NOT NULL DEFAULT '',
+  city TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  device TEXT NOT NULL DEFAULT '',
+  mobile_os TEXT NOT NULL DEFAULT '',
+  os_version TEXT NOT NULL DEFAULT ''
+);
