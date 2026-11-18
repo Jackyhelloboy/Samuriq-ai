@@ -16,16 +16,13 @@ export async function authLimit(email: string) {
       ),
       (v) => v.toString(16).padStart(2, "0"),
     ).join("");
-  const rows = await getDb()
-    .insert(authLimits)
-    .values({ key, attempts: 1, expires: (window + 1) * 900000 })
-    .onConflictDoUpdate({
-      target: authLimits.key,
-      set: { attempts: sql`${authLimits.attempts}+1` },
-    })
-    .returning();
-  if (rows[0].attempts > 12)
-    throw new AuthRateLimitError();
+  const db=getDb();
+  for(const [label,value,maximum] of [['pair',key,12],['ip',ip,60],['email',email.toLowerCase().slice(0,254),30]] as const){
+    const bucket=label+':'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(label+'|'+value+'|'+window))),v=>v.toString(16).padStart(2,'0')).join('');
+    const rows=await db.insert(authLimits).values({key:bucket,attempts:1,expires:(window+1)*900000}).onConflictDoUpdate({target:authLimits.key,set:{attempts:sql`${authLimits.attempts}+1`}}).returning();
+    if(rows[0].attempts>maximum)throw new AuthRateLimitError();
+  }
+  await db.run(sql`DELETE FROM auth_limits WHERE key IN (SELECT key FROM auth_limits WHERE expires < ${Date.now()} LIMIT 50)`);
 }
 export function safeReturn(v: unknown) {
   const raw = String(v || "/workspace");

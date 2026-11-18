@@ -1,3 +1,4 @@
+import {websiteOnly} from "../../deployment-mode";
 import {contractVersion} from '../../vendor-policy';
 import {applicationLocks} from '../../enrollment';
 import {requestProjectPermission,acceptAssignedRate} from '../../enrollment-actions';
@@ -210,10 +211,10 @@ export default async function Detail({
                     </small>
                   </label>
                 )}
-                <label>
-                  Telegram or Discord username
+                {!websiteOnly()&&<label>
+                  Community username
                   <input name="communityHandle" required maxLength={100} />
-                </label>
+                </label>}
                 <label>
                   Skills, availability & answers to the questions
                   <textarea

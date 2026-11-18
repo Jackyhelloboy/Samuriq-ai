@@ -1,3 +1,5 @@
+import {websiteOnly} from "../../deployment-mode";
+import {privateStorageReady} from "../../private-crypto";
 import {ensureTelegramSetup} from "../../telegram-setup";
 import { requireOwnerView as requireOwner } from "../../access";
 import { getDb } from "../../../db";
@@ -20,6 +22,8 @@ export default async function Integrations({
   searchParams: Promise<Record<string, string>>;
 }) {
   await requireOwner();
+  if(websiteOnly())return <Shell admin active="Integrations"><Heading eyebrow="WEBSITE DATA & ACCESS" title="One account. One workspace." description="Contributors use website email and password accounts. External login, messaging and payout integrations are disabled."/><section className="suite-card"><h2>Account and storage status</h2><div className="table-scroll"><table className="suite-table"><thead><tr><th>Feature</th><th>Status</th></tr></thead><tbody><tr><td>Website passwords</td><td>Enabled · hashed passwords, private sessions</td></tr><tr><td>Google / platform sign-in</td><td>Disabled</td></tr><tr><td>Telegram and community gates</td><td>Disabled · use Support and Announcements</td></tr><tr><td>Account and payout records</td><td>Stored in the application database</td></tr><tr><td>Bank and private file encryption</td><td>{privateStorageReady()?"Configured":"Setup required: add the existing BANK_ENCRYPTION_KEY as a runtime secret. Never replace a key used for saved records."}</td></tr><tr><td>Payment transfers</td><td>External payment providers disabled · owner records verified bank transfers</td></tr></tbody></table></div></section><section className="suite-card"><h2>Manage the operation</h2><div className="actions"><a className="button dark" href="/admin/people">People & permissions</a><a className="button light" href="/admin/payouts">Payout ledger</a><a className="button light" href="/admin/announcements">Announcements</a></div><p>Account registration does not verify ownership of an email address or a beneficiary bank account. Review contributor and payment details before approval. Never put passwords, encryption keys or full bank details in support tickets.</p></section></Shell>;
+
   const q = await searchParams,
     rows = await getDb().select().from(integrations);
   const telegramStatus=await ensureTelegramSetup();

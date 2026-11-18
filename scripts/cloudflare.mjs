@@ -19,6 +19,12 @@ function run(script, argv, env = process.env) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 if (command === 'build') {
+  run('../node_modules/typescript/bin/tsc', ['--noEmit']);
+  for (const check of ['test-hosting-request.mjs', 'test-security-response.mjs', 'test-csv.mjs']) run('./' + check, []);
+  const { version } = JSON.parse(await readFile(new URL('../node_modules/react-server-dom-webpack/package.json', import.meta.url), 'utf8'));
+  const [major, minor, patch] = version.split('.').map(Number);
+  const minimum = { 0: 9, 1: 10, 2: 9, 3: 1 };
+  if (major === 19 && minor in minimum && patch < minimum[minor]) throw new Error('React Server Components must be patched for GHSA-xqc2-xf4c-x3h3 before deploying.');
   const databaseId = local ? placeholder : process.env.CLOUDFLARE_D1_DATABASE_ID;
   if (!databaseId || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(databaseId) || (!local && /^0{8}-/.test(databaseId))) {
     throw new Error('Set CLOUDFLARE_D1_DATABASE_ID to the real existing D1 database UUID. Use --local only for disposable tests. No cloud resources will be created.');

@@ -1,2 +1,3 @@
+import {getChatGPTUser} from "../../chatgpt-auth";
 import {inspectClientConnection} from '../../client-connection';export const dynamic='force-dynamic';
-export async function GET(request:Request){const id=new URL(request.url).searchParams.get('project')||'speech-pair';if(!/^[a-zA-Z0-9_-]{1,100}$/.test(id))return Response.json({state:'not-configured',reason:'Choose a valid project.'},{status:400});return Response.json(await inspectClientConnection(id),{headers:{'Cache-Control':'no-store'}})}
+export async function GET(request:Request){if(!await getChatGPTUser())return Response.json({error:"Sign in required"},{status:401,headers:{"Cache-Control":"no-store"}});const id=new URL(request.url).searchParams.get('project')||'speech-pair';if(!/^[a-zA-Z0-9_-]{1,100}$/.test(id))return Response.json({state:'not-configured',reason:'Choose a valid project.'},{status:400});return Response.json(await inspectClientConnection(id),{headers:{'Cache-Control':'no-store'}})}

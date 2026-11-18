@@ -1,3 +1,4 @@
+import {websiteOnly} from "../../deployment-mode";
 import { requireOwnerView as requireOwner } from "../../access";
 import { Shell, Heading } from "../../components/shell";
 import { setOwnerPassword } from "../../owner-password-action";
@@ -18,12 +19,13 @@ export default async function Security({
       />
       {q.saved && (
         <p className="notice" role="status">
-          Owner password saved.
+          Owner password saved. Other signed-in sessions have been revoked.
         </p>
       )}
       <section className="suite-card">
         <h2>{owner.email}</h2>
         <form action={setOwnerPassword}>
+          <label>Current password<input type="password" name="currentPassword" required={websiteOnly()} maxLength={128} autoComplete="current-password"/></label>
           <label>
             New password
             <input

@@ -1,4 +1,5 @@
 "use server";
+import {websiteOnly} from "./deployment-mode";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { getDb } from "../db";
 import { applications, participants, pairClaims } from "../db/schema";
@@ -18,11 +19,11 @@ export async function setPartner(form: FormData) {
       .slice(0, 100);
   if (
     !partner ||
-    !communityHandle ||
+    (!websiteOnly()&&!communityHandle) ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(partnerEmail) ||
     partnerEmail === user.email.toLowerCase()
   )
-    throw Error("Check partner name, email and community handle");
+    throw Error("Check your partner name and separate website email");
   const result = await getDb()
     .update(applications)
     .set({

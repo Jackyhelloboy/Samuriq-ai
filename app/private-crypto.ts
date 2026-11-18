@@ -1,5 +1,6 @@
 import {env} from 'cloudflare:workers';
 const enc=new TextEncoder();
+export function privateStorageReady(){return /^[a-f0-9]{64}$/.test((env as unknown as {BANK_ENCRYPTION_KEY?:string}).BANK_ENCRYPTION_KEY||"");}
 function rawKey(){const s=(env as unknown as {BANK_ENCRYPTION_KEY?:string}).BANK_ENCRYPTION_KEY;if(!s||!/^[a-f0-9]{64}$/.test(s))throw Error('Private payment storage is not configured');return Uint8Array.from(s.match(/../g)!,x=>parseInt(x,16));}
 async function key(){return crypto.subtle.importKey('raw',rawKey(),'AES-GCM',false,['encrypt','decrypt']);}
 export async function sealBytes(bytes:Uint8Array,context:string){const iv=crypto.getRandomValues(new Uint8Array(12)),cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:enc.encode(context)},await key(),new Uint8Array(bytes));const all=new Uint8Array(12+cipher.byteLength);all.set(iv);all.set(new Uint8Array(cipher),12);return all;}

@@ -105,7 +105,7 @@ export default async function Reports({
             <p>{r.notes}</p>
             {r.proofUrl ? (
               <a href={r.proofUrl} target="_blank" rel="noreferrer">
-                Open Drive evidence ↗
+                Open protected evidence ↗
               </a>
             ) : (
               <p>No evidence link submitted</p>

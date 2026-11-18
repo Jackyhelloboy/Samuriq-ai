@@ -1,3 +1,4 @@
+import {websiteOnly} from "./deployment-mode";
 import {bot} from './telegram-bot';
 import {getDb} from '../db';
 import {integrations} from '../db/schema';
@@ -7,6 +8,7 @@ const id='private-telegram-setup-v1';
 // Runtime secrets opt in to a fixed, idempotent integration setup. No request data can
 // select a destination, read the token, or grant Telegram administration rights.
 export async function ensureTelegramSetup(){
+ if(websiteOnly())return {ready:false,state:"disabled"};
  const e=bot();if(!e.BOT_TOKEN||!e.BOT_USERNAME||!e.TELEGRAM_WEBHOOK_SECRET||e.TELEGRAM_WEBHOOK_URL!==origin+'/api/telegram')return {ready:false,state:'not-configured'};
  const fingerprint=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode([e.BOT_TOKEN,e.BOT_USERNAME,e.TELEGRAM_WEBHOOK_SECRET,e.TELEGRAM_WEBHOOK_URL].join('|')))),x=>x.toString(16).padStart(2,'0')).join('');
  const db=getDb(),row=await db.select().from(integrations).where(eq(integrations.id,id)).get();

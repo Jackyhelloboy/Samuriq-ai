@@ -1,3 +1,4 @@
+import {websiteOnly} from "./deployment-mode";
 import { env } from "cloudflare:workers";
 
 type CommunityEnv = {
@@ -24,4 +25,4 @@ export function adminUrl(value?: string) {
 }
 
 // Server-only resolution: private invitation URLs stay in runtime settings, never GitHub.
-export function projectCommunity(j:{id:string;communityUrl?:string}){return j.communityUrl||(j.id==='speech-pair'?joinUrl(settings().PROJECT_COMMUNITY_JOIN_URL)||joinUrl(settings().HINDI_JOIN_URL)||'':'');}
+export function projectCommunity(j:{id:string;communityUrl?:string}){if(websiteOnly())return "";return j.communityUrl||(j.id==='speech-pair'?joinUrl(settings().PROJECT_COMMUNITY_JOIN_URL)||joinUrl(settings().HINDI_JOIN_URL)||'':'');}

@@ -1,3 +1,4 @@
+import {websiteOnly} from "../deployment-mode";
 import {safeReturn} from "../auth-rate";
 import ProfilePreferences from "../components/profile-preferences";
 import SubmitButton from "../components/submit-button";
@@ -23,7 +24,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
           </a>
         }
       />
-      {query.error&&<p role="alert" className="notice">{({"project-closed":"Choose an active project. Closed projects cannot be selected.","project-permission":"Your current TL must approve another project before you can switch.",policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, Telegram username and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
+      {query.error&&<p role="alert" className="notice">{({"project-closed":"Choose an active project. Closed projects cannot be selected.","project-permission":"Your current TL must approve another project before you can switch.",policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, profile and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
       {!user ? (
         <div className="onboarding-grid">
           <section className="suite-card">
@@ -102,7 +103,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                     <option>Phone and computer</option>
                   </select>
                 </label>
-                <label>
+                {!websiteOnly()&&<label>
                   Telegram username <small>Verified through the bot after saving</small>
                   <input
                     name="telegram"
@@ -110,7 +111,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                     placeholder="@username"
                     defaultValue={profile?.telegram}
                   /><small>Telegram → Settings → Username. Typing a name here does not verify ownership.</small>
-                </label>
+                </label>}
                 <label>Primary interest<select name="primaryProject" defaultValue={projectOptions?.choices.some(j=>j.id===query.next&&!j.locked)?query.next:projectOptions?.selected||''}>{!projectOptions?.choices.length&&<option value="">No active projects</option>}{projectOptions?.choices.map(j=><option key={j.id} value={j.id} disabled={j.locked}>{j.title}{j.locked?' · TL permission required':''}</option>)}</select><small>Only active projects appear. Your first assigned project stays selected; another project needs your current TL’s permission.</small></label>
                 <input type="hidden" name="project" value={profile?.project||'general'}/>
 

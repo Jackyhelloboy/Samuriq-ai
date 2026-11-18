@@ -1,9 +1,10 @@
 "use server";
+import {websiteOnly,publicSiteOrigin} from "./deployment-mode";
 import { requireFeature } from "./features";
 import { requireOwner } from "./access";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { getDb } from "../db";
-import { progress, applications, integrations, notices, projects } from "../db/schema";
+import { progress, applications, integrations, notices, projects, evidenceItems } from "../db/schema";
 import { projectState } from "./project-state";
 import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
@@ -42,19 +43,20 @@ export async function saveProgress(form: FormData) {
     units > 100000
   )
     throw Error("Check your work totals");
-  const proofUrl = String(form.get("proofUrl") || "").trim();
+  let proofUrl = String(form.get("proofUrl") || "").trim();
+  if(websiteOnly()&&status==="completed"){const day=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date());const proof=await getDb().select().from(evidenceItems).where(and(eq(evidenceItems.userId,user.userId),eq(evidenceItems.projectId,projectId),eq(evidenceItems.day,day))).get();if(!proof)throw Error("Upload a private screenshot on this website before completing your report");proofUrl=publicSiteOrigin()+"/evidence/file?id="+encodeURIComponent(proof.id);}
   if (proofUrl) {
     const url = new URL(proofUrl);
     if (
       url.protocol !== "https:" ||
-      !["drive.google.com", "docs.google.com"].includes(url.hostname) ||
+      (websiteOnly()?url.origin!==publicSiteOrigin()||url.pathname!=="/evidence/file":!["drive.google.com", "docs.google.com"].includes(url.hostname)) ||
       url.username ||
       url.password
     )
-      throw Error("Use a Google Drive file or folder link");
+      throw Error("Use your private evidence uploaded on this website");
   }
   if (status === "completed" && !proofUrl)
-    throw Error("Add a Drive evidence link before completing the report");
+    throw Error("Upload your completion evidence before completing the report");
   if(proj?.workType!=='general'&&status==='completed'&&!String(form.get('clientId')||'').trim())throw Error('Add the client submission or batch reference for this workflow');
   const row = {
     userId: user.userId,
@@ -88,6 +90,7 @@ export async function saveProgress(form: FormData) {
 }
 export async function saveIntegration(form: FormData) {
   await requireOwner();
+  if(websiteOnly())throw Error("External integrations are disabled. Use website announcements and support.");
   const id = String(form.get("id")),
     raw = String(form.get("url") || "").trim();
   const hosts: Record<string, string[]> = {

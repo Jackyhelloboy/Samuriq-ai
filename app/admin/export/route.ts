@@ -1,3 +1,4 @@
+import {csvCell} from "../../../lib/csv.mjs";
 import { getChatGPTUser } from "../../chatgpt-auth";
 import { settings } from "../../telegram";
 import { getDb } from "../../../db";
@@ -63,11 +64,7 @@ export async function GET(request: Request) {
           ),
       )
     : [];
-  const cell = (value: unknown) => {
-    let text = String(value ?? "");
-    if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
-    return '"' + text.replace(/"/g, '""') + '"';
-  };
+  const cell = csvCell;
   const data = [
     [
       "Participant",

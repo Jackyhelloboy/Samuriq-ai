@@ -1,3 +1,4 @@
+import {csvCell} from "../../../../lib/csv.mjs";
 import { getChatGPTUser } from "../../../chatgpt-auth";
 import { settings } from "../../../telegram";
 import { teamRows, indiaDay } from "../../../team-metrics";
@@ -44,11 +45,7 @@ export async function GET(request: Request) {
       r.j.deadline,
     ]),
   ];
-  const cell = (v: unknown) => {
-    let s = String(v ?? "");
-    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
-    return '"' + s.replace(/"/g, '""') + '"';
-  };
+  const cell = csvCell;
   return new Response(
     "\uFEFF" + data.map((r) => r.map(cell).join(",")).join("\r\n"),
     {

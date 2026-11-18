@@ -1,9 +1,9 @@
 "use server";
 import { requireOwner } from "./access";
 import { getDb } from "../db";
-import { accounts, operationAudit } from "../db/schema";
+import { accounts, sessions, operationAudit } from "../db/schema";
 import { eq } from "drizzle-orm";
-import { hashPassword, randomHex } from "./account";
+import { hashPassword, randomHex, startSession } from "./account";
 import { redirect } from "next/navigation";
 export async function setOwnerPassword(form: FormData) {
   const owner = await requireOwner(),
@@ -24,9 +24,11 @@ export async function setOwnerPassword(form: FormData) {
     throw Error(
       "An owner password account with a different identity exists. Use that existing sign-in to change its password.",
     );
+  if(row&&await hashPassword(String(form.get("currentPassword")||""),row.salt)!==row.hash)throw Error("Your current password is incorrect");
   const salt = randomHex(16),
     hash = await hashPassword(pw, salt);
   await db.batch([
+    db.delete(sessions).where(eq(sessions.accountId,owner.userId)),
     db
       .insert(accounts)
       .values({
@@ -50,5 +52,6 @@ export async function setOwnerPassword(form: FormData) {
         created: new Date().toISOString(),
       }),
   ]);
+  await startSession(owner.userId);
   redirect("/admin/security?saved=1");
 }
