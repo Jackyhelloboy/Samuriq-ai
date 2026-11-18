@@ -1,10 +1,10 @@
 import SubmitButton from "../components/submit-button";
+import PasswordField from "../components/password-field";
+import "./account-forms.css";
 import {workspaceHome} from "../workspace-context";
 import { safeReturn } from "../auth-rate";
-import { staffRole } from "../access";
 import { sessionUser } from "../account";
 import { loginAccount, createAccount } from "../account-actions";
-import { settings } from "../telegram";
 import { redirect } from "next/navigation";
 import { Brand } from "../marks";
 export const dynamic = "force-dynamic";
@@ -16,7 +16,6 @@ export default async function Login({
   const q = await searchParams;
   const user = await sessionUser();
   if (user) {
-    const staff = await staffRole();
     redirect(
       q.return_to ? safeReturn(q.return_to) : await workspaceHome(),
     );
@@ -44,7 +43,7 @@ export default async function Login({
                 expired: "This temporary review account has expired. Use your permanent account.",
                 restricted:"This account is restricted. Contact your project manager for a review.",
                 exists: "That email already has an account. Sign in instead.",
-                short: "Password must be at least 8 characters.",
+                short: "Choose a password with 8–128 characters.",
                 details: "Enter your name and a valid email.",
                 admin:
                   "That email is reserved for the owner. Use your existing owner password sign-in.",
@@ -53,67 +52,66 @@ export default async function Login({
           </p>
         )}
         <form
+          id="sign-in"
+          className="account-form"
           action={loginAccount}
           style={{ display: "grid", gap: 10, maxWidth: 420 }}
         >
           <h2>Sign in</h2>
+          <p>Already registered? Use your website account. <a href="#create-account">New here? Create an account</a></p>
           <input
             type="hidden"
             name="return_to"
             value={q.return_to || ""}
           />
+          <label htmlFor="signin-email">Email</label>
           <input
-            aria-label="Email"
+            id="signin-email"
             name="email"
             type="email"
             placeholder="Email"
             required
             autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
           />
-          <input
-            aria-label="Password"
-            name="password"
-            type="password"
-            placeholder="Password"
-            required
-            autoComplete="current-password"
-          />
+          <PasswordField id="signin-password" />
           <SubmitButton className="button dark" pendingLabel="Signing in…">Sign in</SubmitButton>
         </form>
         <form
+          id="create-account"
+          className="account-form"
           action={createAccount}
           style={{ display: "grid", gap: 10, maxWidth: 420, marginTop: 28 }}
         >
           <h2>New here? Create an account</h2>
+          <p>Set up your account, then complete your contributor profile. <a href="#sign-in">Already have an account? Sign in</a></p>
           <input
             type="hidden"
             name="return_to"
             value={q.return_to || ""}
           />
+          <label htmlFor="signup-name">Full name</label>
           <input
-            aria-label="Full name"
+            id="signup-name"
             name="name"
             placeholder="Full name"
             required
             autoComplete="name"
+            maxLength={100}
           />
+          <label htmlFor="signup-email">Email</label>
           <input
-            aria-label="Email"
+            id="signup-email"
             name="email"
             type="email"
             placeholder="Email"
             required
             autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
           />
-          <input
-            aria-label="Password"
-            name="password"
-            type="password"
-            placeholder="Password (8+ characters)"
-            required
-            minLength={8}
-            autoComplete="new-password"
-          />
+          <PasswordField id="signup-password" creating />
 
           <SubmitButton className="button dark" pendingLabel="Creating account…">Create account</SubmitButton>
         </form>
