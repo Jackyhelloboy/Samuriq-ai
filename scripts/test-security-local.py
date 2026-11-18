@@ -125,6 +125,22 @@ with tempfile.TemporaryDirectory(prefix='samuriq-security-') as state:
             assert b'samuriqai.in/sitemap.xml' in request('/robots.txt')[1]
             sessions = {name: login(name)[0] for name in roles}
             assert all(sessions.values())
+            editor = '/admin/projects/post?id=audit-individual'
+            for actor in ['manager', 'owner']:
+                fields = form(editor, 'Save post', sessions[actor])
+                title = 'Project updated by ' + actor
+                fields.update(title=title, category='Speech & audio', location='Remote',
+                              description='Revised public description', requirements='Headphones')
+                blocked = request(editor, dict(fields, title='Unauthorized change'), sessions['alice'])
+                assert blocked[0] >= 300
+                assert request(editor, fields, sessions[actor])[0] in [303, 307]
+                for path in ['/', '/projects', '/projects/detail?id=audit-individual']:
+                    status, page, _ = request(path)
+                    assert status == 200 and title.encode() in page, (path, status)
+                stale = request(editor, dict(fields, title='Outdated change'), sessions[actor])
+                assert 'conflict' in stale[2].get('Location', ''), stale[0]
+                with database() as db:
+                    assert db.execute("SELECT title FROM projects WHERE id='audit-individual'").fetchone()[0] == title
             assert b'Join project group' not in request('/workspace', cookie=sessions['alice'])[1]
             assert b'Connect my Drive folder' not in request('/workspace/evidence', cookie=sessions['alice'])[1]
             for name in ['alice', 'bob', 'leader', 'manager', 'outsider']:
