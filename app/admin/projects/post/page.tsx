@@ -1,3 +1,4 @@
+import { BriefForm } from "../../../recruitment/brief-form";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { getDb } from "../../../../db";
@@ -30,6 +31,7 @@ export default async function EditPost({ searchParams }: { searchParams: Promise
       </label>)}
       <button className="button dark">Save post</button>
     </form>
+    <BriefForm id={id} />
     {visible && <a href={"/projects/detail?id=" + encodeURIComponent(id)}>View published post</a>}
   </Shell>;
 }

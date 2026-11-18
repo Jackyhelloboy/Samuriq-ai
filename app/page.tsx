@@ -53,8 +53,7 @@ export default async function Home({
               <em>Your next project.</em>
             </h1>
             <p>
-              Explore real opportunities. Register once. Join an approved team
-              and keep your work in view.
+              Find work in your language, on the devices you own. Apply on the website and meet your project team on WhatsApp.
             </p>
             <div className="hero-workspace-actions"><a className="button pearl" href={board}>Find a project <ArrowUpRight size={16}/></a><a href="/workspace">Continue my work <ArrowUpRight size={15}/></a></div>
           </div>
@@ -87,17 +86,7 @@ export default async function Home({
           )}
           {jobs.length === 12 && <a className="text-link" href={board}>View all projects and filters <ArrowUpRight size={16}/></a>}
         </section>{" "}
-        <section className="statement-strip">
-          <span>BUILT FOR THE WORK THAT MATTERS</span>
-          <p>
-            Different skills. Shared standards.
-            <br />
-            <strong>One place to move projects forward.</strong>
-          </p>
-          <a href="#delivery" aria-label="Explore our approach">
-            <ArrowUpRight size={30} />
-          </a>
-        </section>
+
         <section className="expertise-section" id="expertise">
           <div className="editorial-heading">
             <p className="eyebrow">01 — OUR EXPERTISE</p>

@@ -1,4 +1,5 @@
 "use server";
+import {parseCSV} from "../lib/parse-csv";
 import { requireOwner } from "./access";
 import { getDb } from "../db";
 import { integrations, projects } from "../db/schema";
@@ -25,34 +26,6 @@ export async function saveFeatures(form: FormData) {
   );
   await db.batch([writes[0], ...writes.slice(1)]);
   redirect("/admin/settings?saved=1");
-}
-function parseCSV(text: string) {
-  const rows: string[][] = [];
-  let row: string[] = [],
-    cell = "",
-    quoted = false;
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
-    if (c === '"') {
-      if (quoted && text[i + 1] === '"') {
-        cell += '"';
-        i++;
-      } else quoted = !quoted;
-    } else if (c === "," && !quoted) {
-      row.push(cell);
-      cell = "";
-    } else if ((c === "\n" || c === "\r") && !quoted) {
-      if (c === "\r" && text[i + 1] === "\n") i++;
-      row.push(cell);
-      if (row.some((v) => v.trim())) rows.push(row);
-      row = [];
-      cell = "";
-    } else cell += c;
-  }
-  if (quoted) throw Error("CSV contains an unclosed quote");
-  row.push(cell);
-  if (row.some((v) => v.trim())) rows.push(row);
-  return rows;
 }
 export async function importProjects(form: FormData) {
   await requireOwner();

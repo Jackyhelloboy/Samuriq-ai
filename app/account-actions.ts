@@ -1,4 +1,5 @@
 "use server";
+import {acceptedEmail,consumeCode,markVerified} from "./verify-email/verification";
 import {workspaceHome} from "./workspace-context";
 import { redirect } from "next/navigation";
 import { getDb } from "../db";
@@ -18,8 +19,7 @@ export async function createAccount(form: FormData) {
       .trim()
       .slice(0, 100),
     pw = String(form.get("password") || "");
-  if (email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name)
-    return back(to, "details");
+  if (!acceptedEmail(email) || !name) return back(to, "details");
   try{await authLimit(email)}catch(e){if(e instanceof AuthRateLimitError)return back(to,"rate");throw e;}
   if (pw.length < 8 || pw.length > 128) return back(to, "short");
   const admin = bot().ADMIN_EMAIL?.toLowerCase();
@@ -27,6 +27,7 @@ export async function createAccount(form: FormData) {
   const db = getDb();
   if (await db.select().from(accounts).where(eq(accounts.email, email)).get())
     return back(to, "exists");
+  if (!await consumeCode(email,form.get("code"))) return back(to,"verification");
   const id = "pw_" + crypto.randomUUID(),
     salt = randomHex(16);
   try{await db
@@ -39,6 +40,7 @@ export async function createAccount(form: FormData) {
       hash: await hashPassword(pw, salt),
       created: new Date().toISOString(),
     });}catch(e){const text=String(e)+String((e as {cause?:unknown})?.cause||"");if(/account_email_in_use|UNIQUE constraint failed: accounts.email/i.test(text))return back(to,"exists");throw e;}
+  await markVerified(email);
   await startSession(id);
   redirect(to);
 }

@@ -29,3 +29,14 @@
 .demo-panels article img { display: block; width: 100%; aspect-ratio: 2 / 1; object-fit: cover }
 .demo-panels article div { padding: 1.25rem }
 @media (max-width: 760px) { .demo-panels { grid-template-columns: 1fr } }
+
+.pro5 .project-first-hero {background:#f4f3ee;border:1px solid #d8dfda;border-radius:clamp(14px,2vw,28px);align-items:stretch}
+.pro5 .project-first-hero>div {align-self:center;padding:clamp(1.3rem,3.5vw,3.8rem)}
+.pro5 .project-first-hero img {max-height:none;min-height:100%;object-position:55% center}
+.pro5 .project-first-hero h1 {letter-spacing:-.055em;line-height:1.03}
+.pro5 .project-first-hero h1 em {color:#335957}
+.pro5 .opportunity-card {border-top:3px solid #46615d}
+.editor-form .choice-grid {display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:.45rem}
+.editor-form .choice-grid label {display:flex;gap:.55rem;align-items:center;padding:.45rem}
+.editor-form .choice-grid input {width:1rem;min-height:1rem;flex:none}
+@media(max-width:760px){.pro5 .project-first-hero img{min-height:0;max-height:240px}.pro5 .project-first-hero>div{align-self:stretch}}

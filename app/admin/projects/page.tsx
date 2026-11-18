@@ -42,7 +42,7 @@ export default async function AdminProjects({
           <a className="button dark" href="/admin/projects/edit">
             <Plus size={16} />
             Create project
-          </a>:undefined
+          </a>:<a className="button dark" href="/admin/projects/new">Create project draft</a>
         }
       />
       <form className="filter-bar">

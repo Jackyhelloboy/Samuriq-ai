@@ -44,7 +44,8 @@ export default async function Login({
                 restricted:"This account is restricted. Contact your project manager for a review.",
                 exists: "That email already has an account. Sign in instead.",
                 short: "Choose a password with 8–128 characters.",
-                details: "Enter your name and a valid email.",
+                details: "Enter your name and a valid .com email.",
+                verification: "Request an email code and enter it under Create an account.",
                 admin:
                   "That email is reserved for the owner. Use your existing owner password sign-in.",
               } as Record<string, string>
@@ -112,6 +113,8 @@ export default async function Login({
             autoCapitalize="none"
             spellCheck={false}
           />
+          <a href={"/verify-email?return_to="+encodeURIComponent(q.return_to || "/workspace")}>Get a verification code by email</a>
+          <label htmlFor="signup-code">Code from your inbox</label><input id="signup-code" name="code" required maxLength={12} autoComplete="one-time-code"/>
           <PasswordField id="signup-password" creating />
 
           <SubmitButton className="button dark" pendingLabel="Creating account…">Create account</SubmitButton>
