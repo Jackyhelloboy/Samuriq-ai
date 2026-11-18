@@ -41,6 +41,14 @@ if (command === 'build') {
   run('../node_modules/vite/bin/vite.js', ['build'], { ...process.env, SAMURIQ_DEPLOY_TARGET: 'cloudflare' });
   const built = JSON.parse(await readFile(new URL('../dist/server/wrangler.json', import.meta.url), 'utf8'));
   if (built.vars?.SAMURIQ_HOSTING_MODE !== 'cloudflare' || built.d1_databases?.[0]?.database_id !== databaseId) throw new Error('Build lost its production bindings or hosting mode.');
+  // Public, non-secret release identity lets deployment checks verify the exact
+  // GitHub update instead of mistaking an older HTTP 200 page for a new release.
+  const commit = process.env.WORKERS_CI_COMMIT_SHA || '';
+  await writeFile(new URL('../dist/client/deployment.json', import.meta.url), JSON.stringify({
+    commit: /^[a-f0-9]{40}$/i.test(commit) ? commit : null,
+    builtAt: new Date().toISOString(),
+    local,
+  }) + '\n');
   await writeFile(metadataPath, JSON.stringify({ ready: true, local, databaseId, name, privateFiles: Boolean(bucket) }, null, 2));
   console.log(local ? 'Disposable local Cloudflare build ready. Deployment is blocked for this artifact.' : 'Cloudflare build ready. Runtime secrets and database migrations must be verified before deployment.');
 } else {
