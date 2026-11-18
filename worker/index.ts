@@ -15,7 +15,10 @@ const worker = {
       if(size>0&&size<=8192)await request.arrayBuffer();
       return new Response('Invalid origin',{status:403,headers:{'Cache-Control':'no-store'}});
     }
-    if(Number(request.headers.get('content-length')||0)>4*1024*1024){
+    // Evidence accepts an 8 MB image plus multipart metadata. Its handler also
+    // limits streamed bodies to 9 MB and validates the decoded file at 8 MB.
+    const bodyLimit = new URL(request.url).pathname === '/evidence/upload' ? 9*1024*1024 : 4*1024*1024;
+    if(Number(request.headers.get('content-length')||0)>bodyLimit){
       return new Response('Request is too large',{status:413});
     }
     let binding = ctx.props?.CONNECTORS;
