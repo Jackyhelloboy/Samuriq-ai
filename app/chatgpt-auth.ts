@@ -1,3 +1,4 @@
+import {websiteOnly} from "./deployment-mode";
 import {cache} from "react";
 import {getDb} from "../db";
 import {participants} from "../db/schema";
@@ -31,6 +32,7 @@ async function rawUser(): Promise<ChatGPTUser | null> {
   const jar=await cookies();
   // Never silently become the host owner after expiry, tampering or sign-out.
   if(jar.get("sq_session")?.value||jar.get("sq_auth_signed_out")?.value)return null;
+  if (websiteOnly()) return null;
   const requestHeaders = await headers();
   const userId = requestHeaders.get(USER_ID_HEADER);
   const email = requestHeaders.get(USER_EMAIL_HEADER);

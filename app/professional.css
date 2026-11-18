@@ -1,0 +1,38 @@
+.suite-main{max-width:1560px;margin-inline:auto}
+.suite-heading{gap:20px;flex-wrap:wrap}
+.suite-heading h1{font-size:clamp(28px,3.5vw,48px);line-height:1.15;overflow-wrap:anywhere}
+.suite-heading p,.suite-card p{line-height:1.65}
+.suite .actions,.suite .form-grid{gap:14px}
+.suite input:not([type=checkbox]):not([type=hidden]),.suite select,.suite button,.suite .button{min-height:44px}
+.suite input,.suite textarea,.suite select{max-width:100%;box-sizing:border-box}
+.suite input[type=file]{padding:10px;white-space:normal}
+.suite textarea{min-height:100px;resize:vertical}
+.suite .table-scroll{overflow-x:auto;overscroll-behavior-inline:contain;max-width:100%}
+.suite .suite-table th{white-space:nowrap}
+.suite .suite-table td{overflow-wrap:anywhere}
+.suite .suite-table th,.suite .suite-table td{padding:14px 12px;vertical-align:top}
+.suite .notice,.suite .soft-note{border:1px solid #dedede;border-radius:10px;padding:16px 18px;line-height:1.6}
+.suite .badge{line-height:1.4;white-space:normal}
+.suite .evidence-project{margin-block:32px;min-width:0}
+.suite .screenshot-review img{max-width:100%;height:auto;max-height:300px;object-fit:contain;background:#f7f7f7;border-radius:8px}
+.suite a:focus-visible,.suite button:focus-visible,.suite input:focus-visible,.suite textarea:focus-visible,.suite select:focus-visible{outline:3px solid #3b6d84;outline-offset:3px}
+.suite .account-menu summary{max-width:220px;overflow-wrap:anywhere}
+.premium-site .company-nav nav a{min-height:44px;display:inline-flex;align-items:center}
+@media(max-width:760px){
+ .suite .suite-main{padding:24px 16px 100px}
+ .suite .suite-heading{display:flex;flex-direction:column;align-items:stretch;gap:16px;margin-bottom:24px}
+ .suite .suite-heading h1{font-size:30px;letter-spacing:-.8px}
+ .suite .suite-heading .actions,.suite .actions{display:flex;flex-wrap:wrap}
+ .suite .actions>a,.suite .actions>button{flex:1 1 160px;justify-content:center;text-align:center}
+ .suite input:not([type=checkbox]),.suite select,.suite textarea{font-size:16px}
+ .suite .form-grid,.suite .payment-layout,.suite .v7-work-grid,.suite .v7-bottom-grid,.suite .leader-grid,.suite .screenshot-review-grid{grid-template-columns:minmax(0,1fr)}
+ .suite .suite-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .suite .suite-stats article{padding:18px 12px}
+ .suite .suite-stats strong{font-size:26px;overflow-wrap:anywhere}
+ .suite .section-kicker{flex-wrap:wrap;gap:12px}
+ .suite .phone-bottom-nav a{min-height:56px;min-width:0;font-size:12px}
+ .suite .account-menu summary{max-width:145px}
+ .suite .suite-card{padding-block:22px}
+ .suite .table-scroll:focus-visible{outline:2px solid #3b6d84}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}

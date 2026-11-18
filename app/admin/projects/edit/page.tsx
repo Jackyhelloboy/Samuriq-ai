@@ -1,3 +1,4 @@
+import {websiteOnly} from "../../../deployment-mode";
 import {projectCommunity} from '../../../telegram';
 import { requireOwnerView as requireOwner } from "../../../access";
 import { getDb } from "../../../../db";
@@ -158,7 +159,7 @@ export default async function Editor({
                 />
                 Require tutorial and terms before applying
               </label>
-              <label className="check"><input type="checkbox" name="telegramRequired" value="yes" defaultChecked={!!job?.telegramRequired}/>Require bot-verified Telegram username before training and client access</label>
+              {!websiteOnly()&&<label className="check"><input type="checkbox" name="telegramRequired" value="yes" defaultChecked={!!job?.telegramRequired}/>Require verified Telegram username before training and client access</label>}
               <label className="check"><input type="checkbox" name="tutorialReference" value="yes" defaultChecked={!!job?.tutorialReference}/>Label tutorials as reference material, pending client-specific training</label>
               <label>
                 Minimum tutorial playback (seconds)
@@ -244,19 +245,15 @@ export default async function Editor({
                   defaultValue={job?.registerUrl}
                 />
               </label>
-              <label>
-                Private Telegram / Discord invite
+              {!websiteOnly()&&<label>
+                Private community invite
                 <input
                   name="communityUrl"
                   type="url"
                   defaultValue={job?projectCommunity(job):''}
                 />
-              </label>
-              <p>
-                Use a private group with join approval or a restricted Discord
-                role. This invite is shown only after application approval.
-                Confirm handles manually before granting work access.
-              </p>
+              </label>}
+              <p>Coordinate project questions in the website support desk. Review contributor details and consent before approving work.</p>
               <label>
                 Required invitation code
                 <input

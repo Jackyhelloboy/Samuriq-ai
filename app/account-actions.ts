@@ -18,7 +18,7 @@ export async function createAccount(form: FormData) {
       .trim()
       .slice(0, 100),
     pw = String(form.get("password") || "");
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name)
+  if (email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !name)
     return back(to, "details");
   try{await authLimit(email)}catch(e){if(e instanceof AuthRateLimitError)return back(to,"rate");throw e;}
   if (pw.length < 8 || pw.length > 128) return back(to, "short");
@@ -48,6 +48,7 @@ export async function loginAccount(form: FormData) {
       .trim()
       .toLowerCase(),
     pw = String(form.get("password") || "");
+  if(email.length>254)return back(to,"details");
   try{await authLimit(email)}catch(e){if(e instanceof AuthRateLimitError)return back(to,"rate");throw e;}
   if (pw.length > 128) return back(to, "login");
   const a = await getDb()

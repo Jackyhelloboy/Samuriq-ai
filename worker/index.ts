@@ -1,10 +1,14 @@
 import handler from "vinext/server/fetch-handler";
+import { secureHostedResponse } from "../lib/security-response.mjs";
 import { runWithConnectorBinding } from "../lib/connector-context";
 import type { ConnectorBinding } from "../lib/connector-contract.mjs";
 import { sanitizeHostedRequest } from "../lib/hosting-request.mjs";
 
-const worker = {
-  async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+async function fetchApplication(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+    const path = new URL(request.url).pathname;
+    const direct = (env as unknown as { SAMURIQ_HOSTING_MODE?: string }).SAMURIQ_HOSTING_MODE === 'cloudflare';
+    if (direct && (path === '/api/telegram' || path.startsWith('/api/telegram/'))) return new Response('Not found', {status:404});
+    if (direct && (path === '/workspace/telegram' || path === '/projects/community')) return Response.redirect(new URL('/support', request.url), 303);
     request = sanitizeHostedRequest(request, (env as unknown as { SAMURIQ_HOSTING_MODE?: string }).SAMURIQ_HOSTING_MODE);
     // Reject cross-origin writes before framework dispatch. Drain only declared
     // small bodies so a rejected form cannot stall the next local Worker request.
@@ -41,7 +45,12 @@ const worker = {
       };
     }
     return runWithConnectorBinding(binding, () => handler.fetch(request, env, ctx));
+}
+
+const worker = {
+  async fetch(request: Request, env: Cloudflare.Env, ctx: ExecutionContext<{ CONNECTORS?: ConnectorBinding }>) {
+    const response = await fetchApplication(request, env, ctx);
+    return secureHostedResponse(response, request, (env as unknown as {SAMURIQ_HOSTING_MODE?:string}).SAMURIQ_HOSTING_MODE);
   },
 };
-
 export default worker;

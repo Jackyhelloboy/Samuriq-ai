@@ -1,3 +1,4 @@
+import {websiteOnly} from "./deployment-mode";
 import { getDb } from "../db";
 import { integrations } from "../db/schema";
 export const featureDefinitions = [
@@ -37,7 +38,7 @@ export async function features() {
   return Object.fromEntries(
     featureDefinitions.map(([key]) => [
       key,
-      rows.find((r) => r.id === "feature:" + key)?.url !== "0",
+      websiteOnly() && key === "community" ? false : rows.find((r) => r.id === "feature:" + key)?.url !== "0",
     ]),
   ) as Record<string, boolean>;
 }

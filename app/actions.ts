@@ -1,4 +1,5 @@
 "use server";
+import {websiteOnly} from "./deployment-mode";
 import {safeReturn} from "./auth-rate";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { settings } from "./telegram";
@@ -12,11 +13,11 @@ export async function register(form: FormData) {
   const user = await getChatGPTUser();
   if (!user) redirect("/login?return_to=/workspace");
   const username=String(form.get('username')||'').trim().toLowerCase();if(username&&!/^[a-z0-9](?:[a-z0-9._]{1,28})[a-z0-9]$/.test(username))return fail('username');const existingProfile=await getDb().select().from(participants).where(eq(participants.id,user.userId)).get();const handle=username||existingProfile?.username||'member_'+Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(user.userId))),v=>v.toString(16).padStart(2,'0')).join('').slice(0,20);const handleOwner=await getDb().select().from(participants).where(eq(participants.username,handle)).get();if(handleOwner&&handleOwner.id!==user.userId)return fail('taken');
-  const linkedTelegram=await (await import("./telegram-identity")).telegramIdentity(user.userId);
+  const linkedTelegram=websiteOnly()?null:await (await import("./telegram-identity")).telegramIdentity(user.userId);
   const name = String(form.get("name") || "")
       .trim()
       .slice(0, 100),
-    telegram = linkedTelegram?.username?"@"+linkedTelegram.username:String(form.get("telegram") || "").trim();
+    telegram = websiteOnly()?"":linkedTelegram?.username?"@"+linkedTelegram.username:String(form.get("telegram") || "").trim();
   const language = String(form.get("language")),
     project = String(form.get("project"));
   if (
@@ -61,7 +62,7 @@ export async function register(form: FormData) {
       set: { username:handle,name,primaryProjectId,phone,phoneConsent, telegram, language, project, skills, location, device },
     });}catch(error){const message=String(error)+String((error as {cause?:unknown})?.cause||"");if(/participant_username_unique|UNIQUE constraint failed: participants.username/i.test(message))return fail("taken");throw error;}
   const next=String(form.get("next")||(!existingProfile?primaryProjectId:""));if(next){const e=await import("./enrollment");try{await e.requireApplicationPermission(user.userId,next);await e.assignDirect(user.userId,next);}catch(error){if(error instanceof e.EnrollmentError)redirect("/projects/detail?id="+encodeURIComponent(next)+"&notice="+error.code);throw error;}}
-  if(next){const job=await getDb().select().from(projects).where(eq(projects.id,next)).get();if(job?.telegramRequired&&!(await (await import("./telegram-identity")).telegramIdentity(user.userId))?.username)redirect("/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+next));}
+  if(next){const job=await getDb().select().from(projects).where(eq(projects.id,next)).get();if(!websiteOnly()&&job?.telegramRequired&&!(await (await import("./telegram-identity")).telegramIdentity(user.userId))?.username)redirect("/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+next));}
   const returnTo=String(form.get("return_to")||"");if(returnTo)redirect(safeReturn(returnTo));
   redirect(next?"/projects/onboarding?id="+encodeURIComponent(next):"/workspace");
 }

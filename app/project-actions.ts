@@ -1,4 +1,5 @@
 "use server";
+import {websiteOnly} from "./deployment-mode";
 import {requireApplicationPermission,assignDirect} from "./enrollment";
 import { requireOnboarding } from "./onboarding-state";
 import { requireOperator } from "./access";
@@ -42,7 +43,7 @@ export async function publishProject(form: FormData) {
   const introUrl = vid("introUrl"),
     tutorialUrl = vid("tutorialUrl"),
     registerUrl = vid("registerUrl");
-  const communityUrl = value("communityUrl");
+  const communityUrl = websiteOnly()?"":value("communityUrl");
   if (communityUrl) {
     const u = new URL(communityUrl);
     if (
@@ -98,7 +99,7 @@ export async function publishProject(form: FormData) {
     deadline,
     communityUrl,
     onboardingRequired,
-    telegramRequired:form.get("telegramRequired")==="yes"?1:0,
+    telegramRequired:!websiteOnly()&&form.get("telegramRequired")==="yes"?1:0,
     tutorialReference:form.get("tutorialReference")==="yes"?1:0,
     tutorialSeconds,
     terms,
@@ -117,7 +118,7 @@ export async function publishProject(form: FormData) {
     active: form.get("active") === "1" && visibility==="listed" ? 1 : 0,
   };
   if(values.evidenceRequired&&(!values.pair||!values.onboardingRequired||!values.inviteCode))throw Error("Pair evidence projects need permanent pairs, tutorial/terms onboarding and an invitation code");
-  if(values.active&&(!clientUrl||!communityUrl||(deadline&&deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("Set client/community links and a current schedule before activating");
+  if(values.active&&(!clientUrl||(!websiteOnly()&&!communityUrl)||(deadline&&deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("Set the client destination and a current schedule before activating");
   if(id){const original=await getDb().select().from(projects).where(eq(projects.id,id)).get(),contract=await getDb().select().from(projectTeams).where(and(eq(projectTeams.projectId,id),(await import('drizzle-orm')).ne(projectTeams.vendorFrom,''))).get();if(original&&contract&&(original.hourlyRate!==values.hourlyRate||original.pair!==values.pair||original.targetStart!==values.targetStart||original.deadline!==values.deadline||original.targetMinutes!==values.targetMinutes))throw Error('This project has a vendor contract. Create a new project for a different financial period, target, budget or work format; existing contract calculations are preserved.');}
   if (id) await getDb().update(projects).set(values).where(eq(projects.id, id));
   else
@@ -170,7 +171,7 @@ export async function submitProjectApplication(form: FormData) {
       partnerEmail === user.email.toLowerCase())
   )
     throw Error("Use your permanent partner’s separate sign-in email");
-  if (!communityHandle) throw Error("Add your Telegram or Discord username");
+  if (!websiteOnly()&&!communityHandle) throw Error("Add your community username");
   const answers = String(form.get("experience") || "").trim();
   if (!answers) throw Error("Complete your application answers");
   if (form.get("consent") !== "yes") throw Error("Confirm your application");
@@ -228,4 +229,4 @@ export async function decideApplication(form: FormData) {
     );
   redirect("/admin");
 }
-export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&job.sample)throw Error("Sample projects stay closed. Create a real project with client requirements instead.");if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");if(active&&(!job.clientUrl||!job.communityUrl))throw Error("The owner must configure client and community links first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed",archivedAt:active?"":new Date().toISOString()}).where(eq(projects.id,id));redirect("/admin/projects");}
+export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&job.sample)throw Error("Sample projects stay closed. Create a real project with client requirements instead.");if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");if(active&&(!job.clientUrl||(!websiteOnly()&&!job.communityUrl)))throw Error("The owner must configure the client destination first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed",archivedAt:active?"":new Date().toISOString()}).where(eq(projects.id,id));redirect("/admin/projects");}

@@ -1,3 +1,4 @@
+import {websiteOnly} from "../../deployment-mode";
 import {projectState} from "../../project-state";
 import { getChatGPTUser, chatGPTSignInPath } from "../../chatgpt-auth";
 import { getDb } from "../../../db";
@@ -78,7 +79,7 @@ export default async function Onboarding({
         >
           Complete your profile
         </a>
-      ) : j.telegramRequired&&!telegram?.username ? (<section className="suite-card telegram-gate"><span className="badge">NEXT · VERIFY TELEGRAM</span><h2>Connect Telegram before training.</h2><p>Open your Project Assistant bot and press Start. We verify the account and username automatically; typing a username is not proof.</p><a className="button dark" href={"/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+j.id)}>Verify my Telegram</a><p>Your project and progress stay saved while you switch apps.</p></section>) : !url ? (
+      ) : !websiteOnly()&&j.telegramRequired&&!telegram?.username ? (<section className="suite-card telegram-gate"><span className="badge">NEXT · VERIFY TELEGRAM</span><h2>Connect Telegram before training.</h2><p>Open your Project Assistant bot and press Start. We verify the account and username automatically; typing a username is not proof.</p><a className="button dark" href={"/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+j.id)}>Verify my Telegram</a><p>Your project and progress stay saved while you switch apps.</p></section>) : !url ? (
         <div className="soft-note">
           Your coordinator is preparing this project’s tutorial. Please check
           back before applying.
