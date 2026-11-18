@@ -1,4 +1,4 @@
-import { recruitment } from "../../recruitment/data";
+import { memberBrief } from "../../recruitment/data";
 import {websiteOnly} from "../../deployment-mode";
 import {contractVersion} from '../../vendor-policy';
 import {applicationLocks} from '../../enrollment';
@@ -41,7 +41,7 @@ export default async function Detail({
         <a href="/projects">Back to opportunities</a>
       </Shell>
     );
-  const brief = await recruitment(job.id);
+  const brief = await memberBrief(job.id,user?.userId);
   const membership=user?await db.select().from(teamMembers).where(and(eq(teamMembers.userId,user.userId),eq(teamMembers.projectId,job.id))).get():null;
   const locks=user?await applicationLocks(user.userId,job.id):[];
   const application = user

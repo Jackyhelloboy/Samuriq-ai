@@ -40,6 +40,11 @@ export async function register(form: FormData) {
   const skills = String(form.get("skills") || "").slice(0, 1500),
     location = String(form.get("location") || "").slice(0, 200),
     device = String(form.get("device") || "").slice(0, 100);
+  const skillLevel=String(form.get("skillLevel")??existingProfile?.skillLevel??"");
+  if(!["","New to project work","Experienced contributor","Team coordination experience"].includes(skillLevel))return fail("details");
+  const mobileOs=device==="iPhone"?"iOS":device==="Android phone"?"Android":device==="Phone and computer"?String(form.get("mobileOs")||""):"";
+  const osVersion=mobileOs?String(form.get("osVersion")||"").trim():"";
+  if ((device && !["iPhone","Android phone","Phone and computer","Laptop / desktop"].includes(device)) || (device==="Phone and computer" && !["Android","iOS"].includes(mobileOs)) || (mobileOs && !/^[1-9]\d?(?:\.\d{1,3}){0,2}$/.test(osVersion))) return fail("equipment");
   try{await (await import('./policy')).recordRegistrationPolicy(user,String(form.get('policyVersion')||''),form.get('platformPolicyConsent'));}catch(error){if(error instanceof Error&&/Read and accept the current platform agreement/i.test(error.message))return fail('policy');throw error;}const chosen=String(form.get('next')||(!existingProfile?primaryProjectId:''));if(chosen&&(!phone||!phoneConsent))return fail('phone-required');
   try{await getDb()
     .insert(participants)
@@ -54,12 +59,12 @@ export async function register(form: FormData) {
       source,
       skills,
       location,
-      device,
+      device,mobileOs,osVersion,skillLevel,
       created: new Date().toISOString(),
     })
     .onConflictDoUpdate({
       target: participants.id,
-      set: { username:handle,name,primaryProjectId,phone,phoneConsent, telegram, language, project, skills, location, device },
+      set: { username:handle,name,primaryProjectId,phone,phoneConsent, telegram, language, project, skills, location, device,mobileOs,osVersion,skillLevel },
     });}catch(error){const message=String(error)+String((error as {cause?:unknown})?.cause||"");if(/participant_username_unique|UNIQUE constraint failed: participants.username/i.test(message))return fail("taken");throw error;}
   const next=String(form.get("next")||(!existingProfile?primaryProjectId:""));if(next){const e=await import("./enrollment");try{await e.requireApplicationPermission(user.userId,next);await e.assignDirect(user.userId,next);}catch(error){if(error instanceof e.EnrollmentError)redirect("/projects/detail?id="+encodeURIComponent(next)+"&notice="+error.code);throw error;}}
   if(next){const job=await getDb().select().from(projects).where(eq(projects.id,next)).get();if(!websiteOnly()&&job?.telegramRequired&&!(await (await import("./telegram-identity")).telegramIdentity(user.userId))?.username)redirect("/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+next));}

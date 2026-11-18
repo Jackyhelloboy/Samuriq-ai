@@ -1,4 +1,4 @@
-import {recruitment,groupEligibility,db as directory} from "./recruitment/data";
+import {memberBrief,groupEligibility,db as directory} from "./recruitment/data";
 import {requireLeaderScope} from './vendor-policy';
 import { getChatGPTUser } from "./chatgpt-auth";
 import { getDb } from "../db";
@@ -37,7 +37,7 @@ export async function accessibleProject(id: string) {
     throw Error(
       "Coordinator approval and confirmed team membership are required",
     );
-  const brief=await recruitment(id);
+  const brief=await memberBrief(id,user.userId);
   if(brief?.group_url){
     const profile=await db.select().from(participants).where(eq(participants.id,user.userId)).get();
     const visit=await directory().prepare("SELECT 1 FROM group_visits WHERE project_id=? AND user_id=?").bind(id,user.userId).first();

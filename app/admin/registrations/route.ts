@@ -20,6 +20,7 @@ export async function GET() {
     [
       "Name",
       "Website email",
+      "Device","Mobile OS","OS version",
       "Project",
       "Declared client email",
       "Intended client username",
@@ -31,6 +32,7 @@ export async function GET() {
     ...rows.map((r) => [
       r.participants.name,
       r.participants.email,
+      r.participants.device,r.participants.mobileOs,r.participants.osVersion,
       r.projects.title,
       r.onboarding.clientEmail,
       r.onboarding.clientUsername,
