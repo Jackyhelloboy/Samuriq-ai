@@ -36,7 +36,7 @@ export default async function Home({
         <Brand />
         <nav aria-label="Main navigation">
           <a href={board}>Opportunities</a>
-          <a href="#how-to-start">How to start</a>
+          <a href="/demo/login">Try demo</a>
           <a href="#company">For businesses</a>
         </nav>
         <a className="nav-signin" href="/login">
@@ -63,19 +63,10 @@ export default async function Home({
             alt="Professionals collaborating on a project"
           />
         </section>
-        <section className="getting-started" id="how-to-start" aria-labelledby="getting-started-title">
-          <div className="section-kicker"><div><p className="eyebrow">YOUR NEXT STEP</p><h2 id="getting-started-title">Start here. Keep it simple.</h2></div></div>
-          <div className="getting-started-grid">
-            <a href={board}><span className="getting-started-number">01</span><h3>Find an opportunity</h3><p>Check requirements and available projects before applying.</p><strong>Browse projects <ArrowUpRight size={16}/></strong></a>
-            <a href="/login"><span className="getting-started-number">02</span><h3>Create your account</h3><p>Register once, or sign in with your existing account.</p><strong>Sign in or register <ArrowUpRight size={16}/></strong></a>
-            <a href="/workspace"><span className="getting-started-number">03</span><h3>Continue your project</h3><p>Find your next task, team updates and support in your workspace.</p><strong>Open my workspace <ArrowUpRight size={16}/></strong></a>
-          </div>
-        </section>
         <section className="home-project-board">
           <div className="section-kicker">
             <div>
-              <p className="eyebrow">PROJECT OPPORTUNITIES</p>
-              <h2>Choose where you contribute.</h2>
+              <h2>Project opportunities</h2>
             </div>
             <a className="text-link" href={board}>
               Search & filter projects ↗

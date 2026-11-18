@@ -64,8 +64,8 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             else:
                 raise AssertionError('Cloudflare Worker did not serve the home page')
             status, body, _ = request('/')
-            assert status == 200 and 'Start here. Keep it simple.' in body and 'Skip to main content' in body
-            for path in ['/projects', '/login', '/privacy', '/favicon.svg']:
+            assert status == 200 and 'Start here. Keep it simple.' not in body and 'Project opportunities' in body and 'Skip to main content' in body
+            for path in ['/projects', '/login', '/demo/login', '/demo', '/privacy', '/favicon.svg']:
                 assert request(path)[0] == 200, path
             # Check header-based size admission before body consumption: evidence
             # must reach authorization, while ordinary forms reject the same size.

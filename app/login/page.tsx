@@ -58,6 +58,7 @@ export default async function Login({
           style={{ display: "grid", gap: 10, maxWidth: 420 }}
         >
           <h2>Sign in</h2>
+          <a href="/demo/login">Try the project demo</a>
           <p>Already registered? Use your website account. <a href="#create-account">New here? Create an account</a></p>
           <input
             type="hidden"

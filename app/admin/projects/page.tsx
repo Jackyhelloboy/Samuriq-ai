@@ -89,7 +89,7 @@ export default async function AdminProjects({
                       {j.active ? "ACTIVE" : j.visibility==="listed"?"CLOSED":"DRAFT"}
                     </span>
                   </td>
-                  <td><a className="text-link" href={"/admin/projects/workflow?id="+j.id}>Training & evidence</a>
+                  <td><a className="text-link" href={"/admin/projects/post?id=" + encodeURIComponent(j.id)}>Edit public post</a> <a className="text-link" href={"/admin/projects/workflow?id="+j.id}>Training & evidence</a>
                     {operator.role==="owner"&&<a
                       className="text-link"
                       href={"/admin/projects/edit?id=" + j.id}
