@@ -111,6 +111,7 @@ export default async function Admin({
           </a>
         }
       />
+      <p><a className="button light" href="/admin/recruitment">Find and verify contributors</a></p>
       <Stats
         items={[
           ["Contributors", registered],
@@ -123,7 +124,7 @@ export default async function Admin({
         <h2>Your 5-minute daily routine</h2>
         <ol style={{ display: "grid", gap: 10, paddingLeft: 22, fontSize: 16 }}>
           <li><a href="/admin/team">Team & targets</a>: see who has not reported today and send reminders.</li>
-          <li>Below: approve pending applications ({pending} waiting) after checking their Telegram message.</li>
+          <li>Below: approve pending applications ({pending} waiting) after reviewing their registration and project requirements.</li>
           <li><a href="/admin/reports">Proof & reports</a>: review evidence and enter client-approved minutes.</li>
           <li><a href="/admin/team">Download the client report</a> and send it to the client.</li>
           <li><a href="/admin/payments">Payments</a>: prepare payouts from approved minutes only.</li>
@@ -172,7 +173,7 @@ export default async function Admin({
                     <td>
                       <strong>{p.name}</strong>
                       <small>{p.email}</small>
-                      <small>{p.telegram || "No Telegram username"}</small>
+                      <small>{p.username || "Profile incomplete"}</small>
                       <small>
                         {p.language} · {p.location}
                       </small>
@@ -230,7 +231,7 @@ export default async function Admin({
                             value="yes"
                             defaultChecked={!!a.communityVerified}
                           />
-                          I verified the pair’s Telegram / Discord identities
+                          I checked the applicant’s website registration
                         </label>
                         <button>Save decision</button>
                       </form>

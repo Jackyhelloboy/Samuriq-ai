@@ -1,3 +1,6 @@
+import {devices} from "../recruitment/data";
+import {INDIA_LANGUAGES} from "../india-languages";
+import {sql} from "drizzle-orm";
 import {features} from "../features";
 
 import { ProjectCard } from "../components/project-card";
@@ -20,6 +23,8 @@ export default async function Projects({
     page = Math.max(1, Math.min(10000, Number(q.page) || 1));
   const filter = and(
     eq(projects.archivedAt,""),
+    q.language ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.languages<>'' AND instr(', '||r.languages||', ', ', '||${q.language}||', ')=0)` : undefined,
+    q.device ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.devices<>'' AND instr(', '||r.devices||', ', ', '||${q.device}||', ')=0)` : undefined,
     or(eq(projects.active,1),eq(projects.visibility,"listed")),
     term
       ? or(
@@ -40,7 +45,7 @@ export default async function Projects({
     total = (await db.select({ n: count() }).from(projects).where(filter))[0].n;
   const samples:typeof jobs=[];
   const params = new URLSearchParams({
-    q: term,
+    language:q.language||"",device:q.device||"",q: term,
     category,
     source: q.source || "direct",
   });
@@ -89,6 +94,7 @@ export default async function Projects({
             ))}
           </select>
         </label>
+        {([["language",INDIA_LANGUAGES],["device",devices]] as const).map(([key,options])=><label key={key}><span className="sr-only">{key}</span><select name={key} defaultValue={q[key]||""}><option value="">{key==="device"?"All devices":"All languages"}</option>{options.map(o=><option key={o}>{o}</option>)}</select></label>)}
         <input type="hidden" name="source" value={q.source || "direct"} />
         <button>
           <Search size={16} />

@@ -1,4 +1,5 @@
 """Exercise the Cloudflare build using disposable D1 data and real password forms."""
+import hashlib
 import html
 import pathlib
 import re
@@ -21,6 +22,11 @@ opener = urllib.request.build_opener(NoRedirect)
 with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
     seed = pathlib.Path(state) / 'seed.sql'
     seed.write_text('\n'.join(p.read_text().replace('--> statement-breakpoint', '') for p in sorted((root / 'drizzle').glob('*.sql'))))
+    email = 'cloudflare-smoke@example.com'
+    code = '123456ABCDEF'
+    digest = hashlib.sha256((email+'|'+code).encode()).hexdigest()
+    with seed.open('a') as sql:
+        sql.write(f"\nINSERT INTO email_challenges VALUES ('{email}','{digest}',{int(time.time()*1000)+1800000},{int(time.time()*1000)});")
     subprocess.run(cli + ['d1', 'execute', 'DB', '--config', str(config), '--local', '--persist-to', state, '--file', str(seed)], cwd=root, check=True, stdout=subprocess.DEVNULL)
     with socket.socket() as listener:
         listener.bind(('127.0.0.1', 0))
@@ -84,11 +90,14 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 response = error
             assert response.status == 403, response.status
             signup = form('Create account')
-            signup.update(name='Synthetic Cloudflare User', email='cloudflare-smoke@example.test', password='SyntheticOnly-Password-2026', return_to='/workspace')
+            signup.update(name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
+            status, _, headers = request('/login', signup)
+            assert 'error=verification' in headers.get('Location','') and not any('sq_session=' in v for v in headers.get_all('Set-Cookie',[]))
+            signup['code']=code
             status, _, headers = request('/login', signup)
             assert status in (303, 307) and any('sq_session=' in value for value in headers.get_all('Set-Cookie', [])), (status, headers)
             signin = form('Sign in')
-            signin.update(email='cloudflare-smoke@example.test', password='SyntheticOnly-Password-2026', return_to='/workspace')
+            signin.update(email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
             status, _, headers = request('/login', signin)
             cookies = headers.get_all('Set-Cookie', [])
             assert status in (303, 307) and any('sq_session=' in value for value in cookies), (status, headers)

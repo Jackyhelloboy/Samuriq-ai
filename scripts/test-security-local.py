@@ -125,6 +125,21 @@ with tempfile.TemporaryDirectory(prefix='samuriq-security-') as state:
             assert b'samuriqai.in/sitemap.xml' in request('/robots.txt')[1]
             sessions = {name: login(name)[0] for name in roles}
             assert all(sessions.values())
+            with database() as db:
+                db.execute("UPDATE participants SET username='audit_alice' WHERE id='audit-alice'")
+                db.execute("INSERT INTO earnings(id,source_user_id,project_id,day,user_id,kind,minutes,rate_paise,amount_paise,source_version,created) VALUES ('earning_fixture','audit-alice','audit-individual','2026-01-01','audit-alice','direct',60,500,500,'synthetic','2026-01-01')")
+            template='/admin/payouts/import/template'
+            exported=request(template,cookie=sessions['owner'])
+            assert exported[0]==200 and b'"earning_fixture","audit_alice","5.00"' in exported[1]
+            assert b'earning_fixture' not in request(template,cookie=sessions['leader'])[1]
+            upload='/admin/payouts/import'
+            sheet=form(upload,'Check against earnings',sessions['owner'])
+            sheet['file']=('review.csv',exported[1])
+            matched=request(upload,sheet,sessions['owner'])
+            assert matched[0]==200 and b'Matched' in matched[1] and b'Prepare this payout' in matched[1],(matched[0],matched[1][-600:])
+            sheet['file']=('review.csv',exported[1].replace(b'5.00',b'9.00'))
+            mismatch=request(upload,sheet,sessions['owner'])
+            assert mismatch[0]==200 and b'Does not match the ledger' in mismatch[1]
             editor = '/admin/projects/post?id=audit-individual'
             for actor in ['manager', 'owner']:
                 fields = form(editor, 'Save post', sessions[actor])
@@ -171,6 +186,38 @@ with tempfile.TemporaryDirectory(prefix='samuriq-security-') as state:
                 assert '881122334499' not in encrypted and 'Synthetic Alice' not in encrypted
             assert request('/admin/payments/reveal', {'userId': 'audit-alice'}, sessions['owner'])[0] == 200
             assert request('/admin/payments/reveal', {'userId': 'audit-alice'}, sessions['owner'], origin='https://attacker.example')[0] == 403
+            change = form('/workspace/payments','Request bank change',sessions['alice'])
+            change.update(holder='Synthetic Alice',ifsc='ABCD0123456',account='881122338877',confirm='881122338877',reason='My original account has been closed.',consent='yes')
+            assert request('/workspace/payments',change,sessions['alice'])[0] in (303,307)
+            with database() as db:
+                assert db.execute("SELECT last4 FROM bank_details WHERE user_id='audit-alice'").fetchone()[0]=='4499'
+            decision=form('/admin/identity','Approve replacement bank account',sessions['owner'])
+            decision.update(decision='approve',note='Synthetic beneficiary review completed.')
+            assert request('/admin/identity',decision,sessions['owner'])[0] in (303,307)
+            with database() as db:
+                assert db.execute("SELECT last4 FROM bank_details WHERE user_id='audit-alice'").fetchone()[0]=='8877'
+            brief=form(editor,'Save recruitment settings',sessions['manager'])
+            invite='https://chat.whatsapp.com/SyntheticFixtureOnly'
+            brief.update(languages='Hindi',devices='Android phone',group=invite,notes='Headphones required')
+            assert request(editor,brief,sessions['manager'])[0] in (303,307)
+            public=request('/projects/detail?id=audit-individual')[1]
+            assert b'Headphones required' in public and invite.encode() not in public
+            group='/projects/group?id=audit-individual'
+            assert request(group)[0] in (303,307)
+            assert invite.encode() not in request(group,cookie=sessions['alice'])[1]
+            with database() as db:
+                db.execute("UPDATE participants SET username='audit_alice',device='Android phone',location='Pune, India' WHERE id='audit-alice'")
+                db.execute("INSERT INTO verified_mailboxes VALUES ('alice@example.test',1)")
+            directory='/admin/recruitment?city=Pune'
+            review=form(directory,'Mark profile reviewed',sessions['manager'])
+            review.update(checked='yes')
+            assert request(directory,review,sessions['manager'])[0] in (303,307)
+            status,_,hdr=request(group,cookie=sessions['alice'])
+            assert hdr.get('Location')==invite,(status,hdr)
+            with database() as db:
+                assert db.execute("SELECT count(*) FROM group_visits WHERE user_id='audit-alice'").fetchone()[0]==1
+                db.execute("UPDATE participants SET language='Tamil' WHERE id='audit-alice'")
+            assert request(group,cookie=sessions['alice'])[2].get('Location')!=invite
             screenshot = base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jS1cAAAAASUVORK5CYII=')
             fields = {'day': today, 'sectionId': 'audit-section-1', 'screenshot': ('synthetic.png', screenshot), 'consent': 'yes'}
             result = request('/evidence/upload?project=audit-individual', fields, sessions['alice'])
