@@ -229,4 +229,24 @@ export async function decideApplication(form: FormData) {
     );
   redirect("/admin");
 }
-export async function toggleProject(form:FormData){const operator=await requireOperator(),db=getDb(),id=String(form.get("id")),job=await db.select().from(projects).where(eq(projects.id,id)).get();if(!job)throw Error("Project not found");const active=form.get("active")==="1"?1:0;if(active&&job.sample)throw Error("Sample projects stay closed. Create a real project with client requirements instead.");if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");if(active&&(!job.clientUrl||(!websiteOnly()&&!job.communityUrl)))throw Error("The owner must configure the client destination first");if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");await db.update(projects).set({active,visibility:"listed",archivedAt:active?"":new Date().toISOString()}).where(eq(projects.id,id));redirect("/admin/projects");}
+export async function toggleProject(form: FormData) {
+  const operator = await requireOperator();
+  const db = getDb(), id = String(form.get("id"));
+  const job = await db.select().from(projects).where(eq(projects.id,id)).get();
+  if (!job || job.visibility==="removed") throw Error("Project unavailable");
+  const mode = String(form.get("mode") || (form.get("active")==="1"?"activate":"close"));
+  if (!["activate","pause","close","delete"].includes(mode)) throw Error("Unknown project action");
+  if (mode==="delete" && (operator.role!=="owner" || form.get("confirm")!==job.title))
+    throw Error("The owner must confirm the project title to delete it.");
+  const active = mode==="activate"?1:0;
+  if(active&&job.sample)throw Error("Sample projects stay closed. Create a real project with client requirements instead.");
+  if(active&&job.evidenceRequired&&(!job.onboardingRequired||!(job.tutorialUrl||job.registerUrl)||!job.terms||!job.pair||!job.inviteCode))throw Error("Configure required tutorials, terms, permanent pairs and task invitation code before activating this evidence project");
+  if(active&&(!job.clientUrl||(!websiteOnly()&&!job.communityUrl)))throw Error("The owner must configure the client destination first");
+  if(active&&((job.deadline&&job.deadline<new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))||(job.targetStart&&job.targetStart>new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date()))))throw Error("The owner must update this project’s schedule before it can be activated");
+  const values = {
+    active, visibility: mode==="delete"?"removed":mode==="pause"?"paused":"listed",
+    archivedAt: mode==="close" || mode==="delete" ? new Date().toISOString() : ""
+  };
+  await db.update(projects).set(values).where(and(eq(projects.id,id),eq(projects.visibility,job.visibility),eq(projects.archivedAt,job.archivedAt),eq(projects.active,job.active)));
+  redirect("/admin/projects");
+}
