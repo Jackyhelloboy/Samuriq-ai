@@ -1,10 +1,11 @@
+import SignupForm from "./signup-form";
 import SubmitButton from "../components/submit-button";
 import PasswordField from "../components/password-field";
 import "./account-forms.css";
 import {workspaceHome} from "../workspace-context";
 import { safeReturn } from "../auth-rate";
 import { sessionUser } from "../account";
-import { loginAccount, createAccount } from "../account-actions";
+import { loginAccount } from "../account-actions";
 import { redirect } from "next/navigation";
 import { Brand } from "../marks";
 export const dynamic = "force-dynamic";
@@ -35,7 +36,7 @@ export default async function Login({
           your team.
         </p>
         {q.error && (
-          <p role="alert" style={{ color: "#ffb4ab" }}>
+          <p role="alert" className="account-error">
             {(
               {
                 login: "Wrong email or password.",
@@ -45,6 +46,7 @@ export default async function Login({
                 exists: "That email already has an account. Sign in instead.",
                 short: "Choose a password with 8–128 characters.",
                 details: "Enter your name and a valid .com email.",
+                profile:"Check your age, phone, city and device version.",
                 verification: "Request an email code and enter it under Create an account.",
                 admin:
                   "That email is reserved for the owner. Use your existing owner password sign-in.",
@@ -52,15 +54,16 @@ export default async function Login({
             )[q.error] || "Something went wrong."}
           </p>
         )}
+        <nav className="account-tabs" aria-label="Account options"><a href="#sign-in">Sign in</a><a href="#create-account">Create an account</a></nav>
         <form
           id="sign-in"
           className="account-form"
           action={loginAccount}
-          style={{ display: "grid", gap: 10, maxWidth: 420 }}
+          
         >
           <h2>Sign in</h2>
-          <a href="/demo/login">Try the project demo</a>
-          <p>Already registered? Use your website account. <a href="#create-account">New here? Create an account</a></p>
+
+          
           <input
             type="hidden"
             name="return_to"
@@ -80,45 +83,7 @@ export default async function Login({
           <PasswordField id="signin-password" />
           <SubmitButton className="button dark" pendingLabel="Signing in…">Sign in</SubmitButton>
         </form>
-        <form
-          id="create-account"
-          className="account-form"
-          action={createAccount}
-          style={{ display: "grid", gap: 10, maxWidth: 420, marginTop: 28 }}
-        >
-          <h2>New here? Create an account</h2>
-          <p>Set up your account, then complete your contributor profile. <a href="#sign-in">Already have an account? Sign in</a></p>
-          <input
-            type="hidden"
-            name="return_to"
-            value={q.return_to || ""}
-          />
-          <label htmlFor="signup-name">Full name</label>
-          <input
-            id="signup-name"
-            name="name"
-            placeholder="Full name"
-            required
-            autoComplete="name"
-            maxLength={100}
-          />
-          <label htmlFor="signup-email">Email</label>
-          <input
-            id="signup-email"
-            name="email"
-            type="email"
-            placeholder="Email"
-            required
-            autoComplete="email"
-            autoCapitalize="none"
-            spellCheck={false}
-          />
-          <a href={"/verify-email?return_to="+encodeURIComponent(q.return_to || "/workspace")}>Get a verification code by email</a>
-          <label htmlFor="signup-code">Code from your inbox</label><input id="signup-code" name="code" required maxLength={12} autoComplete="one-time-code"/>
-          <PasswordField id="signup-password" creating />
-
-          <SubmitButton className="button dark" pendingLabel="Creating account…">Create account</SubmitButton>
-        </form>
+        <SignupForm returnTo={q.return_to||""}/>
         <small>Use your registered email and password. Staff permissions are assigned by management, never selected at sign-up.</small>
       </div>
       <a href="/">← Back to Samuriq AI</a>

@@ -73,7 +73,7 @@ export default async function Home({
               <h2>Project opportunities</h2>
             </div>
             <a className="text-link" href={board}>
-              Search & filter projects ↗
+              Filter projects
             </a>
           </div>
           <ContentSlot slot="home" />
@@ -89,7 +89,6 @@ export default async function Home({
           {!hasLiveListings && (
             <p>New projects will appear when applications open.</p>
           )}
-          {jobs.length === 12 && <a className="text-link" href={board}>View all projects and filters <ArrowUpRight size={16}/></a>}
         </section>{" "}
 
         <section className="expertise-section" id="expertise">
@@ -137,9 +136,7 @@ export default async function Home({
                     <h3>{String(t)}</h3>
                     <p>{String(d)}</p>
                   </div>
-                  <a href={board} aria-label={"Explore " + t}>
-                    <ArrowUpRight size={21} />
-                  </a>
+
                 </article>
               );
             })}

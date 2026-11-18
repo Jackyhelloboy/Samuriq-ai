@@ -90,7 +90,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 response = error
             assert response.status == 403, response.status
             signup = form('Create account')
-            signup.update(name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
+            signup.update(age='25', address='Synthetic address', city='Pune', phone='+919000000000', device='iPhone', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
             status, _, headers = request('/login', signup)
             assert 'error=verification' in headers.get('Location','') and not any('sq_session=' in v for v in headers.get_all('Set-Cookie',[]))
             signup['code']=code
@@ -102,8 +102,8 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             cookies = headers.get_all('Set-Cookie', [])
             assert status in (303, 307) and any('sq_session=' in value for value in cookies), (status, headers)
             session = next(value.split(';')[0] for value in cookies if value.startswith('sq_session='))
-            status, _, _ = request('/workspace', headers={'Cookie': session, **forged})
-            assert status < 500, status
+            status, profile_page, _ = request('/workspace', headers={'Cookie': session, **forged})
+            assert status == 200 and 'Synthetic address' in profile_page and '+919000000000' in profile_page and '18.4' in profile_page, status
             status, _, _ = request('/admin/settings', headers={'Cookie': session, **forged})
             assert status in (302, 303, 307, 308, 403), status
             print('PASS CLOUDFLARE: D1 migrations, home/navigation/assets, real password signup/login, forged-owner denial and cross-origin write denial.')
