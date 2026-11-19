@@ -46,7 +46,7 @@ export default function SignupForm({returnTo}:{returnTo:string}){
     <label>Full name<input name="name" autoComplete="name" required maxLength={100}/></label>
     <label>Email address<input ref={email} name="email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required maxLength={254} onChange={()=>setNotice("")}/></label>
     <div className="signup-verification"><button type="button" disabled={sending||saving} onClick={send}>{sending?"Requesting…":"Send verification code"}</button>
-    <span role="status">{notice}</span>
+    <span role="status">{notice} {notice && [codeMessages.requested,codeMessages.delivery].includes(notice) && <a href="/support" target="_blank" rel="noreferrer">Open support in a new tab</a>}</span>
     <label>Code from your inbox<input name="code" required minLength={12} maxLength={12} pattern="[0-9A-Fa-f]{12}" title="Enter the 12-character code from your email" autoComplete="one-time-code" spellCheck={false}/></label></div>
     <PasswordField id="signup-password" creating/>
     {step===1&&<button type="submit">Continue to contact details</button>}</fieldset>

@@ -17,13 +17,28 @@ export async function sendSignupCode(address:string) {
     .bind(email,now,now-60000).run();
   const mail=env as unknown as {RESEND_API_KEY?:string;VERIFICATION_FROM?:string};
   if(!inserted.meta.changes) return "cooldown";
-  if(mail.RESEND_API_KEY && mail.VERIFICATION_FROM){
-    const code=await issueCode(email);
-    const res=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:"Bearer "+mail.RESEND_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({from:mail.VERIFICATION_FROM,to:[email],subject:"Verify your Samuriq email",text:"Your Samuriq verification code is "+code+". It expires in 30 minutes."})});
-    if(!res.ok) { await db().prepare("UPDATE email_challenges SET digest='',expires=0 WHERE email=? AND requested=? AND digest=?").bind(email,now,await digest(email+"|"+code)).run(); return "delivery"; }
-    return "sent";
+  const key=mail.RESEND_API_KEY?.trim();
+  if (!key) return "requested";
+  const sender=mail.VERIFICATION_FROM?.trim() || "Samuriq AI <verification@samuriqai.in>";
+  const code=await issueCode(email);
+  try {
+    const response=await fetch("https://api.resend.com/emails",{
+      method:"POST",
+      headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},
+      body:JSON.stringify({from:sender,to:[email],subject:"Your Samuriq AI verification code",
+        text:"Enter this code on your Samuriq sign-up page: "+code+"\n\nThe code expires in 30 minutes. If you did not request it, you can ignore this email."}),
+      signal:AbortSignal.timeout(12000)
+    });
+    if (response.ok) return "sent";
+    console.warn("Signup email rejected by delivery provider",response.status);
+  } catch {
+    // A timed-out request may still deliver. Keep its code usable.
+    console.warn("Signup email delivery could not be confirmed");
+    return "uncertain";
   }
-  return "requested";
+  await db().prepare("UPDATE email_challenges SET digest='',expires=0 WHERE email=? AND requested=? AND digest=?")
+    .bind(email,now,await digest(email+"|"+code)).run();
+  return "delivery";
 }
 export async function requestCode(f:FormData) {
   const status=await sendSignupCode(String(f.get("email")||""));

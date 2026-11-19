@@ -81,7 +81,7 @@ export default async function Login({
           <SubmitButton className="button dark" pendingLabel="Signing in…">Sign in</SubmitButton>
         </form>
         <SignupForm returnTo={q.return_to||""}/>
-        <footer className="entry-footer"><a href="/privacy">Privacy</a><a href="/demo/login">Explore the demo</a></footer>
+        <footer className="entry-footer"><a href="/support">Get support</a><a href="/privacy">Privacy</a><a href="/demo/login">Explore the demo</a></footer>
         </section>
       </div>
     </main>

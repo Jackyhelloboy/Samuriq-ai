@@ -220,17 +220,18 @@ export default async function Home({
       <footer className="company-footer">
         <div>
           <Brand />
-          <p>Human data. Real possibility.</p>
+
         </div>
         <nav aria-label="Footer navigation"><a href="/india">India locations & languages</a>
           <a href="#expertise">Expertise</a>
           <a href={board}>Project opportunities</a>
           <a href="/login">Your workspace</a>
-          <a href="/privacy">Privacy & data</a>
+          <a href="/support">Get support</a>
+          <a href="/privacy">Privacy &amp; data</a>
         </nav>
         <div className="footer-legal">
           <span>© {new Date().getFullYear()} Samuriq AI</span>
-          <span>Human contribution for a more capable world.</span>
+
         </div>
       </footer>
     </div>

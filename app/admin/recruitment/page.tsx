@@ -1,3 +1,4 @@
+import {env} from "cloudflare:workers";
 import {Checkpoints} from "./checkpoints";
 import {workDay} from "../../team-access";
 import {contributors} from "./query";
@@ -10,6 +11,7 @@ import {Mail} from "./mail";
 export const dynamic="force-dynamic";
 export default async function Recruitment({searchParams}:{searchParams:Promise<Record<string,string>>}){
   const operator=await requireOperatorView("/admin/recruitment");
+  const mail=env as unknown as {RESEND_API_KEY?:string;VERIFICATION_FROM?:string};
   const q=await searchParams,city=(q.city||"").trim().slice(0,80),language=q.language||"",device=q.device||"",page=Math.max(1,Math.min(10000,Math.trunc(Number(q.page)||1)));
   const checkpoint=q.checkpoint||"";
   const overdue=checkpoint==="reports"?await db().prepare("SELECT t.id,t.label,p.title FROM project_teams t JOIN projects p ON p.id=t.project_id WHERE t.active=1 AND p.active=1 AND p.archived_at='' AND NOT EXISTS(SELECT 1 FROM leader_reports r WHERE r.team_id=t.id AND r.day=?) ORDER BY t.label").bind(workDay()).all<{id:string;label:string;title:string}>():null;
@@ -24,5 +26,6 @@ export default async function Recruitment({searchParams}:{searchParams:Promise<R
     {await Promise.all(results.slice(0,30).map(async p=>{const version=await profileVersion(p);return <section key={p.id} className="suite-card"><h2>{p.name}</h2><p>{p.username} · {p.location} · {p.language} · {p.device} {p.mobileOs} {p.osVersion}</p><p>{[p.skillLevel,p.skills].filter(Boolean).join(" · ")}</p><p>{p.email} · {p.verified?"Inbox verified":"Email awaiting verification"}{p.phone_consent?" · "+p.phone:""}</p><p>Project group links opened: {p.opened}</p>
       {p.profile_version===version?<strong>Profile reviewed</strong>:<form action={verifyProfile}><input type="hidden" name="userId" value={p.id}/><input type="hidden" name="version" value={version}/><label><input type="checkbox" name="checked" value="yes" required/> I checked this contributor’s location, language and device.</label><button>Mark profile reviewed</button></form>}</section>}))}
     {!results.length&&<p>No matching contributors.</p>}<nav>{page>1&&<a href={link(page-1)}>Previous page</a>} {results.length>30&&<a href={link(page+1)}>Next page</a>}</nav>
+    {operator.role==="owner"&&<section className="suite-card"><h2>Verification email delivery</h2>{mail.RESEND_API_KEY?.trim()?<p>Sending key configured. Check the Resend email log for delivery or bounce details. Sender: {mail.VERIFICATION_FROM?.trim() || "verification@samuriqai.in"}.</p>:<p>Automatic sending needs a Resend sending key. Verify the sender domain in Resend, then save RESEND_API_KEY as a production Worker secret. Pending requests appear below for manual delivery.</p>}</section>}
     {!!queue.results.length&&<section className="suite-card"><h2>Requested verification emails</h2><p>Send each code only to the mailbox shown.</p>{queue.results.map(row=><Mail key={row.email} email={row.email}/>)}</section>}</Shell>;
 }
