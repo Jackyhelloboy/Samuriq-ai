@@ -1,9 +1,10 @@
+import {cardFields,publishedProject} from "./project-listing";
 import { ProjectCard } from "./components/project-card";
 import { ContentSlot } from "./components/content-slot";
 import { Brand } from "./marks";
 import { getDb } from "../db";
 import { projects } from "../db/schema";
-import { eq, desc, or, and } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import {
   ArrowUpRight,
   AudioLines,
@@ -23,17 +24,11 @@ export default async function Home({
     ),
     board = "/projects?source=" + source,
     jobs = await getDb()
-      .select({
-        id: projects.id, title: projects.title, category: projects.category,
-        description: projects.description, location: projects.location, pair: projects.pair,
-        rate: projects.rate, active: projects.active, visibility: projects.visibility,
-        sample: projects.sample, targetStart: projects.targetStart, deadline: projects.deadline,
-      })
+      .select(cardFields)
       .from(projects)
-      .where(and(eq(projects.archivedAt,""),or(eq(projects.active,1),eq(projects.visibility,"listed"),eq(projects.visibility,"paused"))))
+      .where(publishedProject)
       .orderBy(desc(projects.active),desc(projects.created))
       .limit(12);
-  const hasLiveListings = jobs.some(job => !job.sample);
   return (
     <div className="premium-site pro5">
       <a className="skip-to-content" href="#main-content">Skip to main content</a>
@@ -41,7 +36,6 @@ export default async function Home({
         <Brand />
         <nav aria-label="Main navigation">
           <a href={board}>Opportunities</a>
-          <a href="/demo/login">Try demo</a>
           <a href="#company">For businesses</a>
         </nav>
         <a className="nav-signin" href="/login">
@@ -86,7 +80,7 @@ export default async function Home({
               />
             ))}
           </div>
-          {!hasLiveListings && (
+          {!jobs.length && (
             <p>New projects will appear when applications open.</p>
           )}
         </section>{" "}

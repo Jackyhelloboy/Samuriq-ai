@@ -1,3 +1,4 @@
+import {realProject} from "../../project-listing";
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
@@ -16,7 +17,7 @@ export default async function AdminProjects({
     term = (q.q || "").slice(0, 100),
     page = Math.max(1, Math.min(10000, Number(q.page) || 1)),
     db = getDb();
-  const filter = and(ne(projects.visibility,"removed"),term ? like(projects.title, "%" + term + "%") : undefined);
+  const filter = and(realProject,ne(projects.visibility,"removed"),term ? like(projects.title, "%" + term + "%") : undefined);
   const jobs = await db
     .select()
     .from(projects)

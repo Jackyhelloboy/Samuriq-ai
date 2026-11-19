@@ -108,3 +108,14 @@
   .v6-suite .suite-foot a { display: flex; align-items: center; min-height: 44px; }
   .account-entry .entry-footer { flex-wrap: wrap; justify-content: flex-start; gap: 0 18px; }
 }
+
+.v7-suite .suite-sidebar .nav-section-label {
+  margin: 16px 0 6px; padding: 0 10px;
+  color: #41554c; line-height: 1.5;
+  font-family: inherit; font-size: .75rem; font-weight: 650;
+  letter-spacing: .065em;
+}
+.opportunity-card .card-facts { display: grid; gap: 6px; align-content: start; }
+.opportunity-card .card-facts > span { display: flex; align-items: baseline; gap: 7px; min-width: 0; color: #344c40; line-height: 1.5; overflow-wrap: anywhere; }
+.opportunity-card .card-facts > span > svg { align-self: flex-start; flex: 0 0 15px; margin-top: 3px; }
+.v6-suite .project-filters { max-width: none; width: 100%; }

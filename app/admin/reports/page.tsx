@@ -1,3 +1,4 @@
+import {realProject} from "../../project-listing";
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import {
@@ -51,7 +52,7 @@ export default async function Reports({
         ),
       )
   )[0].n;
-  const jobs = await db.select().from(projects),
+  const jobs = await db.select().from(projects).where(realProject),
     params = new URLSearchParams({ day, project: q.project || "" });
   return (
     <Shell admin active="Proof & reports">

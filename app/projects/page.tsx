@@ -1,16 +1,16 @@
 import {devices} from "../recruitment/data";
 import {INDIA_LANGUAGES} from "../india-languages";
 import {sql} from "drizzle-orm";
-import {features} from "../features";
+import {cardFields,publishedProject} from "../project-listing";
 
 import { ProjectCard } from "../components/project-card";
 import { ContentSlot } from "../components/content-slot";
-import { projectState, stateLabel } from "../project-state";
+
 import { getDb } from "../../db";
 import { projects } from "../../db/schema";
 import { eq, desc, and, like, or, count } from "drizzle-orm";
-import { Shell, Heading, Empty } from "../components/shell";
-import { ArrowUpRight, Search, Users, MapPin } from "lucide-react";
+import { Shell, Empty } from "../components/shell";
+import { Search } from "lucide-react";
 export const dynamic = "force-dynamic";
 export default async function Projects({
   searchParams,
@@ -22,10 +22,9 @@ export default async function Projects({
     category = q.category || "",
     page = Math.max(1, Math.min(10000, Number(q.page) || 1));
   const filter = and(
-    eq(projects.archivedAt,""),
+    publishedProject,
     q.language ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.languages<>'' AND instr(', '||r.languages||', ', ', '||${q.language}||', ')=0)` : undefined,
     q.device ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.devices<>'' AND instr(', '||r.devices||', ', ', '||${q.device}||', ')=0)` : undefined,
-    or(eq(projects.active,1),eq(projects.visibility,"listed"),eq(projects.visibility,"paused")),
     term
       ? or(
           like(projects.title, "%" + term + "%"),
@@ -36,14 +35,13 @@ export default async function Projects({
   );
   const db = getDb(),
     jobs = await db
-      .select()
+      .select(cardFields)
       .from(projects)
       .where(filter)
       .orderBy(desc(projects.active),desc(projects.created))
       .limit(50)
       .offset((page - 1) * 50),
     total = (await db.select({ n: count() }).from(projects).where(filter))[0].n;
-  const samples:typeof jobs=[];
   const params = new URLSearchParams({
     language:q.language||"",device:q.device||"",q: term,
     category,
@@ -51,18 +49,14 @@ export default async function Projects({
   });
   return (
     <Shell active="Find projects">
-      <Heading
-        eyebrow="OPPORTUNITY MARKETPLACE"
-        title="Find work that fits you."
-        description="Explore AI projects, read the requirements and apply with confidence."
-      />
+      <h1 className="sr-only">Projects</h1>
       <form className="filter-bar project-filters" method="get">
         <label>
           <span className="filter-label">Search projects</span>
           <input
             name="q"
             defaultValue={term}
-            placeholder="Search projects, skills or keywords…"
+            placeholder="Search by title or keyword"
           />
         </label>
         <label>
@@ -93,13 +87,13 @@ export default async function Projects({
       </form>
       <div className="section-kicker">
         <h3>
-          {total} published {total === 1 ? "project" : "projects"}{samples.length>0&&" · "+samples.length+" layout previews"}
+          {total} published {total === 1 ? "project" : "projects"}
         </h3>
         <span>Active projects first</span>
       </div>
       <ContentSlot slot="projects" />
       <div className="opportunity-grid">
-        {[...jobs,...samples].map((j) => (
+        {jobs.map((j) => (
           <ProjectCard key={j.id} job={j} source={q.source || "direct"} />
         ))}
       </div>
@@ -108,7 +102,7 @@ export default async function Projects({
           Try a different search or category.
         </Empty>
       )}
-      <div className="pagination">
+      {total > 50 && <div className="pagination">
         {page > 1 && (
           <a href={"/projects?" + params + "&page=" + (page - 1)}>
             Previous page
@@ -118,7 +112,7 @@ export default async function Projects({
         {page * 50 < total && (
           <a href={"/projects?" + params + "&page=" + (page + 1)}>Next page</a>
         )}
-      </div>
+      </div>}
     </Shell>
   );
 }

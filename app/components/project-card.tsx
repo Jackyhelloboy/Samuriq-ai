@@ -5,7 +5,7 @@ import {
   Move3d,
   ScanEye,
   MapPin,
-  Users,
+  Users, Languages, MonitorSmartphone,
 } from "lucide-react";
 import { projectState, stateLabel } from "../project-state";
 type Job = {
@@ -20,9 +20,9 @@ type Job = {
   targetStart: string;
   deadline: string;
   onboardingRequired?: number;
-  preview?: boolean;
+  languages: string;
+  devices: string;
   visibility?: string;
-  sample?:number;
   enrollmentOnly?:number;
 };
 export function ProjectCard({
@@ -48,10 +48,10 @@ export function ProjectCard({
         </span>
 
         <span className={"badge " + (state === "online" ? "approved" : "")}>
-          {j.sample?"Sample project":j.visibility==="paused"?"Temporarily paused":state==="online"?"Applications open":stateLabel(state)}
+          {j.visibility==="paused"?"Temporarily paused":state==="online"?"Applications open":stateLabel(state)}
         </span>
       </div>
-      <p className="card-discipline">{j.category}{j.preview&&<span className="preview-label">LAYOUT PREVIEW</span>}</p>
+      <p className="card-discipline">{j.category}</p>
       <h2>{j.title}</h2>
       <p className="card-excerpt">{j.description}</p>
       <div className="card-facts">
@@ -63,10 +63,12 @@ export function ProjectCard({
           <Users size={13} />
           {j.pair ? "Permanent pair" : "Individual"}
         </span>
+        <span><Languages size={15} aria-hidden="true"/><span>Language: {j.languages || "All languages"}</span></span>
+        <span><MonitorSmartphone size={15} aria-hidden="true"/><span>Device: {j.devices || "Any device"}</span></span>
       </div>
       <div className="card-compensation">{j.rate || "See the project brief for compensation"}</div>
 
-      {!j.preview&&!j.sample?(      <a
+      <a
         href={
           "/projects/detail?id=" +
           encodeURIComponent(j.id) +
@@ -76,7 +78,7 @@ export function ProjectCard({
         className="card-apply"
       >
         {state==="online"?"View requirements":"View project details"} <ArrowUpRight size={18} />
-      </a>):<div className="card-apply card-closed" aria-disabled="true"><span>{j.sample?"Sample project · closed":j.preview?"Preview only · no applications":"Project closed"}</span><span aria-hidden="true">—</span></div>}
+      </a>
     </article>
   );
 }

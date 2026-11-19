@@ -1,15 +1,12 @@
 'use client';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
-import {PanelLeftClose,PanelLeftOpen,Menu,X} from 'lucide-react';
+import {Menu,X} from 'lucide-react';
 
 export default function WorkspaceChrome({sidebar,header,children,footer,mobileNav}:{
   sidebar:ReactNode;header:ReactNode;children:ReactNode;footer:ReactNode;mobileNav?:ReactNode
 }){
-  const [collapsed,setCollapsed]=useState(false),[mobile,setMobile]=useState(false);
+  const [mobile,setMobile]=useState(false);
   const drawer=useRef<HTMLElement>(null),opener=useRef<HTMLButtonElement>(null);
-  useEffect(()=>{
-    try{setCollapsed(localStorage.getItem('samuriq-nav-v6')==='compact')}catch{}
-  },[]);
   useEffect(()=>{
     if(!mobile)return;
     const previous=document.body.style.overflow;
@@ -32,15 +29,12 @@ export default function WorkspaceChrome({sidebar,header,children,footer,mobileNa
       media.removeEventListener('change',closeOnDesktop);opener.current?.focus();
     };
   },[mobile]);
-  function toggle(){
-    setCollapsed(v=>{try{localStorage.setItem('samuriq-nav-v6',!v?'compact':'expanded')}catch{}return !v});
-  }
-  return <div className={'suite v6-suite v7-suite'+(collapsed?' nav-compact':'')+(mobile?' mobile-nav-open':'')}>
+  return <div className={'suite v6-suite v7-suite'+(mobile?' mobile-nav-open':'')}>
     <a className="skip-to-content" href="#main-content">Skip to workspace content</a>
     <aside ref={drawer} id="workspace-navigation" className="suite-sidebar" role={mobile?'dialog':undefined} aria-modal={mobile||undefined}
       aria-label="Workspace navigation" onClickCapture={e=>{if(mobile&&e.target instanceof Element&&e.target.closest('a[href]'))setMobile(false)}}>
       {mobile&&<button type="button" className="mobile-drawer-close" aria-label="Close workspace menu" onClick={()=>setMobile(false)}><X size={20}/></button>}
-      <div className="rail-collapse"><button type="button" onClick={toggle} aria-label={collapsed?'Expand navigation':'Collapse navigation'} aria-expanded={!collapsed}>{collapsed?<PanelLeftOpen size={18}/>:<PanelLeftClose size={18}/>}</button></div>{sidebar}
+      {sidebar}
     </aside>
     {mobile&&<button className="mobile-scrim" tabIndex={-1} aria-label="Close navigation" onClick={()=>setMobile(false)}/>}
     <div className="suite-body" inert={mobile||undefined}>

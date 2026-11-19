@@ -1,3 +1,4 @@
+import {realProject} from "../../project-listing";
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
@@ -14,7 +15,7 @@ export default async function Team({
     day = /^\d{4}-\d{2}-\d{2}$/.test(q.day || "") ? q.day : indiaDay(),
     page = Math.max(1, Math.floor(Number(q.page) || 1)),
     rows = await teamRows(q.project || "", day),
-    jobs = await getDb().select().from(projects),
+    jobs = await getDb().select().from(projects).where(realProject),
     params = new URLSearchParams({ day, project: q.project || "" });
   return (
     <Shell admin active="Team & targets">

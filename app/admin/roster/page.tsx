@@ -1,3 +1,4 @@
+import {realProject} from "../../project-listing";
 import {routeWaitingApplicants} from "../../leader-actions";
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
@@ -21,7 +22,7 @@ export default async function Roster({
   const q = await searchParams,
     db = getDb(),
     day = indiaDay();
-  const jobs = await db.select().from(projects);
+  const jobs = await db.select().from(projects).where(realProject);
   const job = jobs.find((j) => j.id === q.project) || jobs[0];
   const rows = job
     ? await db
