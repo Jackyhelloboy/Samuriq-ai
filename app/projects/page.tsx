@@ -56,20 +56,9 @@ export default async function Projects({
         title="Find work that fits you."
         description="Explore AI projects, read the requirements and apply with confidence."
       />
-      <div className="market-banner premium-market">
-        <div>
-          <span className="badge">HUMAN INTELLIGENCE</span>
-          <h2>Your skills can shape what’s next.</h2>
-          <p>
-            Project-based contributions across language, data, evaluation and
-            real-world collection.
-          </p>
-        </div>
-        <img src="/images/team.jpg" alt="Professionals working together" />
-      </div>
-      <form className="filter-bar" method="get">
+      <form className="filter-bar project-filters" method="get">
         <label>
-          <span className="sr-only">Search projects</span>
+          <span className="filter-label">Search projects</span>
           <input
             name="q"
             defaultValue={term}
@@ -77,7 +66,7 @@ export default async function Projects({
           />
         </label>
         <label>
-          <span className="sr-only">Category</span>
+          <span className="filter-label">Category</span>
           <select name="category" defaultValue={category}>
             <option value="">All categories</option>
             {[
@@ -94,12 +83,13 @@ export default async function Projects({
             ))}
           </select>
         </label>
-        {([["language",INDIA_LANGUAGES],["device",devices]] as const).map(([key,options])=><label key={key}><span className="sr-only">{key}</span><select name={key} defaultValue={q[key]||""}><option value="">{key==="device"?"All devices":"All languages"}</option>{options.map(o=><option key={o}>{o}</option>)}</select></label>)}
+        {([["language",INDIA_LANGUAGES],["device",devices]] as const).map(([key,options])=><label key={key}><span className="filter-label">{key==="device"?"Equipment":"Language"}</span><select name={key} defaultValue={q[key]||""}><option value="">{key==="device"?"All devices":"All languages"}</option>{options.map(o=><option key={o}>{o}</option>)}</select></label>)}
         <input type="hidden" name="source" value={q.source || "direct"} />
         <button>
           <Search size={16} />
-          Search
+          Apply filters
         </button>
+        {(term||category||q.language||q.device)&&<a className="filter-reset" href={"/projects?source="+encodeURIComponent(q.source||"direct")}>Clear filters</a>}
       </form>
       <div className="section-kicker">
         <h3>
