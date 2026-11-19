@@ -6,6 +6,7 @@ import "./android.css";
 import "./getting-started.css";
 import "./professional.css";
 import "./recruitment-design.css";
+import "./light-theme.css";
 
 export const metadata: Metadata = {
   title: "Samuriq AI | Human Data & Project Opportunities",
