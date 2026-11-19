@@ -1,3 +1,4 @@
+import {projectState} from "../../project-state";
 import {getTableColumns} from "drizzle-orm";
 import {cardFields,realProject} from "../../project-listing";
 import { requireOperatorView as requireOperator } from "../../access";
@@ -66,7 +67,7 @@ export default async function AdminProjects({
         <div className="portfolio-grid">
           {jobs.map(j=><article className="portfolio-card" key={j.id}>
             <header><span className="card-discipline">{j.category}</span>
-              <span className="badge">{j.active?"Active":j.visibility==="paused"?"Paused":j.archivedAt||j.visibility==="listed"?"Closed":"Draft"}</span></header>
+              <span className="badge">{j.archivedAt?"Closed":j.visibility==="paused"?"Paused":!j.active&&j.visibility==="draft"?"Draft":projectState(j)==="online"?"Open":projectState(j)==="soon"?"Upcoming":"Closed"}</span></header>
             <h3>{j.title}</h3><p>{j.description}</p>
             <dl className="hiring-facts">{[
               ["Work format",j.location+" · "+(j.pair?"Permanent pair":"Individual")],
