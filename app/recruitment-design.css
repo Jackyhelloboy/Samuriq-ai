@@ -139,3 +139,48 @@
 
 .segment-row {display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #dce3dc; padding-block:6px}
 .segment-row a {overflow-wrap:anywhere;min-width:0}
+
+.hiring-site {--hiring-forest:#103f36;--hiring-paper:#f8f8f1;--hiring-lime:#ddf4a8}
+.hiring-site .hiring-hero {
+  display:grid; grid-template-columns:minmax(0,1.04fr) minmax(0,1fr);
+  background:var(--hiring-forest); color:white; overflow:hidden;
+  margin:clamp(12px,2.4vw,38px); border-radius:20px;
+}
+.hiring-hero > div {padding:clamp(32px,4.5vw,80px);align-self:center}
+.hiring-hero .eyebrow {color:var(--hiring-lime);font-size:.78rem;letter-spacing:.12em;margin:0 0 22px}
+.hiring-hero h1 {color:white;font:500 clamp(3rem,5.6vw,6rem)/.99 Inter,Arial,sans-serif;letter-spacing:-.06em;margin:0}
+.hiring-hero h1 em {font-family:Georgia,serif;font-weight:400;color:var(--hiring-lime)}
+.hiring-hero p:not(.eyebrow) {color:#e3ede6;font-size:clamp(1rem,1.2vw,1.18rem);line-height:1.55;max-width:45ch;margin:24px 0}
+.hiring-hero > img {width:100%;height:100%;min-height:0;object-fit:cover;object-position:55% center}
+.hiring-actions {display:flex;align-items:center;flex-wrap:wrap;gap:8px 20px}
+.hiring-actions a {display:inline-flex;align-items:center;gap:8px;color:white;min-height:46px;font-weight:600}
+.hiring-actions .primary-hiring-link {background:var(--hiring-lime);color:#15392a;border-radius:8px;padding:0 18px}
+.hiring-actions a:hover {text-decoration:underline;text-underline-offset:4px}
+.hiring-site .home-project-board .section-kicker {align-items:center;gap:14px}
+.hiring-site .home-project-board h2:not(.opportunity-card h2) {font-size:clamp(1.65rem,3vw,3rem);letter-spacing:-.045em}
+.hiring-site .section-kicker .text-link {display:inline-flex;align-items:center;gap:6px;min-height:44px}
+.hiring-site .expertise-list h3 a {display:inline-flex;gap:10px;min-height:44px;align-items:center;color:#193d31}
+.hiring-site .expertise-list h3 a:hover {text-decoration:underline}
+.opportunity-card .card-facts span {font-size:.91rem}
+@media(min-width:860px){
+  :is(.pro5,.suite) .opportunity-grid:has(>.opportunity-card:only-child){grid-template-columns:minmax(0,1fr)}
+  :is(.pro5,.suite) .opportunity-card:only-child {
+    display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
+    grid-template-areas:"top top" "discipline facts" "title facts" "excerpt facts" "rate link";
+    gap:8px clamp(28px,5vw,85px);min-height:0;border-top:3px solid #658974;
+  }
+  .opportunity-card:only-child .project-card-top{grid-area:top;margin-bottom:8px}
+  .opportunity-card:only-child .card-discipline{grid-area:discipline;margin:0}
+  .opportunity-card:only-child h2{grid-area:title;margin:0;font-size:clamp(1.55rem,2.2vw,2.35rem);letter-spacing:-.035em}
+  .opportunity-card:only-child .card-excerpt{grid-area:excerpt;margin:0;display:block;line-height:1.5}
+  .opportunity-card:only-child .card-facts{grid-area:facts;align-self:center;gap:9px}
+  .opportunity-card:only-child .card-compensation{grid-area:rate;margin:10px 0 0}
+  .opportunity-card:only-child .card-apply{grid-area:link;align-self:end;margin:8px 0 0}
+}
+@media(max-width:760px){
+  .hiring-site .hiring-hero{grid-template-columns:minmax(0,1fr);border-radius:14px}
+  .hiring-hero>div{padding:28px 22px}.hiring-hero>img{height:clamp(160px,48vw,310px)}
+  .hiring-hero h1{font-size:clamp(2.8rem,10vw,4rem)}.hiring-hero .eyebrow{margin-bottom:16px}
+  .hiring-hero p:not(.eyebrow){margin:16px 0}
+  .hiring-site .expertise-section,.hiring-site .delivery-section{padding-inline:clamp(16px,4vw,30px)}
+}

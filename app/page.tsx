@@ -30,7 +30,7 @@ export default async function Home({
       .orderBy(desc(projects.active),desc(projects.created))
       .limit(12);
   return (
-    <div className="premium-site pro5">
+    <div className="premium-site pro5 hiring-site">
       <a className="skip-to-content" href="#main-content">Skip to main content</a>
       <header className="company-nav">
         <Brand />
@@ -43,18 +43,18 @@ export default async function Home({
         </a>
       </header>
       <main id="main-content" tabIndex={-1}>
-        <section className="project-first-hero">
+        <section className="hiring-hero">
           <div>
-            <p className="eyebrow">PROJECT OPPORTUNITIES</p>
+            <p className="eyebrow">Freelance AI projects</p>
             <h1>
-              Freelance projects.
+              Bring your skills
               <br />
-              <em>Work for teams.</em>
+              <em>to AI work.</em>
             </h1>
             <p>
-              Apply as a freelancer or register your interest as a vendor with a team. Explore recording, annotation and evaluation projects by language and device.
+              Find recording, annotation and evaluation work in your language. Apply independently or register a team as a vendor.
             </p>
-            <div className="hero-workspace-actions"><a className="button pearl" href={board}>Find a project <ArrowUpRight size={16}/></a><a href="/workspace/hiring?interest=vendor">Register vendor interest <ArrowUpRight size={15}/></a></div>
+            <div className="hiring-actions"><a className="primary-hiring-link" href={board}>Browse projects <ArrowUpRight size={16}/></a><a href="/workspace/hiring?interest=vendor">Register vendor interest <ArrowUpRight size={15}/></a></div>
           </div>
           <img
             src="/images/team-1200.webp" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 50vw" width={1200} height={800} fetchPriority="high"
@@ -67,7 +67,7 @@ export default async function Home({
               <h2>Project opportunities</h2>
             </div>
             <a className="text-link" href={board}>
-              Filter projects
+              View project board <ArrowUpRight size={16}/>
             </a>
           </div>
           <ContentSlot slot="home" />
@@ -87,16 +87,7 @@ export default async function Home({
 
         <section className="expertise-section" id="expertise">
           <div className="editorial-heading">
-            <p className="eyebrow">PROJECT CATEGORIES</p>
-            <h2>
-              Human understanding.
-              <br />
-              <em>Across every modality.</em>
-            </h2>
-            <p>
-              From language and perception to everyday motion, we coordinate
-              people around the data your project needs.
-            </p>
+            <h2>Explore by <em>specialty.</em></h2>
           </div>
           <div className="expertise-list">
             {[
@@ -127,7 +118,7 @@ export default async function Home({
                   
                   <Glyph size={28} strokeWidth={1.2} />
                   <div>
-                    <h3>{String(t)}</h3>
+                    <h3><a href={board+"&category="+encodeURIComponent(["Speech & audio","Data annotation","Human motion & POV","AI evaluation"][i])}>{String(t)} <ArrowUpRight size={16}/></a></h3>
                     <p>{String(d)}</p>
                   </div>
 
@@ -143,14 +134,12 @@ export default async function Home({
               alt="Two professionals reviewing a project together"
               loading="lazy"
             />
-            <span>HUMAN EXPERTISE, COORDINATED.</span>
+
           </div>
           <div className="delivery-copy">
-            <p className="eyebrow">HOW PROJECTS WORK</p>
+
             <h2>
-              From first connection
-              <br />
-              to <em>daily progress.</em>
+              How to join <em>a project.</em>
             </h2>
             <ol>
               {[
@@ -163,7 +152,7 @@ export default async function Home({
                   "Complete your profile, confirm your partner where required and receive coordinator approval.",
                 ],
                 [
-                  "Contribute. Report. Improve.",
+                  "Submit your work",
                   "Work on the assigned platform, share daily output and follow quality-review feedback.",
                 ],
               ].map(([t, d], i) => (
@@ -185,14 +174,11 @@ export default async function Home({
           <p className="eyebrow">FOR AI TEAMS & PROJECT PARTNERS</p>
           <div>
             <h2>
-              Your project.
-              <br />
-              <em>Our human focus.</em>
+              Build your <em>project team.</em>
             </h2>
             <aside>
               <p>
-                Participant sourcing, structured onboarding and daily
-                reporting—organized around your project brief.
+                Tell us the languages, devices and team size you need. We coordinate recruitment, onboarding and daily reporting.
               </p>
               <a
                 className="button pearl"
@@ -202,12 +188,7 @@ export default async function Home({
               </a>
             </aside>
           </div>
-          <div className="business-principles">
-            <span>Brief-led coordination</span>
-            <span>Approved participation</span>
-            <span>Evidence-based reporting</span>
-            <span>Client-led quality review</span>
-          </div>
+
         </section>
       </main>
       <ContentSlot slot="footer" />
