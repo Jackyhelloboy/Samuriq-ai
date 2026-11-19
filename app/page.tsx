@@ -47,14 +47,14 @@ export default async function Home({
           <div>
             <p className="eyebrow">PROJECT OPPORTUNITIES</p>
             <h1>
-              Find your next
+              Freelance projects.
               <br />
-              <em>project.</em>
+              <em>Work for teams.</em>
             </h1>
             <p>
-              Browse speech, annotation and evaluation work. Choose a project that fits your language, equipment and availability.
+              Apply as a freelancer or register your interest as a vendor with a team. Explore recording, annotation and evaluation projects by language and device.
             </p>
-            <div className="hero-workspace-actions"><a className="button pearl" href={board}>Find a project <ArrowUpRight size={16}/></a><a href="/join">Use an invitation <ArrowUpRight size={15}/></a></div>
+            <div className="hero-workspace-actions"><a className="button pearl" href={board}>Find a project <ArrowUpRight size={16}/></a><a href="/workspace/hiring?interest=vendor">Register vendor interest <ArrowUpRight size={15}/></a></div>
           </div>
           <img
             src="/images/team-1200.webp" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 50vw" width={1200} height={800} fetchPriority="high"
@@ -221,7 +221,7 @@ export default async function Home({
           <a href={board}>Project opportunities</a>
           <a href="/login">Your workspace</a>
           <a href="/support">Get support</a>
-          <a href="/privacy">Privacy &amp; data</a>
+          <a href="/join">Use a team invitation</a><a href="/privacy">Privacy &amp; data</a>
         </nav>
         <div className="footer-legal">
           <span>© {new Date().getFullYear()} Samuriq AI</span>

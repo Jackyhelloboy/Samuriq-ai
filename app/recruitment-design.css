@@ -119,3 +119,23 @@
 .opportunity-card .card-facts > span { display: flex; align-items: baseline; gap: 7px; min-width: 0; color: #344c40; line-height: 1.5; overflow-wrap: anywhere; }
 .opportunity-card .card-facts > span > svg { align-self: flex-start; flex: 0 0 15px; margin-top: 3px; }
 .v6-suite .project-filters { max-width: none; width: 100%; }
+
+.hiring-launch {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));
+  gap:12px; margin:20px 0 26px;
+}
+.hiring-launch a {
+  display:flex; align-items:flex-start; gap:12px; padding:18px;
+  background:#f1f5ed; color:#1b392c; border:1px solid #c3d2c1; border-radius:12px;
+}
+.hiring-launch a:hover,.hiring-launch a:focus-visible {background:#e4eddf;border-color:#6a8a6e}
+.hiring-launch svg {width:21px; flex-shrink:0}
+.hiring-launch strong,.hiring-launch small {display:block}
+.hiring-launch small {color:#425747;margin-top:4px;line-height:1.45}
+.hiring-facts {margin:8px 0; display:grid; gap:0}
+.hiring-facts div {display:grid;grid-template-columns:minmax(76px,32%) 1fr;gap:8px;padding:7px 0;border-top:1px solid #dce3dc}
+.hiring-facts dt {color:#405246}.hiring-facts dd {margin:0;overflow-wrap:anywhere}
+.hiring-preferences {max-width:42rem}.hiring-preferences .check {align-items:flex-start}
+
+.segment-row {display:flex; align-items:center; justify-content:space-between; gap:12px; border-bottom:1px solid #dce3dc; padding-block:6px}
+.segment-row a {overflow-wrap:anywhere;min-width:0}

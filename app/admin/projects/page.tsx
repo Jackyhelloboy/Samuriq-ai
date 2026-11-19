@@ -1,4 +1,5 @@
-import {realProject} from "../../project-listing";
+import {getTableColumns} from "drizzle-orm";
+import {cardFields,realProject} from "../../project-listing";
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
@@ -19,7 +20,7 @@ export default async function AdminProjects({
     db = getDb();
   const filter = and(realProject,ne(projects.visibility,"removed"),term ? like(projects.title, "%" + term + "%") : undefined);
   const jobs = await db
-    .select()
+    .select({...getTableColumns(projects), languages:cardFields.languages, devices:cardFields.devices})
     .from(projects)
     .where(filter)
     .orderBy(desc(projects.created))
@@ -37,7 +38,7 @@ export default async function AdminProjects({
       </div>}
       <Heading
         eyebrow="PROJECT OPERATIONS"
-        title="Your project portfolio."
+        title="Hiring projects"
         description="Create detailed briefs, manage client destinations and control applications."
         action={operator.role==="owner"?
           <a className="button dark" href="/admin/projects/edit">
@@ -66,11 +67,17 @@ export default async function AdminProjects({
           {jobs.map(j=><article className="portfolio-card" key={j.id}>
             <header><span className="card-discipline">{j.category}</span>
               <span className="badge">{j.active?"Active":j.visibility==="paused"?"Paused":j.archivedAt||j.visibility==="listed"?"Closed":"Draft"}</span></header>
-            <h3>{j.title}</h3><p>{j.location} · {j.pair?"Pair":"Individual"}</p><p>{j.rate}</p>
+            <h3>{j.title}</h3><p>{j.description}</p>
+            <dl className="hiring-facts">{[
+              ["Work format",j.location+" · "+(j.pair?"Permanent pair":"Individual")],
+              ["Languages",j.languages||"All languages"],["Devices",j.devices||"Any device"],
+              ["Compensation",j.rate||"Unspecified"],["Project dates",(j.targetStart||"Unscheduled")+" – "+(j.deadline||"No deadline")]
+            ].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+            <details><summary>Project requirements</summary><p>{j.requirements||"Add the requirements in the public post editor."}</p></details>
             <div className="portfolio-links">
-              <a href={"/admin/projects/post?id="+encodeURIComponent(j.id)}>Edit public post</a>
+              <a href={"/admin/projects/post?id="+encodeURIComponent(j.id)}>Edit listing & recruitment</a>
               <a href={"/admin/projects/workflow?id="+encodeURIComponent(j.id)}>Training & evidence</a>
-              {operator.role==="owner" && <a href={"/admin/projects/edit?id="+encodeURIComponent(j.id)}>Edit brief</a>}
+              {operator.role==="owner" && <a href={"/admin/projects/edit?id="+encodeURIComponent(j.id)}>Full brief & access settings</a>}
             </div>
             <form action={toggleProject} className="portfolio-controls">
               <input name="id" type="hidden" value={j.id}/>
