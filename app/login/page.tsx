@@ -22,19 +22,15 @@ export default async function Login({
     );
   }
   return (
-    <main className="login-page v6-login">
-      <Brand />
-      <div>
-        <p className="eyebrow">SAMURIQ ACCOUNT</p>
-        <h1>
-          Your work. {" "}
-          <br />
-          One secure place.
-        </h1>
-        <p>
-          Sign in to manage your projects, report progress and stay connected to
-          your team.
-        </p>
+    <main className="account-entry">
+      <header className="entry-header"><Brand/><a href="/projects">Browse projects <span aria-hidden="true">↗</span></a></header>
+      <div className="entry-layout">
+        <aside className="entry-photo" aria-label="Project opportunities">
+          <picture><source media="(min-width: 860px)" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="48vw"/>
+            <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" width="1200" height="800" alt="" /></picture>
+          <div><p>Contributor workspace</p><h2>Find your project.<br/><em>Work with your team.</em></h2></div>
+        </aside>
+        <section className="entry-panel" aria-label="Your account">
         {q.error && (
           <p role="alert" className="account-error">
             {(
@@ -61,7 +57,8 @@ export default async function Login({
           action={loginAccount}
           
         >
-          <h2>Sign in</h2>
+          <h1>Welcome back.</h1>
+          <p>Sign in to see your projects, team updates and payments.</p>
 
           
           <input
@@ -84,9 +81,9 @@ export default async function Login({
           <SubmitButton className="button dark" pendingLabel="Signing in…">Sign in</SubmitButton>
         </form>
         <SignupForm returnTo={q.return_to||""}/>
-        <small>Use your registered email and password. Staff permissions are assigned by management, never selected at sign-up.</small>
+        <footer className="entry-footer"><a href="/privacy">Privacy</a><a href="/demo/login">Explore the demo</a></footer>
+        </section>
       </div>
-      <a href="/">← Back to Samuriq AI</a>
     </main>
   );
 }
