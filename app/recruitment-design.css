@@ -184,3 +184,45 @@
   .hiring-hero p:not(.eyebrow){margin:16px 0}
   .hiring-site .expertise-section,.hiring-site .delivery-section{padding-inline:clamp(16px,4vw,30px)}
 }
+
+/* Use one warm editorial treatment for staff photography across the site. */
+body :is(.hiring-hero, .delivery-photo, .entry-photo, .onboarding-visual,
+  .onboarding-aside, .v7-welcome) img {
+  filter: grayscale(.76) sepia(.22) saturate(.82) contrast(1.04);
+}
+.participation-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 12px;
+  margin-block: 18px 24px;
+}
+.participation-cards > a {
+  display: grid;
+  grid-template-columns: 44px 1fr 18px;
+  grid-template-rows: auto 1fr;
+  gap: 4px 12px;
+  align-content: start;
+  padding: clamp(16px, 1.6vw, 26px);
+  border: 1px solid #c9d8ce;
+  border-radius: 14px;
+  color: #153c32;
+  background: #f1f5ef;
+  text-decoration: none;
+}
+.participation-cards > a:is(:hover, :focus-visible) {
+  border-color: #557a68;
+  background: #e7efe5;
+}
+.participation-icon {
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  align-self: start;
+  height: 44px;
+  border-radius: 50%;
+  color: #dff2b1;
+  background: #174439;
+}
+.participation-cards strong { font-size: 1.13rem; line-height: 1.3; }
+.participation-description { grid-column: 2; color: #40564c; font-size: .95rem; line-height: 1.5; }
+.participation-arrow { grid-column: 3; grid-row: 1; }

@@ -1,3 +1,4 @@
+import { ParticipationCards } from "./components/participation-cards";
 import {cardFields,publishedProject} from "./project-listing";
 import { ProjectCard } from "./components/project-card";
 import { ContentSlot } from "./components/content-slot";
@@ -70,6 +71,7 @@ export default async function Home({
               View project board <ArrowUpRight size={16}/>
             </a>
           </div>
+      <ParticipationCards />
           <ContentSlot slot="home" />
           <div className="opportunity-grid">
             {jobs.map((j) => (
@@ -148,12 +150,12 @@ export default async function Home({
                   "Choose work that matches your language, skills and equipment.",
                 ],
                 [
-                  "Join an approved team",
-                  "Complete your profile, confirm your partner where required and receive coordinator approval.",
+                  "Register for the project",
+                  "Create your account, complete your profile and follow the enrollment steps in the project brief.",
                 ],
                 [
-                  "Submit your work",
-                  "Work on the assigned platform, share daily output and follow quality-review feedback.",
+                  "Join your project group",
+                  "Once you have access, open the WhatsApp group from your project page for instructions and updates.",
                 ],
               ].map(([t, d], i) => (
                 <li key={t}>

@@ -1,3 +1,4 @@
+import { ParticipationCards } from "../components/participation-cards";
 import {devices} from "../recruitment/data";
 import {INDIA_LANGUAGES} from "../india-languages";
 import {sql} from "drizzle-orm";
@@ -85,6 +86,7 @@ export default async function Projects({
         </button>
         {(term||category||q.language||q.device)&&<a className="filter-reset" href={"/projects?source="+encodeURIComponent(q.source||"direct")}>Clear filters</a>}
       </form>
+      <ParticipationCards />
       <div className="section-kicker">
         <h3>
           {total} published {total === 1 ? "project" : "projects"}
