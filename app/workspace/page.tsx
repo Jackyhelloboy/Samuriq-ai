@@ -151,7 +151,8 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
             ))}
             <div className="soft-note">
               A profile helps you apply. Each project has its own eligibility
-              and approval process.
+              and approval process.<br/>
+              <a href="/verify-email">Confirm email for project or staff access</a>
             </div>
           </aside>
         </div>

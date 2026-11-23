@@ -1,3 +1,4 @@
+import { partnerEmailMatch } from "../verify-email/verification";
 import {websiteOnly} from "../deployment-mode";
 import {workSpec} from '../work-types';
 import {MyTeams} from './my-teams';
@@ -9,7 +10,7 @@ import {ArrowUpRight,Check,FolderOpen,Headphones,Play,Users,ChevronRight,Message
 type User=NonNullable<Awaited<ReturnType<typeof getChatGPTUser>>>;
 export async function ContributorDashboard({user,profile,projectId=''}:{user:User;profile:typeof participants.$inferSelect;projectId?:string}){
  const db=getDb();const [rawApps,members,bank]=await Promise.all([
- db.select().from(applications).innerJoin(projects,eq(projects.id,applications.projectId)).where(or(eq(applications.userId,user.userId),eq(applications.partnerEmail,user.email.toLowerCase()))).limit(100),
+ db.select().from(applications).innerJoin(projects,eq(projects.id,applications.projectId)).where(or(eq(applications.userId,user.userId),partnerEmailMatch(user))).limit(100),
  db.select().from(teamMembers).innerJoin(projectTeams,eq(projectTeams.id,teamMembers.teamId)).where(eq(teamMembers.userId,user.userId)),
  db.select({last4:bankDetails.last4}).from(bankDetails).where(eq(bankDetails.userId,user.userId)).get()]);
  const rank=(a:typeof applications.$inferSelect)=>(a.status==='approved'?100:a.status==='pending'?10:0)+(a.partnerConfirmed?20:0)+(a.userId===user.userId?1:0);const seen=new Set<string>();const apps=[...rawApps].filter(x=>!x.projects.archivedAt&&x.applications.status!=='removed').sort((x,y)=>rank(y.applications)-rank(x.applications)).filter(x=>{if(seen.has(x.projects.id))return false;seen.add(x.projects.id);return true});

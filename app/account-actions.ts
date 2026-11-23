@@ -1,6 +1,7 @@
 "use server";
+import {websiteOnly} from "./deployment-mode";
 import {acceptedEmail} from "./verify-email/verification";
-import {db as directory,digest} from "./recruitment/data";
+import {db as directory} from "./recruitment/data";
 import {readSignupDetails} from "./signup-details";
 import {workspaceHome} from "./workspace-context";
 import { redirect } from "next/navigation";
@@ -25,32 +26,32 @@ export async function submitSignup(form: FormData) {
   try{await authLimit(email)}catch(e){if(e instanceof AuthRateLimitError)return "rate";throw e;}
   if (pw.length < 8 || pw.length > 128) return "short";
   const admin = bot().ADMIN_EMAIL?.toLowerCase();
+  if (!admin && websiteOnly()) return "unavailable";
   if (admin && email === admin) return "admin";
   const db = getDb();
   if (await db.select().from(accounts).where(eq(accounts.email, email)).get())
     return "exists";
   const details = readSignupDetails(form);
   if (!details) return "profile";
-  const code=String(form.get("code")||"").trim().toUpperCase();
-  if (!/^[A-F0-9]{12}$/.test(code)) return "verification";
-  const id="pw_"+crypto.randomUUID(), salt=randomHex(16), now=Date.now();
-  const sql=directory(), proof=await digest(email+"|"+code);
-  const {age,address,city,phone,device,mobile_os,os_version}=details;
-  let created;
+  const id = "pw_" + crypto.randomUUID();
+  const salt = randomHex(16);
+  const sql = directory();
+  const {age,address,city,phone,device,mobile_os,os_version} = details;
   try {
-    [created]=await sql.batch([
-      sql.prepare("INSERT INTO accounts(id,email,name,salt,hash,created) SELECT ?,?,?,?,?,? FROM email_challenges WHERE email=? AND digest=? AND expires>?")
-        .bind(id,email,name,salt,await hashPassword(pw,salt),new Date(now).toISOString(),email,proof,now),
-      sql.prepare("INSERT INTO signup_details SELECT id,?,?,?,?,?,?,? FROM accounts WHERE id=?")
-        .bind(age,address,city,phone,device,mobile_os,os_version,id),
-      sql.prepare("INSERT OR REPLACE INTO verified_mailboxes SELECT email,? FROM accounts WHERE id=?").bind(now,id),
-      sql.prepare("DELETE FROM email_challenges WHERE email=? AND digest=? AND EXISTS(SELECT 1 FROM accounts WHERE id=?)").bind(email,proof,id)
+    const [created] = await sql.batch([
+      sql.prepare(`INSERT INTO accounts(id,email,name,salt,hash,created)
+        SELECT ?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM participants WHERE lower(email)=?)
+        AND NOT EXISTS (SELECT 1 FROM verified_mailboxes WHERE email=?)`)
+        .bind(id,email,name,salt,await hashPassword(pw,salt),new Date().toISOString(),email,email),
+      sql.prepare(`INSERT INTO signup_details(account_id,age,address,city,phone,device,mobile_os,os_version)
+        SELECT id,?,?,?,?,?,?,? FROM accounts WHERE id=?`)
+        .bind(age,address,city,phone,device,mobile_os,os_version,id)
     ]);
+    if (!created.meta.changes) return "exists";
   } catch(error) {
     if (/account_email_in_use|UNIQUE constraint failed: accounts.email/i.test(String(error))) return "exists";
     throw error;
   }
-  if (!created.meta.changes) return "verification";
   await startSession(id);
   return to;
 }

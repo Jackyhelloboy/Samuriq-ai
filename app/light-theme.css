@@ -8,12 +8,16 @@
   --muted: #475951;
   --accent: #315b4e;
   --line: #d2dbd2;
+  --control-border: #839387;
+  --on-accent: #fff;
+  --scrim: rgb(23 46 40 / 40%);
+  accent-color: var(--accent);
 }
 body, .premium-site.pro5, .account-entry, .suite .suite-main {
   background-color: var(--paper);
   color: var(--ink);
 }
-.pro5 .company-nav, .pro5 .company-footer, .suite .suite-foot {
+.pro5 .company-nav, .premium-site.pro5 .company-footer, .suite .suite-foot {
   background: var(--surface);
   color: var(--ink);
   border-color: var(--line);
@@ -29,7 +33,7 @@ body, .premium-site.pro5, .account-entry, .suite .suite-main {
 .hiring-site .hiring-actions a, .pro5 .business-section aside p { color: var(--muted); }
 .hiring-site .hiring-actions .primary-hiring-link, .pro5 .business-section .button.pearl {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
 }
 .participation-cards > a, .suite .checkpoint-grid > a, .suite .hiring-launch a {
   background: var(--surface);
@@ -41,7 +45,6 @@ body, .premium-site.pro5, .account-entry, .suite .suite-main {
   color: var(--accent);
 }
 .account-entry .entry-photo { color: var(--ink); background: var(--sage); }
-.account-entry .entry-photo:after { background: none; }
 .account-entry .entry-photo > div {
   width: 100%;
   background: var(--sage);
@@ -50,10 +53,6 @@ body, .premium-site.pro5, .account-entry, .suite .suite-main {
 .account-entry .entry-photo h2, .account-entry .entry-photo p { color: var(--ink); }
 .account-entry .entry-photo em { color: var(--accent); }
 .v7-suite.v6-suite {
-  --v7-ink: var(--ink);
-  --v7-muted: var(--muted);
-  --v7-accent: var(--accent);
-  --v7-line: var(--line);
   background: var(--paper) !important;
 }
 .v7-suite.v6-suite :is(.suite-sidebar, .suite-top, .suite-card, .suite-stats, .phone-bottom-nav) {
@@ -71,8 +70,52 @@ body, .premium-site.pro5, .account-entry, .suite .suite-main {
 .v7-suite.v6-suite :is(.suite-card h2, .suite-heading h1, .section-kicker h2, h3, .workspace-switcher strong) {
   color: var(--ink) !important;
 }
-.v7-suite.v6-suite .button.dark, .account-entry .account-form > button[type=submit] {
+.v7-suite.v6-suite .button.dark,
+.v7-suite.v6-suite form > button:not(.button.light, .workspace-choice),
+.v7-suite.v6-suite .v7-launch-toolbar button,
+.account-entry .account-form > button[type=submit] {
   background: var(--accent) !important;
-  color: white !important;
+  color: var(--on-accent) !important;
   border-color: var(--accent) !important;
+}
+
+
+.premium-site.pro5 .company-footer .brand,
+.premium-site.pro5 .company-footer nav a {
+  color: var(--ink);
+}
+
+.premium-site.pro5 .company-footer .footer-legal {
+  color: var(--muted);
+}
+
+.v7-suite.v6-suite :is(.mobile-nav-toggle, .mobile-drawer-close, .phone-task-dock a) {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.phone-bottom-nav {
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -4px 20px rgb(23 46 40 / 5%);
+}
+
+.phone-bottom-nav a {
+  color: var(--ink);
+}
+
+.mobile-scrim {
+  background: var(--scrim);
+}
+
+.v6-suite .suite-table tbody tr:nth-child(even) {
+  background: var(--paper);
+}
+
+.v6-suite .suite-table tbody tr:hover {
+  background: var(--sage);
+}
+
+.suite .table-scroll:focus-visible {
+  outline: 2px solid var(--accent);
 }

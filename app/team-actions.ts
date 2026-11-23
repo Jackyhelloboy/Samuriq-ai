@@ -1,9 +1,10 @@
 "use server";
+import { partnerEmailMatch, pairMailboxAllowed } from "./verify-email/verification";
 import {websiteOnly} from "./deployment-mode";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { getDb } from "../db";
 import { applications, participants, pairClaims } from "../db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 export async function setPartner(form: FormData) {
   const user = await getChatGPTUser();
@@ -55,6 +56,8 @@ export async function confirmPartner(form: FormData) {
   const db = getDb(),
     projectId = String(form.get("projectId")),
     leadId = String(form.get("leadId"));
+  const result = await db.run(sql`SELECT 1 WHERE ${pairMailboxAllowed(user.userId, user.email)}`);
+  if (!result.results.length) redirect("/verify-email");
   const row = await db
     .select()
     .from(applications)
@@ -63,7 +66,7 @@ export async function confirmPartner(form: FormData) {
       and(
         eq(applications.projectId, projectId),
         eq(applications.userId, leadId),
-        eq(applications.partnerEmail, user.email.toLowerCase()),
+        partnerEmailMatch(user),
         eq(applications.partnerConfirmed, 0),
       ),
     )
@@ -88,7 +91,7 @@ export async function confirmPartner(form: FormData) {
           and(
             eq(applications.userId, leadId),
             eq(applications.projectId, projectId),
-            eq(applications.partnerEmail, user.email.toLowerCase()),
+            partnerEmailMatch(user),
           ),
         ),
     ]);

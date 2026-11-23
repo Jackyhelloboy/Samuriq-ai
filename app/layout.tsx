@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./workspace-v7.css";
-import "./monochrome.css";
+import "./workspace-controls.css";
 import "./android.css";
 import "./getting-started.css";
 import "./professional.css";

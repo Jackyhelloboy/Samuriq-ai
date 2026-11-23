@@ -49,7 +49,7 @@ export async function redeemInvitation(_:string,f:FormData):Promise<string>{
   const row=await db().prepare("SELECT role,id FROM staff_invites WHERE digest=? AND recipient=? AND status='pending' AND expires>?")
     .bind(await digest(entered.toUpperCase()),user.userId,Date.now()).first<{role:string;id:string}>();
   if(!row)return "This code is unavailable for your account. Ask the owner for a fresh invitation.";
-  if(!await db().prepare("SELECT 1 FROM verified_mailboxes WHERE email=?").bind(user.email.toLowerCase()).first())return "Verify your account email, then enter your code again.";
+  if(!await db().prepare("SELECT 1 FROM verified_mailboxes WHERE email=?").bind(user.email.toLowerCase()).first())return "Confirm your account email, then enter your invitation code again.";
   let changed;
   try{
     changed=await db().prepare("UPDATE staff_invites SET status='accepted',redeemed=? WHERE id=? AND recipient=? AND status='pending' AND expires>?")

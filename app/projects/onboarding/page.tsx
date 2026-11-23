@@ -1,3 +1,4 @@
+import { partnerEmailMatch } from "../../verify-email/verification";
 import {websiteOnly} from "../../deployment-mode";
 import {projectState} from "../../project-state";
 import { getChatGPTUser, chatGPTSignInPath } from "../../chatgpt-auth";
@@ -36,7 +37,7 @@ export default async function Onboarding({
         .where(eq(participants.id, user.userId))
         .get()
     : null;
-  const application=user?await db.select().from(applications).where(and(eq(applications.projectId,j.id),or(eq(applications.userId,user.userId),eq(applications.partnerEmail,user.email.toLowerCase())))).get():null;
+  const application=user?await db.select().from(applications).where(and(eq(applications.projectId,j.id),or(eq(applications.userId,user.userId),partnerEmailMatch(user)))).get():null;
   const telegram= user?await (await import("../../telegram-identity")).telegramIdentity(user.userId):null;
   const version = await onboardingVersion(j),
     record = user

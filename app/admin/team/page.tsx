@@ -1,9 +1,9 @@
-import {realProject} from "../../project-listing";
+import { realProject } from "../../project-listing";
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
-import { teamRows, indiaDay } from "../../team-metrics";
-import { Shell, Heading, Stats, Empty } from "../../components/shell";
+import { teamRows,indiaDay } from "../../team-metrics";
+import { Shell,Heading,Stats,Empty } from "../../components/shell";
 export const dynamic = "force-dynamic";
 export default async function Team({
   searchParams,
@@ -86,7 +86,7 @@ export default async function Team({
             <tbody>
               {rows
                 .slice((page - 1) * 30, page * 30)
-                .map(({ a, p, j, today, minutes, qc, remaining, amount }) => (
+                .map(({ a, p, j, today, minutes, qc, remaining }) => (
                   <tr key={a.userId + j.id}>
                     <td>
                       <strong>

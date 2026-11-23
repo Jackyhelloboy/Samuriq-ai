@@ -42,8 +42,8 @@ export default async function Login({
                 exists: "That email already has an account. Sign in instead.",
                 short: "Choose a password with 8–128 characters.",
                 details: "Enter your name and a valid .com email.",
+                unavailable: "Registration is temporarily unavailable. Contact support if this continues.",
                 profile:"Check your age, phone, city and device version.",
-                verification: "Request an email code and enter it under Create an account.",
                 admin:
                   "That email is reserved for the owner. Use your existing owner password sign-in.",
               } as Record<string, string>

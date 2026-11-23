@@ -1,4 +1,5 @@
 "use server";
+import { partnerEmailMatch } from "./verify-email/verification";
 import {projectState} from "./project-state";
 import { getChatGPTUser } from "./chatgpt-auth";
 import { requireOperator } from "./access";
@@ -170,7 +171,7 @@ export async function acceptOnboarding(form: FormData) {
   if (existing && existing.userId !== user.userId)
     throw Error("That client username is already registered for this project");
   if(j.inviteCode&&String(form.get("inviteCode")||"").trim()!==j.inviteCode)throw Error("Enter the mandatory client task invitation code exactly as shown");
-  const application=await db.select().from(applications).where(and(eq(applications.projectId,id),or(eq(applications.userId,user.userId),eq(applications.partnerEmail,user.email.toLowerCase())))).get();
+  const application=await db.select().from(applications).where(and(eq(applications.projectId,id),or(eq(applications.userId,user.userId),partnerEmailMatch(user)))).get();
   const combined=form.get('submitApplication')==='yes'&&!application;
   if(combined){await (await import('./features')).requireFeature('applications');await (await import('./enrollment')).requireApplicationPermission(user.userId,id);await (await import('./work-membership')).requireProjectAllowed(user.userId,id);const partner=String(form.get('partner')||'').trim(),email=String(form.get('partnerEmail')||'').trim().toLowerCase();if((j.pair&&(!partner||!/^\S+@\S+\.\S+$/.test(email)||email===user.email.toLowerCase()))||!String(form.get('experience')||'').trim()||form.get('consent')!=='yes')redirect('/projects/onboarding?id='+encodeURIComponent(id)+'&error=application');}
   const acceptedAt = new Date().toISOString();
