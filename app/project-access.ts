@@ -1,3 +1,4 @@
+import { partnerEmailMatch } from "./verify-email/verification";
 import {memberBrief,groupEligibility,db as directory} from "./recruitment/data";
 import {requireLeaderScope} from './vendor-policy';
 import { getChatGPTUser } from "./chatgpt-auth";
@@ -23,7 +24,7 @@ export async function accessibleProject(id: string) {
           eq(applications.projectId, id),
           or(
             eq(applications.userId, user.userId),
-            eq(applications.partnerEmail, user.email.toLowerCase()),
+            partnerEmailMatch(user),
           ),
         ),
       )

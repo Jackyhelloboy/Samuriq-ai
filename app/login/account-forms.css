@@ -14,18 +14,17 @@
 .account-tabs a:first-child,.entry-panel:has(#create-account:target) .account-tabs a:last-child{color:white;background:#234432}
 .entry-panel:has(#create-account:target) .account-tabs a:first-child{color:#37543f;background:transparent}
 .account-entry #create-account:not(:target),.entry-panel:has(#create-account:target) #sign-in,.account-entry [hidden]{display:none}
-.account-entry .account-form,.account-entry .entry-fields,.account-entry fieldset,.account-entry .account-password,.signup-verification{display:grid;gap:12px;min-width:0}
+.account-entry .account-form,.account-entry .entry-fields,.account-entry fieldset,.account-entry .account-password{display:grid;gap:12px;min-width:0}
 .account-entry .account-form{scroll-margin-top:12px}.account-entry h1{font:500 clamp(2.3rem,3.6vw,3.65rem)/1.05 Georgia,serif;letter-spacing:-.04em;margin:0}
 .account-entry form p{color:#425548;line-height:1.5;margin:0 0 6px}
 .account-entry fieldset{margin:0;padding:0;border:0}.account-entry legend:not(.sr-only){padding:0;margin:12px 0;font-size:1.12rem;font-weight:700}
 .account-entry label{display:grid;gap:6px;font-weight:600;font-size:.95rem;color:#273e30}
 .account-entry :is(input:not([type=hidden]),textarea,select){display:block;width:100%;min-width:0;min-height:46px;padding:10px 12px;border:1px solid #839387;background:#fff;border-radius:7px;color:#182e20;font-weight:400;line-height:1.4;font-family:inherit;font-size:1rem}
-.account-entry small,.entry-progress,.signup-verification [role=status]{color:#43564a;font-size:.9rem;line-height:1.5}
+.account-entry small,.entry-progress{color:#43564a;font-size:.9rem;line-height:1.5}
 .account-entry button{min-height:46px;border-radius:7px;background:#234432;color:white;font-size:1rem;padding:10px 14px;cursor:pointer}
 .account-entry button:disabled{opacity:.7;cursor:wait}
 .account-entry .account-password-control{display:flex;gap:8px}.account-entry .account-password-control input{flex:1;width:0}
-.account-entry :is(.password-visibility,.entry-back,.signup-verification>button){border:1px solid #839387;background:#f8faf6;color:#294733}
-.account-entry .signup-verification{padding:14px;background:#f3f6f0;border-radius:8px}.signup-verification [role=status]:empty{display:none}
+.account-entry :is(.password-visibility,.entry-back){border:1px solid #839387;background:#f8faf6;color:#294733}
 .entry-footer{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #d4dcd2;margin-top:24px;padding-top:12px}.entry-footer a,.entry-header>a:last-child{display:inline-flex;align-items:center;min-height:44px}
 .account-entry [role=alert]{background:#fff1ed;border-left:3px solid #9b3c26;color:#802d20;padding:12px}
 @media(max-width:859px){.entry-photo{display:none}.entry-layout{display:block;max-width:35rem}.entry-panel{max-width:none}.entry-header{padding:12px 0}.account-entry{padding-inline:clamp(12px,4vw,26px)}}

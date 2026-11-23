@@ -1,15 +1,44 @@
-import {codeMessages} from "./messages";
-import {sessionUser} from "../account";
-import {Shell,Heading} from "../components/shell";
-import {requestCode,confirmExisting} from "./actions";
-import {safeReturn} from "../auth-rate";
-export const dynamic="force-dynamic";
-export default async function Verification({searchParams}:{searchParams:Promise<{status?:string;return_to?:string}>}){
-  const q=await searchParams, user=await sessionUser(),next=safeReturn(q.return_to);
-  return <Shell><Heading eyebrow="Account" title="Verify your email" description="Use a .com address whose inbox you can open."/>
+import { requireChatGPTUser } from "../chatgpt-auth";
+import { Shell, Heading } from "../components/shell";
+import { confirmLink, requestLink } from "./actions";
+import { hasVerifiedMailbox } from "./verification";
+import SubmitButton from "../components/submit-button";
+
+export const metadata = { referrer: "no-referrer" as const };
+export const dynamic = "force-dynamic";
+
+const messages: Record<string, string> = {
+  sent: "Check your inbox for a confirmation link.",
+  uncertain: "Check your inbox before requesting another link.",
+  cooldown: "Wait a minute before requesting another link.",
+  limited: "Too many requests. Try again in 15 minutes.",
+  unavailable: "We could not send a confirmation link. Contact support for help.",
+  invalid: "This link is invalid or expired. Request a new one.",
+};
+
+export default async function Verification({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string; token?: string }>;
+}) {
+  const { status, token } = await searchParams;
+  const validToken = typeof token === "string" && /^[a-f0-9]{64}$/.test(token);
+  const user = await requireChatGPTUser(validToken ? "/verify-email?token=" + token : "/verify-email");
+  const verified = await hasVerifiedMailbox(user.email);
+  return <Shell>
+    <Heading eyebrow="Account" title="Confirm your email" description="Some project and staff actions require a confirmed email address." />
     <section className="suite-card editor-form">
-      {q.status&&<p role="status">{codeMessages[q.status]}</p>}
-      <form action={requestCode}><input type="hidden" name="return_to" value={next}/><label>Email address<input type="email" name="email" required defaultValue={user?.email} readOnly={!!user}/></label><button>Request verification code</button></form>
-      {user?<form action={confirmExisting}><label>Code from your inbox<input name="code" required maxLength={12} autoComplete="one-time-code"/></label><button>Verify my account</button></form>:<a href={"/login?return_to="+encodeURIComponent(next)+"#create-account"}>I have my code · Create account</a>}
-    </section></Shell>;
+      <p>{user.email}</p>
+      {verified ? <><p>Your email is confirmed.</p><a href="/workspace">Return to workspace</a></> : <>
+        {status && messages[status] && <p role="status">{messages[status]}</p>}
+        {validToken ? <form action={confirmLink}>
+          <input type="hidden" name="token" value={token} />
+          <SubmitButton pendingLabel="Confirming…">Confirm email</SubmitButton>
+        </form> : <form action={requestLink}>
+          <SubmitButton pendingLabel="Sending…">Send confirmation link</SubmitButton>
+        </form>}
+        <a href="/support">Get support</a>
+      </>}
+    </section>
+  </Shell>;
 }

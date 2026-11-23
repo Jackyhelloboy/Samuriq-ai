@@ -1,61 +1,75 @@
 "use server";
+
 import { env } from "cloudflare:workers";
 import { redirect } from "next/navigation";
-import { authLimit,safeReturn,AuthRateLimitError } from "../auth-rate";
-import { requireOwner } from "../access";
-import { sessionUser } from "../account";
-import { db, digest } from "../recruitment/data";
-import { acceptedEmail, normalizeEmail, issueCode, consumeCode, markVerified } from "./verification";
+import { authLimit, AuthRateLimitError } from "../auth-rate";
+import { requireChatGPTUser } from "../chatgpt-auth";
+import { publicSiteOrigin } from "../deployment-mode";
+import { randomHex } from "../account";
+import { db } from "../recruitment/data";
+import { acceptedEmail, hasVerifiedMailbox, mailboxProof } from "./verification";
 
-export async function sendSignupCode(address:string) {
-  const email=normalizeEmail(address);
-  if (!acceptedEmail(email)) return "address";
-  try { await authLimit(email); }
-  catch(error) { if(error instanceof AuthRateLimitError) return "limited"; throw error; }
-  const now=Date.now();
-  const inserted=await db().prepare("INSERT INTO email_challenges(email,requested) VALUES(?,?) ON CONFLICT(email) DO UPDATE SET requested=excluded.requested WHERE email_challenges.requested < ?")
-    .bind(email,now,now-60000).run();
-  const mail=env as unknown as {RESEND_API_KEY?:string;VERIFICATION_FROM?:string};
-  if(!inserted.meta.changes) return "cooldown";
-  const key=mail.RESEND_API_KEY?.trim();
-  if (!key) return "requested";
-  const sender=mail.VERIFICATION_FROM?.trim() || "Samuriq AI <verification@samuriqai.in>";
-  const code=await issueCode(email);
+export async function requestLink() {
+  const user = await requireChatGPTUser("/verify-email");
+  const email = user.email.toLowerCase();
+  if (await hasVerifiedMailbox(email)) redirect("/verify-email");
+  const mail = env as unknown as { RESEND_API_KEY?: string; VERIFICATION_FROM?: string };
+  const key = mail.RESEND_API_KEY?.trim();
+  if (!key || !acceptedEmail(email)) redirect("/verify-email?status=unavailable");
   try {
-    const response=await fetch("https://api.resend.com/emails",{
-      method:"POST",
-      headers:{Authorization:"Bearer "+key,"Content-Type":"application/json"},
-      body:JSON.stringify({from:sender,to:[email],subject:"Your Samuriq AI verification code",
-        text:"Enter this code on your Samuriq sign-up page: "+code+"\n\nThe code expires in 30 minutes. If you did not request it, you can ignore this email."}),
-      signal:AbortSignal.timeout(12000)
-    });
-    if (response.ok) return "sent";
-    console.warn("Signup email rejected by delivery provider",response.status);
-  } catch {
-    // A timed-out request may still deliver. Keep its code usable.
-    console.warn("Signup email delivery could not be confirmed");
-    return "uncertain";
+    await authLimit("mailbox:" + email);
+  } catch (error) {
+    if (error instanceof AuthRateLimitError) redirect("/verify-email?status=limited");
+    throw error;
   }
-  await db().prepare("UPDATE email_challenges SET digest='',expires=0 WHERE email=? AND requested=? AND digest=?")
-    .bind(email,now,await digest(email+"|"+code)).run();
-  return "delivery";
+
+  const token = randomHex(32);
+  const proof = await mailboxProof(user.userId, token);
+  const now = Date.now();
+  const result = await db().prepare(`INSERT INTO email_challenges(email,digest,expires,requested)
+    VALUES(?,?,?,?) ON CONFLICT(email) DO UPDATE SET digest=excluded.digest,
+    expires=excluded.expires,requested=excluded.requested WHERE email_challenges.requested<=?`)
+    .bind(email, proof, now + 30 * 60000, now, now - 60000).run();
+  if (!result.meta.changes) redirect("/verify-email?status=cooldown");
+
+  const url = new URL("/verify-email", publicSiteOrigin());
+  url.searchParams.set("token", token);
+  let status = "uncertain";
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + key, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: mail.VERIFICATION_FROM?.trim() || "Samuriq AI <verification@samuriqai.in>",
+        to: [email],
+        subject: "Confirm your Samuriq AI email address",
+        text: "Open this link and confirm while signed in to your Samuriq AI account. It expires in 30 minutes.\n\n" + url,
+      }),
+      signal: AbortSignal.timeout(12000),
+    });
+    status = response.ok ? "sent" : "unavailable";
+  } catch {
+    // A delivery timeout can still result in the link reaching the inbox.
+  }
+  redirect("/verify-email?status=" + status);
 }
-export async function requestCode(f:FormData) {
-  const status=await sendSignupCode(String(f.get("email")||""));
-  redirect("/verify-email?status="+status+"&return_to="+encodeURIComponent(safeReturn(f.get("return_to"))));
-}
-export async function staffCode(_:string,f:FormData) {
-  await requireOwner();
-  const email=normalizeEmail(f.get("email"));
-  if(!acceptedEmail(email)) throw Error("Invalid email");
-  return await issueCode(email);
-}
-export async function confirmExisting(f:FormData) {
-  const user=await sessionUser();
-  if(!user) redirect("/login");
-  const email=normalizeEmail(user.email);
-  await authLimit(email);
-  if(!await consumeCode(email,f.get("code"))) redirect("/verify-email?status=invalid");
-  await markVerified(email);
-  redirect("/verify-email?status=verified");
+
+export async function confirmLink(form: FormData) {
+  const user = await requireChatGPTUser("/verify-email");
+  const token = String(form.get("token") || "");
+  if (!/^[a-f0-9]{64}$/.test(token)) redirect("/verify-email?status=invalid");
+
+  const email = user.email.toLowerCase();
+  const proof = await mailboxProof(user.userId, token);
+  const now = Date.now();
+  const sql = db();
+  const [verified] = await sql.batch([
+    sql.prepare(`INSERT OR IGNORE INTO verified_mailboxes(email,verified)
+      SELECT email,? FROM email_challenges WHERE email=? AND digest=? AND expires>?`)
+      .bind(now, email, proof, now),
+    sql.prepare("DELETE FROM email_challenges WHERE email=? AND digest=? AND expires>?")
+      .bind(email, proof, now),
+  ]);
+  if (!verified.meta.changes && !await hasVerifiedMailbox(email)) redirect("/verify-email?status=invalid");
+  redirect("/verify-email");
 }

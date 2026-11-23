@@ -1,9 +1,11 @@
 """Exercise the Cloudflare build using disposable D1 data and real password forms."""
 import hashlib
 import html
+import json
 import pathlib
 import re
 import socket
+import sqlite3
 import subprocess
 import tempfile
 import time
@@ -23,17 +25,13 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
     seed = pathlib.Path(state) / 'seed.sql'
     seed.write_text('\n'.join(p.read_text().replace('--> statement-breakpoint', '') for p in sorted((root / 'drizzle').glob('*.sql'))))
     email = 'cloudflare-smoke@example.com'
-    code = '123456ABCDEF'
-    digest = hashlib.sha256((email+'|'+code).encode()).hexdigest()
-    with seed.open('a') as sql:
-        sql.write(f"\nINSERT INTO email_challenges VALUES ('{email}','{digest}',{int(time.time()*1000)+1800000},{int(time.time()*1000)});")
     subprocess.run(cli + ['d1', 'execute', 'DB', '--config', str(config), '--local', '--persist-to', state, '--file', str(seed)], cwd=root, check=True, stdout=subprocess.DEVNULL)
     with socket.socket() as listener:
         listener.bind(('127.0.0.1', 0))
         port = listener.getsockname()[1]
     base = f'http://127.0.0.1:{port}'
     with (pathlib.Path(state) / 'server.log').open('w+') as log:
-        server = subprocess.Popen(cli + ['dev', '--config', str(config), '--local', '--persist-to', state, '--ip', '127.0.0.1', '--port', str(port), '--inspector-port', '0', '--var', 'ADMIN_EMAIL:owner@example.test'], cwd=root, stdout=log, stderr=log)
+        server = subprocess.Popen(cli + ['dev', '--config', str(config), '--local', '--persist-to', state, '--ip', '127.0.0.1', '--port', str(port), '--inspector-port', '0', '--var', 'ADMIN_EMAIL:owner@example.com'], cwd=root, stdout=log, stderr=log)
         def request(path, fields=None, headers=None):
             headers = dict(headers or {})
             body = None
@@ -47,8 +45,8 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 response = error
             return response.status, response.read().decode(), response.headers
 
-        def form(label):
-            status, body, _ = request('/login')
+        def form(label, path='/login', headers=None):
+            status, body, _ = request(path, headers=headers)
             assert status == 200, status
             selected = next(value for value in re.findall(r'<form\b.*?</form>', body, re.S) if label in value)
             fields = {}
@@ -71,8 +69,11 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 raise AssertionError('Cloudflare Worker did not serve the home page')
             status, body, _ = request('/')
             assert status == 200 and 'Start here. Keep it simple.' not in body and 'Project opportunities' in body and 'Skip to main content' in body
-            for path in ['/projects', '/login', '/demo/login', '/demo', '/privacy', '/favicon.svg']:
+            for path in ['/projects', '/login', '/privacy', '/favicon.svg']:
                 assert request(path)[0] == 200, path
+            for old, current in [('/demo/login', '/login'), ('/demo', '/projects')]:
+                status, _, headers = request(old)
+                assert status == 308 and headers.get('Location') == current, (old, status, headers)
             # Check header-based size admission before body consumption: evidence
             # must reach authorization, while ordinary forms reject the same size.
             for path, expected in [('/evidence/upload', 403), ('/login', 413)]:
@@ -81,7 +82,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 except urllib.error.HTTPError as error:
                     response = error
                 assert response.status == expected, (path, response.status)
-            forged = {'oai-authenticated-user-id': 'test-owner', 'oai-authenticated-user-email': 'owner@example.test'}
+            forged = {'oai-authenticated-user-id': 'test-owner', 'oai-authenticated-user-email': 'owner@example.com'}
             status, response_body, headers = request('/admin/dashboard', headers=forged)
             assert status in (302, 303, 307, 308) and '/login?return_to=%2Fadmin%2Fdashboard' in headers.get('Location', ''), (status, headers, re.sub('<[^>]+>', ' ', response_body)[-3000:])
             try:
@@ -91,11 +92,14 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             assert response.status == 403, response.status
             signup = form('Create account')
             signup.update(age='25', address='Synthetic address', city='Pune', phone='+919000000000', device='iPhone', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
-            status, _, headers = request('/login', signup)
-            assert 'error=verification' in headers.get('Location','') and not any('sq_session=' in v for v in headers.get_all('Set-Cookie',[]))
-            signup['code']=code
+            assert "code" not in signup
             status, _, headers = request('/login', signup)
             assert status in (303, 307) and any('sq_session=' in value for value in headers.get_all('Set-Cookie', [])), (status, headers)
+            status, _, headers = request('/login', signup)
+            assert 'error=exists' in headers.get('Location', '')
+            reserved = dict(signup, email='owner@example.com')
+            status, _, headers = request('/login', reserved)
+            assert 'error=admin' in headers.get('Location', '')
             signin = form('Sign in')
             signin.update(email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
             status, _, headers = request('/login', signin)
@@ -106,7 +110,33 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             assert status == 200 and 'Synthetic address' in profile_page and '+919000000000' in profile_page and '18.4' in profile_page, status
             status, _, _ = request('/admin/settings', headers={'Cookie': session, **forged})
             assert status in (302, 303, 307, 308, 403), status
-            print('PASS CLOUDFLARE: D1 migrations, home/navigation/assets, real password signup/login, forged-owner denial and cross-origin write denial.')
+            # Seed a delivery proof without contacting a real mailbox.
+            for state_db in pathlib.Path(state).rglob('*.sqlite'):
+                with sqlite3.connect(state_db) as db:
+                    if db.execute("SELECT 1 FROM sqlite_master WHERE name='accounts'").fetchone():
+                        break
+            else:
+                raise AssertionError('Local D1 account database not found')
+            token = 'ab' * 32
+            with sqlite3.connect(state_db) as db:
+                account_id = db.execute('SELECT id FROM accounts WHERE email=?', (email,)).fetchone()[0]
+                assert db.execute('SELECT 1 FROM verified_mailboxes WHERE email=?', (email,)).fetchone() is None
+                now = int(time.time() * 1000)
+                proof = hashlib.sha256(json.dumps(['mailbox-link', account_id, token], separators=(',', ':')).encode()).hexdigest()
+                db.execute('INSERT INTO email_challenges VALUES (?,?,?,?)', (email, proof, now + 60000, now))
+            path = '/verify-email?token=' + token
+            status, _, headers = request(path)
+            assert status in (302, 303, 307, 308) and headers.get('Referrer-Policy') == 'no-referrer'
+            confirm = form('Confirm email', path, {'Cookie': session})
+            wrong = dict(confirm, token='cd' * 32)
+            status, _, headers = request('/verify-email', wrong, {'Cookie': session})
+            assert 'status=invalid' in headers.get('Location', ''), (status, headers)
+            status, _, headers = request('/verify-email', confirm, {'Cookie': session})
+            assert status in (303, 307) and headers.get('Location') == '/verify-email', (status, headers)
+            with sqlite3.connect(state_db) as db:
+                assert db.execute('SELECT 1 FROM verified_mailboxes WHERE email=?', (email,)).fetchone()
+                assert db.execute('SELECT 1 FROM email_challenges WHERE email=?', (email,)).fetchone() is None
+            print('PASS CLOUDFLARE: D1 migrations, home/navigation/assets, real password signup/login, account email confirmation, forged-owner denial and cross-origin write denial.')
         except Exception:
             time.sleep(.5)
             log.flush()
