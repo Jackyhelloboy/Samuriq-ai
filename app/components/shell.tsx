@@ -1,12 +1,12 @@
-import {websiteOnly} from "../deployment-mode";
-import {switchWorkspace} from '../workspace-view-actions';
-import {PolicyNotice} from './policy-notice';
-import {WorkspaceNotices} from './workspace-notices';
-import {Brand} from '../marks';
-import {workspaceAccess} from '../workspace-context';
+import { websiteOnly } from "../deployment-mode";
+import { switchWorkspace } from '../workspace-view-actions';
+import { PolicyNotice } from './policy-notice';
+import { WorkspaceNotices } from './workspace-notices';
+import { Brand } from '../marks';
+import { workspaceAccess } from '../workspace-context';
 import WorkspaceChrome from './workspace-chrome';
-import {LayoutDashboard,FolderOpen,UserRound,ChartNoAxesCombined,Plug,Wallet,Radio,ArrowUpRight,ShieldCheck,Settings2,BookOpen,PenLine,Users,ChevronDown,Boxes,Bell,FlaskConical} from 'lucide-react';
-import type {ReactNode} from 'react';
+import { LayoutDashboard,FolderOpen,UserRound,ChartNoAxesCombined,Plug,Wallet,Radio,ArrowUpRight,ShieldCheck,Settings2,BookOpen,PenLine,Users,ChevronDown,Boxes,Bell } from 'lucide-react';
+import type { ReactNode } from 'react';
 export async function Shell({children,admin=false,active="",workspace}:{children:ReactNode;admin?:boolean;active?:string;workspace?:"manager"}){
 const {user,staff,leader,helper}=await workspaceAccess();
 const area=active==='Helper workspace'?'Helper workspace':admin?(staff?.role==='owner'&&workspace!=='manager'?'Owner console':'Manager workspace'):(active==='Team workspace'?(leader?'Team leader workspace':'Delegated team workspace'):'Contributor workspace');

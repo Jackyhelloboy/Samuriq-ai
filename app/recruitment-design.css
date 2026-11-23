@@ -13,26 +13,13 @@
 .checkpoint-grid>a:hover,.checkpoint-grid>a:focus-visible{background:#e3eee6}
 .checkpoint-grid strong{font-size:2rem;line-height:1.15;font-variant-numeric:tabular-nums}
 .checkpoint-grid span{font-size:.9rem;line-height:1.35}
-.pro5 .project-first-hero{background:#eef1e9;color:#102d27}
-.pro5 .project-first-hero h1{font-size:clamp(2.7rem,4.6vw,5.2rem);max-width:13ch}
-.pro5 .project-first-hero img{height:100%;width:100%;max-height:480px;object-fit:cover;object-position:center 42%}
 .opportunity-card.project-open{border-color:#9ab6a7;box-shadow:0 6px 20px #17382b0c}
 .project-open .project-glyph{color:#164b3c;background:#e4efe6}.project-closed .project-glyph{color:#526064}
 @media(max-width:820px){.invitation-layout{grid-template-columns:1fr}.checkpoint-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:760px){.pro5 .project-first-hero img{height:clamp(180px,50vw,290px);min-height:0}.invite-form input,.invite-form select{min-width:0;width:100%}.invite-form fieldset input{width:auto}}
-.project-examples{padding-block:1rem;border-top:1px solid #cfd9d4}
-.project-examples summary{color:#36544a;cursor:pointer;font-weight:600}
-@media(min-width:860px){.single-opportunity{grid-template-columns:1fr}.single-opportunity .opportunity-card{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(16rem,.65fr);column-gap:clamp(2rem,5vw,5rem);min-height:0}.single-opportunity .project-card-top,.single-opportunity .card-discipline,.single-opportunity h2,.single-opportunity .card-excerpt{grid-column:1}.single-opportunity .card-facts{grid-column:2;grid-row:2}.single-opportunity .card-compensation{grid-column:2;grid-row:3}.single-opportunity .card-apply{grid-column:2;grid-row:4;align-self:end}}
+@media(max-width:760px){.invite-form input,.invite-form select{min-width:0;width:100%}.invite-form fieldset input{width:auto}}
 
 /* Keep the recruitment board consistent across public and signed-in views. */
 .pro5 main{max-width:1520px;margin-inline:auto}
-.pro5 .project-first-hero{margin:clamp(12px,2.5vw,40px);overflow:hidden;border:1px solid #d9ded7;border-radius:18px;background:#f3f4ed;min-height:0}
-.pro5 .project-first-hero>div{padding:clamp(24px,4vw,64px)}
-.pro5 .project-first-hero h1{color:#132c27;font-size:clamp(2.75rem,5.6vw,5.75rem);line-height:1.01}
-.pro5 .project-first-hero h1 em{color:#375747}
-.pro5 .project-first-hero p,.pro5 .hero-workspace-actions>a:last-child{color:#33453e}
-.pro5 .hero-workspace-actions a{display:inline-flex;align-items:center;min-height:44px;font-size:.95rem;font-weight:600}
-.pro5 .project-first-hero img{display:block;max-height:520px;min-height:100%;object-position:center}
 .pro5 .home-project-board{padding:clamp(20px,3vw,48px) clamp(16px,2.5vw,40px)}
 .pro5 .opportunity-grid,.suite .opportunity-grid,.portfolio-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:clamp(14px,2vw,26px);align-items:stretch}
 .pro5 .opportunity-card,.suite .opportunity-card,.portfolio-card{background:#fff;color:#172a24;border:1px solid #bac9c0;border-radius:16px;padding:clamp(20px,2vw,32px);min-width:0;overflow-wrap:anywhere;box-shadow:0 4px 16px #172a2408}
@@ -43,8 +30,8 @@
 .portfolio-card details{border-top:1px solid #cbd6cf;padding-top:.65rem}.portfolio-card summary{cursor:pointer}
 :where(a,button,summary,input,textarea,select):focus-visible{outline:3px solid #136e68;outline-offset:3px}
 .v7-suite.v6-suite .suite-card p,.v7-suite.v6-suite .suite-card small,.v6-suite .suite-heading p,.v6-suite .muted{color:#414d48!important}
-.suite label,.suite input::placeholder,.v6-login input::placeholder{color:#47534d}
-@media(max-width:760px){.pro5 .project-first-hero{grid-template-columns:1fr}.pro5 .project-first-hero img{min-height:0;height:clamp(150px,46vw,275px)}.portfolio-controls button{flex:1}}
+.suite label,.suite input::placeholder{color:#47534d}
+@media(max-width:760px){.portfolio-controls button{flex:1}}
 
 .pro5 main{width:100%;max-width:none;box-sizing:border-box}
 .pro5 .business-section{margin:clamp(12px,2.5vw,40px);padding:clamp(22px,4vw,68px);border-radius:18px;border:1px solid #c4d0c7;background:#edf2eb;color:#163429}
@@ -52,15 +39,14 @@
 .pro5 .business-section h2{font-size:clamp(2.4rem,5vw,5rem);color:#182f25}
 .pro5 .business-section h2 em{color:#365b47}
 .pro5 .business-section aside{max-width:46ch;margin:0}
-.pro5 .business-section aside p,.pro5 .business-section .eyebrow,.pro5 .business-principles span{color:#364c40;opacity:1}
+.pro5 .business-section aside p,.pro5 .business-section .eyebrow{color:#364c40;opacity:1}
 .pro5 .business-section aside p{font-size:clamp(1rem,1.2vw,1.18rem);line-height:1.6}
-.pro5 .business-principles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr));gap:14px;border-color:#acbcb0}
 .pro5 .business-section .button.pearl{background:#214432;color:white}
-.pro5 .business-principles span,.pro5 .company-footer a{font-size:.94rem}
-.pro5,.suite,.suite-main,.suite-content,.v6-login{min-width:0;box-sizing:border-box}
+.pro5 .company-footer a{font-size:.94rem}
+.pro5,.suite,.suite-main{min-width:0;box-sizing:border-box}
 .pro5 :is(img,video),.suite :is(img,video){max-width:100%}
 .suite .suite-card,.suite .form-grid>*{min-width:0}
-@media(max-width:700px){.pro5 .business-section>div:first-of-type{grid-template-columns:1fr}.pro5 .business-principles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.pro5 .business-section>div:first-of-type{grid-template-columns:1fr}}
 .pro5 .expertise-list article{grid-template-columns:auto minmax(0,1fr)}
 .pro5 .expertise-list p,.pro5 .editorial-heading>p:last-child,.pro5 .delivery-copy li p{font-size:1rem;line-height:1.65;color:#405047}
 .pro5 .company-nav,.pro5 .company-footer{box-sizing:border-box;max-width:100%}
@@ -80,11 +66,7 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 20px;
     padding: 28px clamp(16px, 5vw, 32px) calc(20px + env(safe-area-inset-bottom));
-    background: #17382d;
-    color: #fff;
   }
-  .premium-site.pro5 .company-footer .brand,
-  .premium-site.pro5 .company-footer .brand * { color: #fff; }
   .premium-site.pro5 .company-footer nav,
   .v6-suite .suite-foot > div {
     display: grid;
@@ -97,12 +79,11 @@
     align-items: center;
     min-height: 48px;
     padding-block: 6px;
-    color: #fff;
-    border-bottom: 1px solid #527064;
+    border-bottom: 1px solid var(--line);
     line-height: 1.4;
     overflow-wrap: anywhere;
   }
-  .premium-site.pro5 .company-footer .footer-legal { margin: 0; padding: 0; color: #d8e6df; }
+  .premium-site.pro5 .company-footer .footer-legal { margin: 0; padding: 0; }
   .v6-suite .suite-foot { display: grid; gap: 8px; padding: 16px 16px calc(88px + env(safe-area-inset-bottom)); }
   .v6-suite .suite-foot .v6-release { display: none; }
   .v6-suite .suite-foot a { display: flex; align-items: center; min-height: 44px; }
@@ -167,7 +148,7 @@
   :is(.pro5,.suite) .opportunity-card:only-child {
     display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);
     grid-template-areas:"top top" "discipline facts" "title facts" "excerpt facts" "rate link";
-    gap:8px clamp(28px,5vw,85px);min-height:0;border-top:3px solid #658974;
+    gap:8px clamp(28px,5vw,85px);min-height:0;
   }
   .opportunity-card:only-child .project-card-top{grid-area:top;margin-bottom:8px}
   .opportunity-card:only-child .card-discipline{grid-area:discipline;margin:0}

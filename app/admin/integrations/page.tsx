@@ -1,19 +1,16 @@
-import {websiteOnly} from "../../deployment-mode";
-import {privateStorageReady} from "../../private-crypto";
-import {ensureTelegramSetup} from "../../telegram-setup";
+import { websiteOnly } from "../../deployment-mode";
+import { privateStorageReady } from "../../private-crypto";
+import { ensureTelegramSetup } from "../../telegram-setup";
 import { requireOwnerView as requireOwner } from "../../access";
 import { getDb } from "../../../db";
 import { integrations } from "../../../db/schema";
-import { Shell, Heading } from "../../components/shell";
+import { Shell,Heading } from "../../components/shell";
 import { saveIntegration } from "../../suite-actions";
-import { settings, adminUrl } from "../../telegram";
+import { settings,adminUrl } from "../../telegram";
 import {
-  Send,
-  Camera,
-  MessagesSquare,
-  BrainCircuit,
-  Wallet,
-  Link,
+Send,
+Camera,
+MessagesSquare
 } from "lucide-react";
 export const dynamic = "force-dynamic";
 export default async function Integrations({

@@ -1,16 +1,16 @@
-import {realProject} from "../../project-listing";
-import {routeWaitingApplicants} from "../../leader-actions";
+import { realProject } from "../../project-listing";
+import { routeWaitingApplicants } from "../../leader-actions";
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import {
-  applications,
-  participants,
-  projects,
-  progress,
+applications,
+participants,
+projects,
+progress,
 } from "../../../db/schema";
-import { Shell, Heading } from "../../components/shell";
+import { Shell,Heading } from "../../components/shell";
 import { indiaDay } from "../../team-metrics";
-import { projectState, stateLabel, missedInfo } from "../../project-state";
+import { projectState,stateLabel,missedInfo } from "../../project-state";
 import { eq } from "drizzle-orm";
 export const dynamic = "force-dynamic";
 export default async function Roster({
@@ -18,7 +18,7 @@ export default async function Roster({
 }: {
   searchParams: Promise<Record<string, string>>;
 }) {
-  const operator = await requireOperator();
+  await requireOperator();
   const q = await searchParams,
     db = getDb(),
     day = indiaDay();

@@ -1,10 +1,10 @@
-import {requireLeaderScope} from './vendor-policy';
-import {getChatGPTUser} from './chatgpt-auth';
-import {staffRole} from './access';
-import {getDb} from '../db';
-import {projectTeams,teamMembers,participants,managers,applications,progress,pairReviews,projects,launches} from '../db/schema';
-import {and,eq,or,desc,sql} from 'drizzle-orm';
-import {settings} from './telegram';
+import { requireLeaderScope } from './vendor-policy';
+import { getChatGPTUser } from './chatgpt-auth';
+import { staffRole } from './access';
+import { getDb } from '../db';
+import { projectTeams,teamMembers,participants,managers,applications,progress,pairReviews,projects,launches } from '../db/schema';
+import { and,eq,sql } from 'drizzle-orm';
+import { settings } from './telegram';
 export const money=(paise:number)=>new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR'}).format(paise/100);
 export const baseRate=(project:{hourlyRate:number;pair:number})=>Math.round(project.hourlyRate*100/(project.pair?2:1));
 export const workDay=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Kolkata'}).format(new Date());

@@ -1,9 +1,9 @@
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
-import { onboarding, participants, projects } from "../../../db/schema";
-import { eq, desc, like, or, and } from "drizzle-orm";
-import { Shell, Heading, Empty } from "../../components/shell";
-import {tutorialEntries,lessonKey,onboardingVersion} from "../../onboarding-state";
+import { onboarding,participants,projects } from "../../../db/schema";
+import { eq,desc,like,or,and } from "drizzle-orm";
+import { Shell,Heading,Empty } from "../../components/shell";
+import { tutorialEntries,lessonKey,onboardingVersion } from "../../onboarding-state";
 import { verifyTutorial } from "../../onboarding-actions";
 export const dynamic = "force-dynamic";
 export default async function Onboarding({
@@ -55,7 +55,7 @@ export default async function Onboarding({
         const r = row.onboarding,
           p = row.participants,
           j = row.projects;
-        const version=await onboardingVersion(j),lessons=await Promise.all(tutorialEntries(j).map((url,i)=>getDb().select().from(onboarding).where(and(eq(onboarding.userId,p.id),eq(onboarding.projectId,lessonKey(j.id,i)),eq(onboarding.version,version))).get()));
+        const version=await onboardingVersion(j),lessons=await Promise.all(tutorialEntries(j).map((_,i)=>getDb().select().from(onboarding).where(and(eq(onboarding.userId,p.id),eq(onboarding.projectId,lessonKey(j.id,i)),eq(onboarding.version,version))).get()));
         return (
           <section className="suite-card" key={r.userId + r.projectId}>
             <div className="section-kicker">
