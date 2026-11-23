@@ -1,8 +1,8 @@
 "use client";
-import {useRouter} from "next/navigation";
-import {tutorialMediaUrl} from "../tutorial-media";
-import { useEffect, useRef, useState } from "react";
-import { startTutorial, recordPlayback, setVideoDuration } from "../onboarding-actions";
+import { useRouter } from "next/navigation";
+import { tutorialMediaUrl } from "../tutorial-media";
+import { useEffect,useRef,useState } from "react";
+import { startTutorial,recordPlayback,setVideoDuration } from "../onboarding-actions";
 import { embedUrl } from "../project-state";
 export default function TutorialPlayer({
   projectId,
@@ -166,7 +166,7 @@ export default function TutorialPlayer({
           Open tutorial video ↗
         </a>
       )}
-      {mode!=="manual"&&<button className="tutorial-play" disabled={!ready||(mode==="youtube"&&!playerReady)||started} onClick={()=>{setStarted(true);if(mode==="direct")video.current?.play().catch(e=>{setStarted(false);setMessage("Tap play again or check your browser’s media permission.")});else player.current?.playVideo?.();}}>{started?"Tutorial playing · complete the full duration":"Play required tutorial"}</button>}
+      {mode!=="manual"&&<button className="tutorial-play" disabled={!ready||(mode==="youtube"&&!playerReady)||started} onClick={()=>{setStarted(true);if(mode==="direct")video.current?.play().catch(()=>{setStarted(false);setMessage("Tap play again or check your browser’s media permission.")});else player.current?.playVideo?.();}}>{started?"Tutorial playing · complete the full duration":"Play required tutorial"}</button>}
       {mode === "manual" ? (
         <p>
           This video provider needs coordinator verification. Watch the full

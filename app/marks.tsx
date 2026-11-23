@@ -1,16 +1,3 @@
-export function Plane({ size = 20 }: { size?: number }) {
-  return (
-    <svg
-      aria-hidden="true"
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="currentColor"
-    >
-      <path d="M21.6 3.3 2.8 10.6c-1.3.5-1.3 1.2-.2 1.5l4.8 1.5 1.9 5.8c.2.6.1.8.7.8.5 0 .7-.2.9-.4l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.9l3.1-15.1c.3-1.4-.5-2-1.2-1.8Z" />
-    </svg>
-  );
-}
 export function Brand() {
   return (
     <a className="brand" href="/" aria-label="Samuriq AI home">

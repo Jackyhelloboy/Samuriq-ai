@@ -1,8 +1,15 @@
 'use server';
 import { partnerEmailMatch } from "./verify-email/verification";
-import {requireLeaderScope,contractVersion,vendorActive} from './vendor-policy';
-import {requireApplicationPermission} from './enrollment';
-import {getDb} from '../db';import {memberFollowups,projectTeams,teamMembers,participants,projects,applications,progress,leaderReports,operationAudit,managers} from '../db/schema';import {and,eq,or,sql} from 'drizzle-orm';import {requireOperator,requireOwner} from './access';import {getChatGPTUser} from './chatgpt-auth';import {baseRate,teamContext,teamActivity,workDay,isProtectedStaff} from './team-access';import {projectState} from './project-state';import {redirect} from 'next/navigation';
+import { contractVersion } from './vendor-policy';
+import { requireApplicationPermission } from './enrollment';
+import { getDb } from '../db';
+import { memberFollowups,projectTeams,teamMembers,participants,projects,applications,leaderReports,operationAudit } from '../db/schema';
+import { and,eq,or,sql } from 'drizzle-orm';
+import { requireOperator,requireOwner } from './access';
+import { getChatGPTUser } from './chatgpt-auth';
+import { baseRate,teamContext,teamActivity,workDay,isProtectedStaff } from './team-access';
+import { projectState } from './project-state';
+import { redirect } from 'next/navigation';
 const val=(f:FormData,k:string)=>String(f.get(k)||'').trim();
 async function audit(actor:string,action:string,target:string,detail:string){await getDb().insert(operationAudit).values({id:crypto.randomUUID(),actor,action,target,detail,created:new Date().toISOString()});}
 export async function appointLeader(f:FormData){const staff=await requireOperator(),db=getDb(),projectId=val(f,'projectId'),leaderId=val(f,'leaderId'),label=val(f,'label').slice(0,80),p=await db.select().from(participants).where(eq(participants.id,leaderId)).get(),j=await db.select().from(projects).where(eq(projects.id,projectId)).get();if(!p||p.suspended||!p.phone||!p.phoneConsent||!j||!label||await isProtectedStaff(p.id,p.email))throw Error('Select a contributor with a consented contact number and an existing project; staff cannot also be team leaders');if(baseRate(j)<=0)throw Error('Configure the project hourly rate before creating a team');const id=crypto.randomUUID(),vendorFrom=f.get('model')==='direct'?'':workDay(),vendorTargetMinutes=vendorFrom?j.targetMinutes:0,payrollTerms=vendorFrom?val(f,'payrollTerms').slice(0,2000):'';if(vendorFrom&&payrollTerms.length<20)throw Error('Provide the vendor’s private contributor payroll terms before appointment');const result=await db.run(sql`INSERT INTO project_teams(id,project_id,leader_id,label,code,rate_paise,approved_rate_paise,created_by,created,vendor_from,vendor_target_minutes,payroll_terms) SELECT ${id},${projectId},${leaderId},${label},${crypto.randomUUID().replaceAll('-','')},${baseRate(j)},${baseRate(j)},${staff.user.userId},${new Date().toISOString()},${vendorFrom},${vendorTargetMinutes},${payrollTerms} WHERE (SELECT count(*) FROM project_teams t JOIN projects p ON p.id=t.project_id WHERE t.leader_id=${leaderId} AND t.active=1 AND p.active=1)<coalesce((SELECT max_projects FROM leader_policies WHERE user_id=${leaderId}),1)`);if(!result.meta.changes)throw Error('This leader is already assigned. An admin or manager must approve a higher project limit first.');await audit(staff.user.userId,'team-leader-appointed',id,projectId+':'+leaderId);redirect('/admin/leaders?team='+id);}

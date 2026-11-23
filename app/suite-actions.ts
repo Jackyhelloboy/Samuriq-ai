@@ -1,93 +1,9 @@
 "use server";
-import {websiteOnly,publicSiteOrigin} from "./deployment-mode";
-import { requireFeature } from "./features";
+import {websiteOnly} from "./deployment-mode";
 import { requireOwner } from "./access";
-import { getChatGPTUser } from "./chatgpt-auth";
 import { getDb } from "../db";
-import { progress, applications, integrations, notices, projects, evidenceItems } from "../db/schema";
-import { projectState } from "./project-state";
-import { and, eq } from "drizzle-orm";
+import { integrations, notices } from "../db/schema";
 import { redirect } from "next/navigation";
-export async function saveProgress(form: FormData) {
-  await requireFeature("reporting");
-  const user = await getChatGPTUser();
-  if (!user) throw Error("Sign in to continue");
-  const projectId = String(form.get("projectId"));
-  await (await import("./policy")).requirePolicyRole(user.userId,"contributor");
-  await (await import("./work-membership")).requireProjectAllowed(user.userId,projectId);
-  const application = await getDb()
-    .select()
-    .from(applications)
-    .where(
-      and(
-        eq(applications.userId, user.userId),
-        eq(applications.projectId, projectId),
-      ),
-    )
-    .get();
-  if (application?.status !== "approved" || !application.communityVerified)
-    throw Error("Project approval required");
-  const proj = await getDb().select().from(projects).where(eq(projects.id, projectId)).get();
-  if (proj?.evidenceRequired) throw Error("This project uses TL-reviewed daily evidence. Upload your screenshots and contact your TL for updates.");
-  if (proj && projectState(proj) !== "online") throw Error("This project is paused. The deadline has passed.");
-  const status = String(form.get("status")),
-    minutes = Number(form.get("minutes")),
-    units = Number(form.get("units"));
-  if (
-    !["started", "completed", "not-started", "need-help"].includes(status) ||
-    !Number.isInteger(minutes) ||
-    minutes < 0 ||
-    minutes > 1440 ||
-    !Number.isInteger(units) ||
-    units < 0 ||
-    units > 100000
-  )
-    throw Error("Check your work totals");
-  let proofUrl = String(form.get("proofUrl") || "").trim();
-  if(websiteOnly()&&status==="completed"){const day=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Kolkata"}).format(new Date());const proof=await getDb().select().from(evidenceItems).where(and(eq(evidenceItems.userId,user.userId),eq(evidenceItems.projectId,projectId),eq(evidenceItems.day,day))).get();if(!proof)throw Error("Upload a private screenshot on this website before completing your report");proofUrl=publicSiteOrigin()+"/evidence/file?id="+encodeURIComponent(proof.id);}
-  if (proofUrl) {
-    const url = new URL(proofUrl);
-    if (
-      url.protocol !== "https:" ||
-      (websiteOnly()?url.origin!==publicSiteOrigin()||url.pathname!=="/evidence/file":!["drive.google.com", "docs.google.com"].includes(url.hostname)) ||
-      url.username ||
-      url.password
-    )
-      throw Error("Use your private evidence uploaded on this website");
-  }
-  if (status === "completed" && !proofUrl)
-    throw Error("Upload your completion evidence before completing the report");
-  if(proj?.workType!=='general'&&status==='completed'&&!String(form.get('clientId')||'').trim())throw Error('Add the client submission or batch reference for this workflow');
-  const row = {
-    userId: user.userId,
-    projectId,
-    day: new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(
-      new Date(),
-    ),
-    status,
-    minutes,
-    units,
-    approvedMinutes: 0,
-    notes: String(form.get("notes") || "").slice(0, 1500),
-    proofUrl,
-    clientId: String(form.get("clientId") || "")
-      .trim()
-      .slice(0, 150),
-    review: "pending",
-    reviewNote: "",
-    updated: new Date().toISOString(),
-  };
-  const result=await getDb()
-    .insert(progress)
-    .values(row)
-    .onConflictDoUpdate({
-      target: [progress.userId, progress.projectId, progress.day],
-      set: row,
-      setWhere:eq(progress.ledgerLocked,0),
-    }).returning();
-  if(!result.length)throw Error("This report is locked in the earnings ledger. Contact the owner for a payment adjustment.");
-  redirect("/workspace?saved=1#progress");
-}
 export async function saveIntegration(form: FormData) {
   await requireOwner();
   if(websiteOnly())throw Error("External integrations are disabled. Use website announcements and support.");

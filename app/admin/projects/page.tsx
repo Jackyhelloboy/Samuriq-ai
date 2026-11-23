@@ -1,13 +1,13 @@
-import {projectState} from "../../project-state";
-import {getTableColumns} from "drizzle-orm";
-import {cardFields,realProject} from "../../project-listing";
+import { projectState } from "../../project-state";
+import { getTableColumns } from "drizzle-orm";
+import { cardFields,realProject } from "../../project-listing";
 import { requireOperatorView as requireOperator } from "../../access";
 import { getDb } from "../../../db";
 import { projects } from "../../../db/schema";
-import { desc, like, count, and, ne } from "drizzle-orm";
+import { desc,like,count,and,ne } from "drizzle-orm";
 import { toggleProject } from "../../project-actions";
-import { Shell, Heading, Empty } from "../../components/shell";
-import { Plus, Search, ArrowUpRight } from "lucide-react";
+import { Shell,Heading,Empty } from "../../components/shell";
+import { Plus,Search } from "lucide-react";
 export const dynamic = "force-dynamic";
 export default async function AdminProjects({
   searchParams,

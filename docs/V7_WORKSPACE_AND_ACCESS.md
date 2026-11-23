@@ -10,7 +10,7 @@ The mobile drawer hides the background from focus while open, locks background s
 
 ## One authorization path
 
-Both the legacy `launchProject` action and the project desk call `accessibleProject`. The legacy action now redirects internally to the desk; it no longer provides a separate direct-to-client launch path.
+The project desk calls `accessibleProject` before issuing a client session.
 
 Authorization checks the actual signed-in account and current project state. Current training/terms acceptance, approved application, verified community and permanent pairing remain required. TL-managed projects also require both participants in the same active team, an active TL and verified evidence-folder viewer access. Queries for those checks select only the two pair members and their two folders.
 
