@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 root = pathlib.Path(__file__).resolve().parent.parent
@@ -94,7 +95,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             signup.update(age='25', address='Synthetic address', city='Pune', phone='+919000000000', device='iPhone', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
             assert "code" not in signup
             status, _, headers = request('/login', signup)
-            assert status in (303, 307) and any('sq_session=' in value for value in headers.get_all('Set-Cookie', [])), (status, headers)
+            assert status in (303, 307) and any('sq_session=' in value for value in headers.get_all('Set-Cookie', [])), (status, dict(headers))
             status, _, headers = request('/login', signup)
             assert 'error=exists' in headers.get('Location', '')
             reserved = dict(signup, email='owner@example.com')
@@ -104,7 +105,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             signin.update(email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
             status, _, headers = request('/login', signin)
             cookies = headers.get_all('Set-Cookie', [])
-            assert status in (303, 307) and any('sq_session=' in value for value in cookies), (status, headers)
+            assert status in (303, 307) and any('sq_session=' in value for value in cookies), (status, dict(headers))
             session = next(value.split(';')[0] for value in cookies if value.startswith('sq_session='))
             status, profile_page, _ = request('/workspace', headers={'Cookie': session, **forged})
             assert status == 200 and 'Synthetic address' in profile_page and '+919000000000' in profile_page and '18.4' in profile_page, status
@@ -130,9 +131,9 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             confirm = form('Confirm email', path, {'Cookie': session})
             wrong = dict(confirm, token='cd' * 32)
             status, _, headers = request('/verify-email', wrong, {'Cookie': session})
-            assert 'status=invalid' in headers.get('Location', ''), (status, headers)
+            assert 'status=invalid' in headers.get('Location', ''), (status, dict(headers))
             status, _, headers = request('/verify-email', confirm, {'Cookie': session})
-            assert status in (303, 307) and headers.get('Location') == '/verify-email', (status, headers)
+            assert status in (303, 307) and urllib.parse.urljoin(base, headers.get('Location', '')) == base + '/verify-email', (status, dict(headers))
             with sqlite3.connect(state_db) as db:
                 assert db.execute('SELECT 1 FROM verified_mailboxes WHERE email=?', (email,)).fetchone()
                 assert db.execute('SELECT 1 FROM email_challenges WHERE email=?', (email,)).fetchone() is None
