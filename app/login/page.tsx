@@ -41,6 +41,7 @@ export default async function Login({
                 restricted:"This account is restricted. Contact your project manager for a review.",
                 exists: "That email already has an account. Sign in instead.",
                 short: "Choose a password with 8–128 characters.",
+                mismatch: "Your password and confirmation do not match.",
                 details: "Enter your name and a valid .com email.",
                 unavailable: "Registration is temporarily unavailable. Contact support if this continues.",
                 profile:"Check your age, phone, city and device version.",

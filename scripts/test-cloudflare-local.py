@@ -99,7 +99,10 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 response = error
             assert response.status == 403, response.status
             signup = form('Create account')
-            signup.update(age='25', address='Synthetic address', city='Pune', phone='+919000000000', device='iOS', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
+            signup.update(age='25', state='Telangana', phone='+919000000000', device='iOS', mobileOs='iOS', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', confirmPassword='SyntheticOnly-Password-2026', return_to='/workspace')
+            mismatch = dict(signup, confirmPassword='Different-Synthetic-Password-2026')
+            status, _, mismatch_headers = request('/login', mismatch)
+            assert 'error=mismatch' in mismatch_headers.get('Location', ''), (status, dict(mismatch_headers))
             assert "code" not in signup
             status, _, headers = request('/login', signup)
             assert status in (303, 307) and any('sq_session=' in value for value in headers.get_all('Set-Cookie', [])), (status, dict(headers))
@@ -115,7 +118,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             assert status in (303, 307) and any('sq_session=' in value for value in cookies), (status, dict(headers))
             session = next(value.split(';')[0] for value in cookies if value.startswith('sq_session='))
             status, profile_page, _ = request('/workspace', headers={'Cookie': session, **forged})
-            assert status == 200 and 'Synthetic address' in profile_page and '+919000000000' in profile_page and '18.4' in profile_page, status
+            assert status == 200 and 'Telangana' in profile_page and '+919000000000' in profile_page and '18.4' in profile_page and 'Synthetic address' not in profile_page, status
             status, _, _ = request('/admin/settings', headers={'Cookie': session, **forged})
             assert status in (302, 303, 307, 308, 403), status
             # Seed a delivery proof without contacting a real mailbox.
