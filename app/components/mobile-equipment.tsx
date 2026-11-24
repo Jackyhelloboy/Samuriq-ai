@@ -27,7 +27,7 @@ function detectDevice(userAgent: string, platform = "", platformVersion = "", to
 
 export default function MobileEquipment({ initial, platform, version }: { initial: string; platform: string; version: string }) {
   const [detected, setDetected] = useState<Detection | null>(null);
-  const [fallback, setFallback] = useState<Device>(choices.includes(initial as Device) ? initial as Device : "Laptops");
+  const [fallback, setFallback] = useState<Device | "">(choices.includes(initial as Device) ? initial as Device : "");
 
   useEffect(() => {
     let mounted = true;
@@ -45,14 +45,14 @@ export default function MobileEquipment({ initial, platform, version }: { initia
   }, []);
 
   const device = detected?.device || fallback;
-  const os = detected?.os || (device === "Mac" ? "macOS" : device === "Laptops" ? "" : device);
+  const os = detected?.os || (device === "Mac" ? "macOS" : device === "Laptops" ? (initial === device ? platform : "") : device);
   const osVersion = detected?.version || (initial === device && platform === os ? version : "");
 
   return <fieldset className="equipment-fields">
     <legend>Your device</legend>
     {detected ? <p>Detected {device} · {os}{osVersion ? ` ${osVersion}` : " (version unavailable)"}</p> : <label>Device
-      <select value={fallback} onChange={event => setFallback(event.target.value as Device)}>
-        {choices.map(choice => <option key={choice}>{choice}</option>)}
+      <select required value={fallback} onChange={event => setFallback(event.target.value as Device | "")}>
+        <option value="">Select your device</option>{choices.map(choice => <option key={choice}>{choice}</option>)}
       </select>
     </label>}
     <input type="hidden" name="device" value={device} />
