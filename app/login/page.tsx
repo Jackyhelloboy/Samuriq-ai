@@ -44,7 +44,7 @@ export default async function Login({
                 short: "Choose a password with 8–128 characters.",
                 details: "Enter your name and a valid .com email.",
                 unavailable: "Registration is temporarily unavailable. Contact support if this continues.",
-                profile:"Check your age, phone, city and device version.",
+                profile:"Check your phone, state and device details.",
                 admin:
                   "That email is reserved for the owner. Use your existing owner password sign-in.",
               } as Record<string, string>
