@@ -14,8 +14,18 @@ export function selections(form: FormData, key: string) {
   const allowed: readonly string[] = key === "languages" ? INDIA_LANGUAGES : devices;
   return allowed.filter(item => form.getAll(key).includes(item)).join(", ");
 }
+export function normalizeGroup(value: string): string | null {
+  try {
+    const url = new URL(value);
+    const code = url.pathname.match(/^\/([a-zA-Z0-9_-]{12,64})\/?$/)?.[1];
+    if (url.protocol !== "https:" || url.hostname !== "chat.whatsapp.com" || url.username || url.password || !code) return null;
+    return "https://chat.whatsapp.com/" + code;
+  } catch {
+    return null;
+  }
+}
 export function validGroup(url: string) {
-  return /^https:\/\/chat\.whatsapp\.com\/[a-zA-Z0-9_-]{12,64}$/.test(url);
+  return normalizeGroup(url) !== null;
 }
 export const words = (value: string) => value.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
 export function matches(brief: Brief, profile: {language:string; device:string;mobileOs?:string}) {

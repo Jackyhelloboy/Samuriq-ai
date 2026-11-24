@@ -14,6 +14,7 @@ import { eq, and } from "drizzle-orm";
 import { getChatGPTUser } from "../../chatgpt-auth";
 import { Shell, Heading } from "../../components/shell";
 import { applyProject } from "../../project-actions";
+import "../projects.css";
 export const dynamic = "force-dynamic";
 export default async function Detail({
   searchParams,
@@ -95,47 +96,33 @@ export default async function Detail({
         }
       />
       {job.id==='speech-pair'&&<section className="project-offer suite-card"><div><p className="eyebrow">HINDI / PERMANENT-PAIR RECORDING</p><h2>Flexible work. Clear requirements.</h2><p>Laptop or Android mobile · stable internet · quiet recording space · two separately registered participants.</p></div><div className="offer-rates"><div><strong>₹250</strong><span>per person / QC-approved hour</span></div><div><strong>₹500</strong><span>per pair / QC-approved hour</span></div></div><p className="small-note">Direct Samuriq contributor rate. Keep the same approved partner throughout the project. Only client-QC-approved work is payable. Add payment details in your workspace; payment follows client QC, settlement review and your accepted terms. Vendor-team members follow their separately accepted payroll terms. No joining fee.</p></section>}
-      {brief && <section className="suite-card"><h2>Project requirements</h2><p>{brief.languages || "All languages"} · {brief.devices || "Any device"} · {job.pair ? "Pair" : "Individual"}</p><p>{brief.notes}</p>{!!brief.group_url && (application?.status === "approved" ? <a className="button dark" href={"/projects/group?id="+encodeURIComponent(job.id)}>Open project WhatsApp group</a> : acceptingApplications ? <a className="button dark" href={user ? "/workspace?edit=1&next="+encodeURIComponent(job.id) : "/login?return_to="+encodeURIComponent("/projects/detail?id="+encodeURIComponent(job.id))+"#create-account"}>Register for this project</a> : null)}</section>}
+      {brief && <section className="suite-card project-recruitment-panel">
+        <div className="project-panel-heading"><div><p className="eyebrow">ELIGIBILITY & RECRUITMENT</p><h2>Who can take part</h2></div><span className="badge">{job.pair ? "Two-person team" : "Individual role"}</span></div>
+        <div className="project-quickfacts">
+          <div><span>Languages</span><strong>{brief.languages || "All languages"}</strong></div>
+          <div><span>Equipment</span><strong>{brief.devices || "Any supported device"}</strong></div>
+          <div><span>Work format</span><strong>{job.pair ? "Permanent partner pair" : "Individual contribution"}</strong></div>
+        </div>
+        {brief.notes && <p className="project-note">{brief.notes}</p>}
+        {!!brief.group_url && application?.status === "approved" && <a className="button dark" href={"/projects/group?id="+encodeURIComponent(job.id)}>Open official WhatsApp group</a>}
+      </section>}
       {q.notice&&<p className="notice" role="status">{q.notice==="tl-role"?"Your profile was saved. A manager must approve a role change before you can join another TL’s team.":q.notice==="permission-required"?"Your profile was saved. Request permission from your current TL below before applying to this additional project.":"Review the project requirements before continuing."}</p>}
       {locks.length>0&&<section className="suite-card"><span className="badge">TL PERMISSION REQUIRED</span><h2>Ask your current team before applying.</h2><p>Each active team leader must approve your additional project. Your existing team does not change.</p><form action={requestProjectPermission}><input type="hidden" name="projectId" value={job.id}/><label>How will you manage both commitments?<textarea name="reason" required minLength={10} maxLength={1000}/></label><button>Request TL permission</button></form></section>}
       {job.enrollmentOnly===1&&acceptingApplications&&<section className="suite-card"><span className="badge approved">ACTIVE</span><h2>Apply now. Complete onboarding before work.</h2><p>This project is active. Website access opens after the required guidance, group connection and team approval.</p><a className="button dark" href={'/workspace?edit=1&next='+job.id}>Register / update my profile</a></section>}
       {membership&&!membership.rateAccepted&&<section className="suite-card"><h2>Your team assignment is ready.</h2>{membership.effectiveFrom&&<p>Payment assignment effective {membership.effectiveFrom}. Earlier work retains its recorded beneficiary and rate.</p>}{membership.vendorFrom?<><span className="badge">VENDOR-MANAGED PAYROLL</span><p>Your vendor receives the Samuriq settlement and is responsible for your individual payment. The owner's vendor budget is not your individual offer.</p><p className="preserve">{membership.payrollTerms||'Your vendor must provide written payroll terms before you can accept.'}</p></>:<p>Your individual contractual rate is {money(membership.ratePaise)} per client-QC-approved hour. Payment follows QC, owner review and your accepted terms.</p>}<form action={acceptAssignedRate}><input type="hidden" name="projectId" value={job.id}/>{membership.vendorFrom?<input type="hidden" name="termsVersion" value={await contractVersion(membership)}/>:<input type="hidden" name="rate" value={membership.ratePaise}/>}<label className="check"><input type="checkbox" name="consent" value="yes" required/>I accept my assigned team’s private terms and understand who is responsible for paying me.</label><button disabled={!!membership.vendorFrom&&membership.payrollTerms.length<20}>Accept assigned team terms</button></form></section>}
+      <div className="project-status-panel">
+        <div><span className={"badge" + (projectState(job) === "online" ? " approved" : "")}>{stateLabel(projectState(job))}</span><strong>{acceptingApplications ? "Applications are open" : "Project information"}</strong></div>
+        <span>{job.deadline ? "Application deadline · " + job.deadline : "Remote opportunity · India"}</span>
+      </div>
       <div className="workspace-columns project-detail-grid">
-        <section className="suite-card" style={{ gridColumn: "1 / -1" }}>
-          <h2>{projectState(job)==="online"?"Start your project":"Project summary"}</h2>
-          <p>
-            <span
-              className={
-                "badge" + (projectState(job) === "online" ? " approved" : "")
-              }
-            >
-              {stateLabel(projectState(job))}
-            </span>
-            {job.deadline
-              ? "  Deadline " + job.deadline + " (India time, end of day)"
-              : ""}
-          </p>
-          {projectState(job) === "paused" && (
-            <p>
-              This project is paused because its deadline has passed.
-              Applications and updates are closed.
-            </p>
-          )}
-          {projectState(job)==="online"?<p>Read the requirements below, then use the join button to create your account or continue your application. After approval, your project group and work setup will appear here.</p>:<p>Applications are currently closed. You can still review the full brief and requirements here.</p>}
-
-        </section>
-        <section className="suite-card">
-          <h2>Project overview</h2>
-          <p className="preserve">{job.description}</p>
-          <h3>Requirements & quality expectations</h3>
-          <p className="preserve">{job.requirements}</p>
-          <h3>Payment responsibility</h3><p>{membership?.vendorFrom?'Vendor-managed payroll. Your assigned vendor pays you under your private agreement. Samuriq pays the vendor after client QC, target checks and owner review.':membership?'Direct Samuriq payments follow your accepted individual contract and owner settlement review.':'Your payment route and private terms are confirmed with your team assignment. No joining fee is required.'}</p>{membership?.vendorFrom&&membership.rateAccepted===1&&<details><summary>My accepted vendor payroll terms</summary><p className="preserve">{membership.payrollTerms}</p></details>}
-          {job.questions && (
-            <>
-              <h3>Application questions</h3>
-              <p className="preserve">{job.questions}</p>
-            </>
-          )}
+        <section className="suite-card project-overview-card">
+          <p className="eyebrow">PROJECT DETAILS</p><h2>Project overview</h2>
+          <div className="project-overview-meta"><span>{job.location || "Remote · India"}</span><span>{job.pair ? "Two participants required" : "Individual participation"}</span>{job.deadline && <span>Deadline: {job.deadline} (India time)</span>}</div>
+          {projectState(job) === "paused" && <p>This project is currently closed. Applications and work updates are unavailable.</p>}
+          <div className="project-copy preserve">{job.description}</div>
+          {job.requirements && <div className="project-requirements-block"><h3>What you need to know</h3><div className="project-copy preserve">{job.requirements}</div></div>}
+          <details className="project-extra-details"><summary>Payment & approval information</summary><p>{membership?.vendorFrom?'Your assigned vendor pays you under your private agreement. Samuriq settles with the vendor after client quality checks, target checks and owner review.':membership?'Your accepted individual contract and owner settlement review determine direct Samuriq payments.':'Your payment route and private terms are confirmed with your team assignment. No joining fee is required.'}</p>{membership?.vendorFrom&&membership.rateAccepted===1&&<p className="preserve">{membership.payrollTerms}</p>}</details>
+          {job.questions && <details className="project-extra-details"><summary>Application questions</summary><div className="project-copy preserve">{job.questions}</div></details>}
         </section>
         <aside>
           <section className="suite-card">
@@ -236,8 +223,8 @@ export default async function Detail({
           <section className="suite-card project-community-card">
             <span className="badge">PROJECT GROUP</span>
             <h2>Connect with the project team</h2>
-            <p>Join the official group for onboarding help, project updates and coordinator support.</p>
-            {brief?.group_url && application?.status==='approved' ? <a className="button dark" href={'/projects/group?id='+encodeURIComponent(job.id)}>Open project WhatsApp group</a> : <p className="soft-note">{brief?.group_url ? "The group opens after your application and project setup are approved." : "The group link will appear when the project coordinator adds it."}</p>}
+            <p className="project-community-caption">Official updates, onboarding guidance and coordinator support.</p>
+            {brief?.group_url && application?.status==='approved' ? <a className="button dark" href={'/projects/group?id='+encodeURIComponent(job.id)}>Open WhatsApp group</a> : <p className="soft-note">{brief?.group_url ? "Available after application approval." : "The coordinator will publish the group invite here."}</p>}
           </section>
         </aside>
       </div>
