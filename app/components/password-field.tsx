@@ -7,6 +7,7 @@ export default function PasswordField({ id, creating = false }: { id: string; cr
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const confirmRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     confirmRef.current?.setCustomValidity(
@@ -24,8 +25,14 @@ export default function PasswordField({ id, creating = false }: { id: string; cr
           id={id}
           name="password"
           type={visible ? "text" : "password"}
+          ref={passwordRef}
           value={creating ? password : undefined}
-          onChange={creating ? (event) => setPassword(event.target.value) : undefined}
+          onChange={creating ? (event) => {
+            setPassword(event.target.value);
+            if (confirmRef.current) confirmRef.current.setCustomValidity(
+              confirmation && confirmation !== event.target.value ? "Passwords do not match." : "",
+            );
+          } : undefined}
           required
           minLength={creating ? 8 : undefined}
           maxLength={128}
@@ -48,7 +55,14 @@ export default function PasswordField({ id, creating = false }: { id: string; cr
               name="confirmPassword"
               type={visible ? "text" : "password"}
               value={confirmation}
-              onChange={(event) => setConfirmation(event.target.value)}
+              onChange={(event) => {
+                setConfirmation(event.target.value);
+                event.currentTarget.setCustomValidity(
+                  event.target.value && event.target.value !== passwordRef.current?.value
+                    ? "Passwords do not match."
+                    : "",
+                );
+              }}
               required
               minLength={8}
               maxLength={128}
