@@ -41,6 +41,7 @@ export async function register(form: FormData) {
   const skills = String(form.get("skills") || "").slice(0, 1500),
     location = String(form.get("location") || "").slice(0, 200),
     device = String(form.get("device") || "").slice(0, 100);
+  if (form.has("location") && !INDIA_STATES.some(state => state.name === location)) return fail("location");
   const skillLevel=String(form.get("skillLevel")??existingProfile?.skillLevel??"");
   if(!["","New to project work","Experienced contributor","Team coordination experience"].includes(skillLevel))return fail("details");
   const mobileOs=device==="iPhone"||device==="iOS"?"iOS":device==="Android phone"||device==="Android"?"Android":device==="Mac"?"macOS":device==="Phone and computer"||device==="Laptops"?String(form.get("mobileOs")||"").trim():"";
