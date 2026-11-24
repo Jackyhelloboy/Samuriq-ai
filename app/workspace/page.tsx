@@ -26,7 +26,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
           </a>
         }
       />
-      {query.error&&<p role="alert" className="notice">{({privateDetails:"Enter a valid age and an address of up to 300 characters.",equipment:"Enter the mobile operating system version shown in your phone settings.","project-closed":"Choose an active project. Closed projects cannot be selected.","project-permission":"Your current TL must approve another project before you can switch.",policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, profile and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
+      {query.error&&<p role="alert" className="notice">{({privateDetails:"Enter a valid age.",equipment:"Review the detected device information and try again.","project-closed":"Choose an active project. Closed projects cannot be selected.","project-permission":"Your current TL must approve another project before you can switch.",policy:"Review and accept the current platform agreement before saving your profile.",username:"Use 3–30 letters, digits, dots or underscores. Begin and end with a letter or digit.",taken:"That username is already taken. Choose another username.",details:"Check your name, languages, profile and consent fields.",phone:"Enter a valid contact number with country code.","phone-consent":"Confirm contact consent or leave the number blank.","phone-required":"Add your contact number and consent so your assigned TL can coordinate project work."} as Record<string,string>)[query.error]||"Review the registration fields."}</p>}
       {!user ? (
         <div className="onboarding-grid">
           <section className="suite-card">
@@ -93,8 +93,8 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                   />
                 </label>
                 <label>Age in years<input type="number" name="age" min={1} max={120} defaultValue={signup?.age}/></label>
-                <label>Private street address (optional)<textarea name="address" rows={2} maxLength={300} autoComplete="street-address" defaultValue={signup?.address}/></label>
-                <ProfilePreferences language={profile?.language||""} location={profile?.location??signup?.city??""}/>
+                
+                <ProfilePreferences language={profile?.language||""} location={profile?.location??signup?.state??""}/>
                 <MobileEquipment initial={profile?.device??signup?.device??""} platform={profile?.mobileOs??signup?.mobile_os??""} version={profile?.osVersion??signup?.os_version??""}/>
                 {!websiteOnly()&&<label>
                   Telegram username <small>Verified through the bot after saving</small>
