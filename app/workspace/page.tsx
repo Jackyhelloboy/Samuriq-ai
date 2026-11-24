@@ -92,7 +92,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                     defaultValue={profile?.name || user.displayName}
                   />
                 </label>
-                <ProfilePreferences language={profile?.language||""} location={profile?.location??signup?.city??""}/>
+                <ProfilePreferences language={profile?.language||""} location={profile?.location||signup?.city||""}/>
                 <MobileEquipment initial={profile?.device??signup?.device??""} platform={profile?.mobileOs??signup?.mobile_os??""} version={profile?.osVersion??signup?.os_version??""}/>
                 {!websiteOnly()&&<label>
                   Telegram username <small>Verified through the bot after saving</small>
@@ -107,7 +107,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                 <input type="hidden" name="project" value={profile?.project||'general'}/>
 
               </div>
-              <div className="form-grid"><label>Project contact number<input name="phone" type="tel" required={!!query.next||(!profile&&!!projectOptions?.choices.length)} maxLength={18} defaultValue={profile?.phone??signup?.phone} placeholder="+91…"/></label><label className="check"><input name="phoneConsent" type="checkbox" required={!!query.next||(!profile&&!!projectOptions?.choices.length)} value="yes" defaultChecked={!!profile?.phoneConsent}/>I allow my assigned team leader and authorized managers to contact me for project coordination. Staff phone numbers are not publicly shared.</label></div>
+              <div className="form-grid"><label>Project contact number<input name="phone" type="tel" required={!!query.next||(!profile&&!!projectOptions?.choices.length)} maxLength={18} defaultValue={profile?.phone||signup?.phone||""} placeholder="+91…"/></label><label className="check"><input name="phoneConsent" type="checkbox" required={!!query.next||(!profile&&!!projectOptions?.choices.length)} value="yes" defaultChecked={!!profile?.phoneConsent}/>I allow my assigned team leader and authorized managers to contact me for project coordination. Staff phone numbers are not publicly shared.</label></div>
               <label>
                 Skills & experience
                 <textarea
