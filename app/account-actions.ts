@@ -25,6 +25,7 @@ export async function submitSignup(form: FormData) {
   if (!acceptedEmail(email) || !name) return "details";
   try{await authLimit(email)}catch(e){if(e instanceof AuthRateLimitError)return "rate";throw e;}
   if (pw.length < 8 || pw.length > 128) return "short";
+  if (pw !== String(form.get("password_confirmation") || "")) return "mismatch";
   const admin = bot().ADMIN_EMAIL?.toLowerCase();
   if (!admin && websiteOnly()) return "unavailable";
   if (admin && email === admin) return "admin";

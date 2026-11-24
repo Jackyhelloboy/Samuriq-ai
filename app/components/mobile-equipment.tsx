@@ -20,14 +20,14 @@ function detectDevice(userAgent: string, platform = "", platformVersion = "", to
   }
   if (/windows|linux|cros/.test(agent) || ["windows", "linux", "chrome os"].includes(reported)) {
     const os = /windows/.test(agent) || reported === "windows" ? "Windows" : /cros/.test(agent) ? "Chrome OS" : "Linux";
-    return { device: "Laptops", os, version: platformVersion || (os === "Windows" ? /windows nt\s+([\d.]+)/i.exec(userAgent)?.[1] : "") || "" };
+    return { device: "Laptops", os, version: os === "Windows" ? (platformVersion ? (Number(platformVersion.split(".")[0]) >= 13 ? "11" : Number(platformVersion.split(".")[0]) >= 1 ? "10" : "") : (/windows nt 6\.3/i.test(userAgent) ? "8.1" : /windows nt 6\.2/i.test(userAgent) ? "8" : /windows nt 6\.1/i.test(userAgent) ? "7" : "")) : platformVersion || "" };
   }
   return null;
 }
 
 export default function MobileEquipment({ initial, platform, version }: { initial: string; platform: string; version: string }) {
   const [detected, setDetected] = useState<Detection | null>(null);
-  const [fallback, setFallback] = useState<Device>(choices.includes(initial as Device) ? initial as Device : "Laptops");
+  const [fallback, setFallback] = useState<Device | "">(choices.includes(initial as Device) ? initial as Device : "");
 
   useEffect(() => {
     let mounted = true;
@@ -45,14 +45,14 @@ export default function MobileEquipment({ initial, platform, version }: { initia
   }, []);
 
   const device = detected?.device || fallback;
-  const os = detected?.os || (device === "Mac" ? "macOS" : device === "Laptops" ? "" : device);
+  const os = detected?.os || (device === "Mac" ? "macOS" : device === "Laptops" ? (initial === device ? platform : "") : device);
   const osVersion = detected?.version || (initial === device && platform === os ? version : "");
 
   return <fieldset className="equipment-fields">
     <legend>Your device</legend>
-    {detected ? <p>Detected {device}{osVersion ? ` · ${os} ${osVersion}` : ""}</p> : <label>Device
-      <select value={fallback} onChange={event => setFallback(event.target.value as Device)}>
-        {choices.map(choice => <option key={choice}>{choice}</option>)}
+    {detected ? <p>Detected {device} · {os}{osVersion ? ` ${osVersion}` : " (version unavailable)"}</p> : <label>Device
+      <select required value={fallback} onChange={event => setFallback(event.target.value as Device | "")}>
+        <option value="">Select your device</option>{choices.map(choice => <option key={choice}>{choice}</option>)}
       </select>
     </label>}
     <input type="hidden" name="device" value={device} />
