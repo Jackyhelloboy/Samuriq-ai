@@ -152,3 +152,6 @@ body, .premium-site.pro5, .account-entry, .suite .suite-main {
 @media (max-width: 760px) {
   .guest-top-brand span { display: none; }
 }
+
+/* Compact workspace selector; preserve the shared light palette. */
+.v7-suite .workspace-switcher{min-width:0;max-width:240px;width:auto}.v7-suite .workspace-switcher>summary{min-height:44px;height:auto;padding:6px 9px;gap:8px;max-width:100%;box-sizing:border-box}.v7-suite .workspace-switcher>summary>span:nth-child(2){min-width:0}.v7-suite .workspace-switcher strong{font-size:13px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}.v7-suite .workspace-switcher small{font-size:10px;line-height:1.2}.v7-suite .workspace-options{width:260px;max-width:calc(100vw - 24px)}.v7-suite .workspace-options form>.workspace-choice{min-height:44px;padding:8px 10px;gap:2px}.v7-suite .workspace-symbol{width:32px;height:32px;flex-shrink:0}@media(max-width:760px){.v7-suite .workspace-switcher{max-width:min(48vw,220px)}.v7-suite .workspace-switcher strong{font-size:12px}}
