@@ -69,10 +69,10 @@ export async function register(form: FormData) {
       target: participants.id,
       set: { username:handle,name,primaryProjectId,phone,phoneConsent, telegram, language, project, skills, location, device,mobileOs,osVersion,skillLevel },
     });}catch(error){const message=String(error)+String((error as {cause?:unknown})?.cause||"");if(/participant_username_unique|UNIQUE constraint failed: participants.username/i.test(message))return fail("taken");throw error;}
-  if(form.has("address") && form.has("age")){
+  if(form.has("age") && form.has("location")){
     await (await import("./recruitment/data")).db().prepare(
-      "INSERT INTO signup_details(account_id,age,address) SELECT id,?,? FROM accounts WHERE id=? ON CONFLICT(account_id) DO UPDATE SET age=excluded.age,address=excluded.address,city='',phone='',device='',mobile_os='',os_version=''"
-    ).bind(age,address,user.userId).run();
+      "INSERT INTO signup_details(account_id,age,city,phone,device,mobile_os,os_version) SELECT id,?,?,?,?,?,? FROM accounts WHERE id=? ON CONFLICT(account_id) DO UPDATE SET age=excluded.age,city=excluded.city,phone=excluded.phone,device=excluded.device,mobile_os=excluded.mobile_os,os_version=excluded.os_version"
+    ).bind(age,location,phone,device,mobileOs,osVersion,user.userId).run();
   }
   const next=String(form.get("next")||(!existingProfile?primaryProjectId:""));if(next){const e=await import("./enrollment");try{await e.requireApplicationPermission(user.userId,next);await e.assignDirect(user.userId,next);}catch(error){if(error instanceof e.EnrollmentError)redirect("/projects/detail?id="+encodeURIComponent(next)+"&notice="+error.code);throw error;}}
   if(next){const job=await getDb().select().from(projects).where(eq(projects.id,next)).get();if(!websiteOnly()&&job?.telegramRequired&&!(await (await import("./telegram-identity")).telegramIdentity(user.userId))?.username)redirect("/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+next));}
