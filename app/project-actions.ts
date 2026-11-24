@@ -48,11 +48,11 @@ export async function publishProject(form: FormData) {
     const u = new URL(communityUrl);
     if (
       u.protocol !== "https:" ||
-      !["t.me", "discord.gg", "discord.com"].includes(u.hostname) ||
+      !["t.me", "discord.gg", "discord.com", "chat.whatsapp.com"].includes(u.hostname) ||
       u.username ||
       u.password
     )
-      throw Error("Use a Telegram or Discord invite URL");
+      throw Error("Use a WhatsApp, Telegram or Discord invite URL");
   }
   const targetMinutes = Number(value("targetHours") || 0) * 60,
     hourlyRate = Number(value("hourlyRate") || 0),
