@@ -64,8 +64,9 @@ export default function MobileEquipment({ initial, platform, version }: { initia
   const device = detected?.device || fallback;
   const os = detected?.os || (device === "Mac" ? "macOS" : device === "Laptops" ? "" : device);
   const osVersion = detected?.version || (initial === device && platform === os ? version : "");
+  const displayVersion = os.startsWith("Windows") ? "" : osVersion;
   const description = detected
-    ? `Detected ${device === "Laptops" ? "computer" : device} · ${os || "Operating system"}${osVersion ? ` ${osVersion}` : " · version not exposed by this browser"}`
+    ? `Detected ${device === "Laptops" ? "computer" : device} · ${os || "Operating system"}${displayVersion ? ` ${displayVersion}` : os.startsWith("Windows") ? " · exact build not exposed by browser" : " · version not exposed by this browser"}`
     : "Automatic detection is unavailable in this browser. Choose your device.";
 
   return <fieldset className="equipment-fields">
