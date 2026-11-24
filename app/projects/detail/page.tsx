@@ -14,6 +14,7 @@ import { eq, and } from "drizzle-orm";
 import { getChatGPTUser } from "../../chatgpt-auth";
 import { Shell, Heading } from "../../components/shell";
 import { applyProject } from "../../project-actions";
+import "../projects.css";
 export const dynamic = "force-dynamic";
 export default async function Detail({
   searchParams,
