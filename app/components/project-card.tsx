@@ -24,6 +24,7 @@ type Job = {
   devices: string;
   visibility?: string;
   enrollmentOnly?:number;
+  hasGroup?:number;
 };
 export function ProjectCard({
   job: j,
@@ -77,7 +78,7 @@ export function ProjectCard({
         }
         className="card-apply"
       >
-        {state==="online"?"View requirements":"View project details"} <ArrowUpRight size={18} />
+        {state==="online"?(j.hasGroup?"Join WhatsApp group":"View project details"):"View project details"} <ArrowUpRight size={18} />
       </a>
     </article>
   );
