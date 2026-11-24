@@ -4,14 +4,15 @@ import { eq } from "drizzle-orm";
 import { requireOperator } from "../access";
 import { getDb } from "../../db";
 import { participants, projects } from "../../db/schema";
-import { db, selections, validGroup, profileVersion } from "./data";
+import { db, selections, normalizeGroup, profileVersion } from "./data";
 
 export async function saveRecruitment(f: FormData) {
   await requireOperator();
   const id = String(f.get("id")), version = String(f.get("revision") || "");
-  const url = String(f.get("group") || "").trim();
+  const submittedUrl = String(f.get("group") || "").trim();
+  const url = submittedUrl ? normalizeGroup(submittedUrl) : "";
   const notes = String(f.get("notes") || "").trim();
-  if (notes.length > 1200 || (url && !validGroup(url))) throw Error("Use a WhatsApp group invite link and up to 1,200 characters of instructions.");
+  if (notes.length > 1200 || (submittedUrl && !url)) throw Error("Use a valid WhatsApp group invite link and up to 1,200 characters of instructions.");
   if (!await getDb().select({id:projects.id}).from(projects).where(eq(projects.id,id)).get()) throw Error("Unknown project");
   const args = [id,selections(f,"languages"),selections(f,"devices"),url,notes,crypto.randomUUID()];
   const statement = version
