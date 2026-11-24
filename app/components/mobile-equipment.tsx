@@ -20,7 +20,7 @@ function detectDevice(userAgent: string, platform = "", platformVersion = "", to
   }
   if (/windows|linux|cros/.test(agent) || ["windows", "linux", "chrome os"].includes(reported)) {
     const os = /windows/.test(agent) || reported === "windows" ? "Windows" : /cros/.test(agent) ? "Chrome OS" : "Linux";
-    return { device: "Laptops", os, version: platformVersion || (os === "Windows" ? /windows nt\s+([\d.]+)/i.exec(userAgent)?.[1] : "") || "" };
+    return { device: "Laptops", os, version: os === "Windows" ? (platformVersion ? (Number(platformVersion.split(".")[0]) >= 13 ? "11" : Number(platformVersion.split(".")[0]) >= 1 ? "10" : "") : (/windows nt 6\.3/i.test(userAgent) ? "8.1" : /windows nt 6\.2/i.test(userAgent) ? "8" : /windows nt 6\.1/i.test(userAgent) ? "7" : "")) : platformVersion || "" };
   }
   return null;
 }
@@ -50,7 +50,7 @@ export default function MobileEquipment({ initial, platform, version }: { initia
 
   return <fieldset className="equipment-fields">
     <legend>Your device</legend>
-    {detected ? <p>Detected {device}{osVersion ? ` · ${os} ${osVersion}` : ""}</p> : <label>Device
+    {detected ? <p>Detected {device} · {os}{osVersion ? ` ${osVersion}` : " (version unavailable)"}</p> : <label>Device
       <select value={fallback} onChange={event => setFallback(event.target.value as Device)}>
         {choices.map(choice => <option key={choice}>{choice}</option>)}
       </select>
