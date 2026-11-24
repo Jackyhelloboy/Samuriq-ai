@@ -1,4 +1,4 @@
-import { memberBrief } from "../../recruitment/data";
+import { memberBrief, validGroup } from "../../recruitment/data";
 import {websiteOnly} from "../../deployment-mode";
 import {contractVersion} from '../../vendor-policy';
 import {applicationLocks} from '../../enrollment';
@@ -29,7 +29,7 @@ export default async function Detail({
     .from(projects)
     .where(eq(projects.id, q.id || ""))
     .get();
-  if (!job || job.sample || job.archivedAt || (!job.active && job.visibility==="draft"))
+  if (!job || job.sample || job.archivedAt || job.visibility==="draft")
     return (
       <Shell>
         <Heading
@@ -94,8 +94,7 @@ export default async function Detail({
           (job.pair ? "Two participants required" : "Individual contribution")
         }
       />
-      {job.id==='speech-pair'&&<section className="project-offer suite-card"><div><p className="eyebrow">HINDI / PERMANENT-PAIR RECORDING</p><h2>Flexible work. Clear requirements.</h2><p>Laptop or Android mobile · stable internet · quiet recording space · two separately registered participants.</p></div><div className="offer-rates"><div><strong>₹250</strong><span>per person / QC-approved hour</span></div><div><strong>₹500</strong><span>per pair / QC-approved hour</span></div></div><p className="small-note">Direct Samuriq contributor rate. Keep the same approved partner throughout the project. Only client-QC-approved work is payable. Add payment details in your workspace; payment follows client QC, settlement review and your accepted terms. Vendor-team members follow their separately accepted payroll terms. No joining fee.</p></section>}
-      {brief && <section className="suite-card"><h2>Project requirements</h2><p>{brief.languages || "All languages"} · {brief.devices || "Any device"} · {job.pair ? "Pair" : "Individual"}</p><p>{brief.notes}</p>{!!brief.group_url && (application?.status === "approved" ? <a className="button dark" href={"/projects/group?id="+encodeURIComponent(job.id)}>Open project WhatsApp group</a> : acceptingApplications ? <a className="button dark" href={user ? "/workspace?edit=1&next="+encodeURIComponent(job.id) : "/login?return_to="+encodeURIComponent("/projects/detail?id="+encodeURIComponent(job.id))+"#create-account"}>Register for this project</a> : null)}</section>}
+      {brief && <section className="suite-card"><h2>Project requirements</h2><p>{brief.languages || "All languages"} · {brief.devices || "Any device"} · {job.pair ? "Pair" : "Individual"}</p><p>{brief.notes}</p>{validGroup(brief.group_url) && (application?.status === "approved" ? <a className="button dark" href={"/projects/group?id="+encodeURIComponent(job.id)}>Join WhatsApp group</a> : acceptingApplications ? <a className="button dark" href={user ? "/workspace?edit=1&next="+encodeURIComponent(job.id) : "/login?return_to="+encodeURIComponent("/projects/detail?id="+encodeURIComponent(job.id))+"#create-account"}>Join WhatsApp group</a> : null)}</section>}
       {q.notice&&<p className="notice" role="status">{q.notice==="tl-role"?"Your profile was saved. A manager must approve a role change before you can join another TL’s team.":q.notice==="permission-required"?"Your profile was saved. Request permission from your current TL below before applying to this additional project.":"Review the project requirements before continuing."}</p>}
       {locks.length>0&&<section className="suite-card"><span className="badge">TL PERMISSION REQUIRED</span><h2>Ask your current team before applying.</h2><p>Each active team leader must approve your additional project. Your existing team does not change.</p><form action={requestProjectPermission}><input type="hidden" name="projectId" value={job.id}/><label>How will you manage both commitments?<textarea name="reason" required minLength={10} maxLength={1000}/></label><button>Request TL permission</button></form></section>}
       {job.enrollmentOnly===1&&acceptingApplications&&<section className="suite-card"><span className="badge approved">ACTIVE</span><h2>Apply now. Complete onboarding before work.</h2><p>This project is active. Website access opens after the required guidance, group connection and team approval.</p><a className="button dark" href={'/workspace?edit=1&next='+job.id}>Register / update my profile</a></section>}
@@ -117,7 +116,7 @@ export default async function Detail({
           </p>
           {projectState(job) === "paused" && (
             <p>
-              This project is paused because its deadline has passed.
+              This project is currently paused or closed.
               Applications and updates are closed.
             </p>
           )}
@@ -237,7 +236,7 @@ export default async function Detail({
             <span className="badge">PROJECT GROUP</span>
             <h2>Connect with the project team</h2>
             <p>Join the official group for onboarding help, project updates and coordinator support.</p>
-            {brief?.group_url && application?.status==='approved' ? <a className="button dark" href={'/projects/group?id='+encodeURIComponent(job.id)}>Open project WhatsApp group</a> : <p className="soft-note">{brief?.group_url ? "The group opens after your application and project setup are approved." : "The group link will appear when the project coordinator adds it."}</p>}
+            {brief?.group_url && application?.status==='approved' ? <a className="button dark" href={'/projects/group?id='+encodeURIComponent(job.id)}>Join WhatsApp group</a> : <p className="soft-note">{brief?.group_url ? "The group opens after your application and project setup are approved." : "The group link will appear when the project coordinator adds it."}</p>}
           </section>
         </aside>
       </div>
