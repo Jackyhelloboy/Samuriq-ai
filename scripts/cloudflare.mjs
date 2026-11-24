@@ -36,7 +36,11 @@ if (command === 'build') {
   const config = {
     name, main: '../worker/index.ts', compatibility_date: '2026-05-15',
     compatibility_flags: ['nodejs_compat'], workers_dev: true,
-    vars: { SAMURIQ_HOSTING_MODE: 'cloudflare', PASSWORD_LOGIN_ONLY: '1' },
+    vars: {
+      SAMURIQ_HOSTING_MODE: 'cloudflare',
+      PASSWORD_LOGIN_ONLY: '1',
+      ADMIN_EMAIL: local ? 'owner@example.com' : 'mdjawaadkhan57@gmail.com',
+    },
     d1_databases: [{ binding: 'DB', database_name: process.env.CLOUDFLARE_D1_DATABASE_NAME || 'samuriq-ai-db', database_id: databaseId, migrations_dir: '../drizzle' }],
     r2_buckets: local ? [{ binding: 'PRIVATE_FILES', bucket_name: 'samuriq-local-test-files' }] : bucket ? [{ binding: 'PRIVATE_FILES', bucket_name: bucket }] : [],
   };

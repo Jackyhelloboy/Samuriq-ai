@@ -1,4 +1,3 @@
-import { ParticipationCards } from "../components/participation-cards";
 import {devices} from "../recruitment/data";
 import {INDIA_LANGUAGES} from "../india-languages";
 import {sql} from "drizzle-orm";
@@ -12,6 +11,7 @@ import { projects } from "../../db/schema";
 import { eq, desc, and, like, or, count } from "drizzle-orm";
 import { Shell, Empty } from "../components/shell";
 import { Search } from "lucide-react";
+import "./projects.css";
 export const dynamic = "force-dynamic";
 export default async function Projects({
   searchParams,
@@ -22,10 +22,11 @@ export default async function Projects({
     term = (q.q || "").slice(0, 100),
     category = q.category || "",
     page = Math.max(1, Math.min(10000, Number(q.page) || 1));
+  const olderDevice = ({ Android: "Android phone", iOS: "iPhone", Mac: "Laptop / desktop", Laptops: "Laptop / desktop" } as Record<string, string>)[q.device || ""] || "";
   const filter = and(
     publishedProject,
     q.language ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.languages<>'' AND instr(', '||r.languages||', ', ', '||${q.language}||', ')=0)` : undefined,
-    q.device ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.devices<>'' AND instr(', '||r.devices||', ', ', '||${q.device}||', ')=0)` : undefined,
+    q.device ? sql`NOT EXISTS(SELECT 1 FROM project_recruitment r WHERE r.project_id=${projects.id} AND r.devices<>'' AND instr(', '||r.devices||', ', ', '||${q.device}||', ')=0 AND instr(', '||r.devices||', ', ', '||${olderDevice}||', ')=0)` : undefined,
     term
       ? or(
           like(projects.title, "%" + term + "%"),
@@ -86,7 +87,6 @@ export default async function Projects({
         </button>
         {(term||category||q.language||q.device)&&<a className="filter-reset" href={"/projects?source="+encodeURIComponent(q.source||"direct")}>Clear filters</a>}
       </form>
-      <ParticipationCards />
       <div className="section-kicker">
         <h3>
           {total} published {total === 1 ? "project" : "projects"}
@@ -94,7 +94,7 @@ export default async function Projects({
         <span>Active projects first</span>
       </div>
       <ContentSlot slot="projects" />
-      <div className="opportunity-grid">
+      <div className="opportunity-grid project-board-grid">
         {jobs.map((j) => (
           <ProjectCard key={j.id} job={j} source={q.source || "direct"} />
         ))}

@@ -1,6 +1,7 @@
 import { env } from "cloudflare:workers";
 import { INDIA_LANGUAGES } from "../india-languages";
-export const devices = ["Android phone", "iPhone", "Laptop / desktop", "Phone and computer"] as const;
+export const devices = ["Android", "iOS", "Mac", "Laptops"] as const;
+export const legacyDevices = ["Android phone", "iPhone", "Laptop / desktop", "Phone and computer"] as const;
 export const db = () => {
   if (!env.DB) throw Error("Database unavailable");
   return env.DB;
@@ -20,6 +21,12 @@ export const words = (value: string) => value.split(",").map(s => s.trim().toLow
 export function matches(brief: Brief, profile: {language:string; device:string;mobileOs?:string}) {
   const langs = words(brief.languages), hardware = words(brief.devices);
   const owned = words(profile.device);
+  if (owned.includes("android")) owned.push("android phone");
+  if (owned.includes("ios")) owned.push("iphone");
+  if (owned.includes("mac") || owned.includes("laptops")) owned.push("laptop / desktop");
+  if (owned.includes("android phone")) owned.push("android");
+  if (owned.includes("iphone")) owned.push("ios");
+  if (owned.includes("laptop / desktop")) owned.push("laptops", "mac");
   if (owned.includes("phone and computer")) owned.push("laptop / desktop",profile.mobileOs==="iOS"?"iphone":profile.mobileOs==="Android"?"android phone":"");
   return (!langs.length || langs.some(l => words(profile.language).includes(l))) &&
     (!hardware.length || hardware.some(d => owned.includes(d)));

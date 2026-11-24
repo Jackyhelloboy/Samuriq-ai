@@ -119,3 +119,36 @@ body, .premium-site.pro5, .account-entry, .suite .suite-main {
 .suite .table-scroll:focus-visible {
   outline: 2px solid var(--accent);
 }
+
+.guest-top-brand {
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.guest-top-brand span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.guest-top-signin,
+.v7-suite.v6-suite .guest-rail-signin {
+  color: #fff;
+  background: var(--accent);
+  border-radius: 8px;
+  padding: 10px 16px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.v7-suite.v6-suite .guest-rail-signin {
+  display: block;
+  margin-top: 20px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .guest-top-brand span { display: none; }
+}

@@ -2,8 +2,8 @@
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {Menu,X} from 'lucide-react';
 
-export default function WorkspaceChrome({sidebar,header,children,footer,mobileNav}:{
-  sidebar:ReactNode;header:ReactNode;children:ReactNode;footer:ReactNode;mobileNav?:ReactNode
+export default function WorkspaceChrome({sidebar,header,children,footer,mobileNav,guest=false}:{
+  sidebar:ReactNode;header:ReactNode;children:ReactNode;footer:ReactNode;mobileNav?:ReactNode;guest?:boolean
 }){
   const [mobile,setMobile]=useState(false);
   const drawer=useRef<HTMLElement>(null),opener=useRef<HTMLButtonElement>(null);
@@ -30,10 +30,10 @@ export default function WorkspaceChrome({sidebar,header,children,footer,mobileNa
     };
   },[mobile]);
   return <div className={'suite v6-suite v7-suite'+(mobile?' mobile-nav-open':'')}>
-    <a className="skip-to-content" href="#main-content">Skip to workspace content</a>
+    <a className="skip-to-content" href="#main-content">Skip to main content</a>
     <aside ref={drawer} id="workspace-navigation" className="suite-sidebar" role={mobile?'dialog':undefined} aria-modal={mobile||undefined}
-      aria-label="Workspace navigation" onClickCapture={e=>{if(mobile&&e.target instanceof Element&&e.target.closest('a[href]'))setMobile(false)}}>
-      {mobile&&<button type="button" className="mobile-drawer-close" aria-label="Close workspace menu" onClick={()=>setMobile(false)}><X size={20}/></button>}
+      aria-label={guest?'Public navigation':'Workspace navigation'} onClickCapture={e=>{if(mobile&&e.target instanceof Element&&e.target.closest('a[href]'))setMobile(false)}}>
+      {mobile&&<button type="button" className="mobile-drawer-close" aria-label="Close navigation" onClick={()=>setMobile(false)}><X size={20}/></button>}
       {sidebar}
     </aside>
     {mobile&&<button className="mobile-scrim" tabIndex={-1} aria-label="Close navigation" onClick={()=>setMobile(false)}/>}

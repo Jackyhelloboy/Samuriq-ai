@@ -42,9 +42,9 @@ export async function register(form: FormData) {
     device = String(form.get("device") || "").slice(0, 100);
   const skillLevel=String(form.get("skillLevel")??existingProfile?.skillLevel??"");
   if(!["","New to project work","Experienced contributor","Team coordination experience"].includes(skillLevel))return fail("details");
-  const mobileOs=device==="iPhone"?"iOS":device==="Android phone"?"Android":device==="Phone and computer"?String(form.get("mobileOs")||""):"";
-  const osVersion=mobileOs?String(form.get("osVersion")||"").trim():"";
-  if ((device && !["iPhone","Android phone","Phone and computer","Laptop / desktop"].includes(device)) || (device==="Phone and computer" && !["Android","iOS"].includes(mobileOs)) || (mobileOs && !/^[1-9]\d?(?:\.\d{1,3}){0,2}$/.test(osVersion))) return fail("equipment");
+  const mobileOs=device==="iPhone"||device==="iOS"?"iOS":device==="Android phone"||device==="Android"?"Android":device==="Mac"?"macOS":device==="Phone and computer"||device==="Laptops"?String(form.get("mobileOs")||"").trim():"";
+  const osVersion=String(form.get("osVersion")||"").trim();
+  if ((device && !["Android","iOS","Mac","Laptops","iPhone","Android phone","Phone and computer","Laptop / desktop"].includes(device)) || (device==="Phone and computer" && !["Android","iOS"].includes(mobileOs)) || mobileOs.length>30 || (osVersion && !/^\d{1,3}(?:\.\d{1,3}){0,3}$/.test(osVersion))) return fail("equipment");
   const ageText=String(form.get("age")||"").trim(),age=ageText?Number(ageText):null;
   const address=String(form.get("address")||"").trim();
   if ((age!==null&&(!Number.isInteger(age)||age<1||age>120))||address.length>300) return fail("privateDetails");

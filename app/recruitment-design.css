@@ -60,6 +60,49 @@
 @media(max-width:760px){.v6-suite .project-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.project-filters label:first-child,.project-filters button{grid-column:1/-1}.v6-suite .suite-body .suite-main{padding-bottom:calc(86px + env(safe-area-inset-bottom))!important}.phone-bottom-nav{padding-bottom:env(safe-area-inset-bottom)}}
 @media(max-width:380px){.v6-suite .project-filters{grid-template-columns:minmax(0,1fr)}}
 
+/* The public project board keeps the current opening and the next step together. */
+.hiring-site .home-project-board .opportunity-grid {
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));
+  gap:18px;
+  margin-block:24px;
+}
+.hiring-site .home-project-board .opportunity-card,
+.hiring-site .next-project-card {
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:var(--surface);
+  box-shadow:0 12px 34px rgb(23 46 40 / 5%);
+}
+.hiring-site .home-project-board .opportunity-card {
+  display:flex;
+  flex-direction:column;
+  min-height:350px;
+}
+.hiring-site .home-project-board .opportunity-card .card-apply {margin-top:auto}
+.hiring-site .next-project-card {
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  min-height:350px;
+  padding:clamp(22px,2.5vw,36px);
+  background:var(--sage);
+  color:var(--ink);
+}
+.hiring-site .next-project-icon {
+  display:grid;
+  place-items:center;
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  background:var(--surface);
+  color:var(--accent);
+}
+.hiring-site .next-project-card h3 {font-size:clamp(1.65rem,2vw,2.2rem);line-height:1.15;letter-spacing:-.035em;margin:0 0 14px}
+.hiring-site .next-project-card p {max-width:42ch;color:var(--muted);line-height:1.6;margin:0}
+.hiring-site .next-project-card a {display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:auto;padding-top:18px;border-top:1px solid var(--line);color:var(--accent);font-weight:650;text-decoration:none}
+.hiring-site .next-project-card a:hover {text-decoration:underline;text-underline-offset:4px}
+.hiring-site .home-project-board .participation-cards {margin-block:20px 0}
+
 @media (max-width: 760px) {
   .premium-site.pro5 .company-footer {
     display: grid;
