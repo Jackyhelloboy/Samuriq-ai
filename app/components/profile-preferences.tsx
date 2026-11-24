@@ -24,7 +24,7 @@ export default function ProfilePreferences({language='',location=''}:{language?:
   <fieldset><legend>Location</legend>
    <p className="small-note">Select your state or union territory. No village, town or street address is required.</p>
    <input type="hidden" name="location" value={stateName}/>
-   <label>State / union territory<select name="indiaState" value={stateCode} onChange={e=>setStateCode(e.target.value)}><option value="">Select state / union territory</option>{INDIA_STATES.map(s=><option value={s.code} key={s.code}>{s.name}</option>)}</select></label>
+   <label>State / union territory<select name="indiaState" required value={stateCode} onChange={e=>setStateCode(e.target.value)}><option value="">Select state / union territory</option>{INDIA_STATES.map(s=><option value={s.code} key={s.code}>{s.name}</option>)}</select></label>
   </fieldset>
  </div>;
 }
