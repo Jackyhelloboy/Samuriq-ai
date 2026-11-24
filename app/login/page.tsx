@@ -40,6 +40,7 @@ export default async function Login({
                 expired: "This temporary review account has expired. Use your permanent account.",
                 restricted:"This account is restricted. Contact your project manager for a review.",
                 exists: "That email already has an account. Sign in instead.",
+                mismatch: "Passwords do not match.",
                 short: "Choose a password with 8–128 characters.",
                 details: "Enter your name and a valid .com email.",
                 unavailable: "Registration is temporarily unavailable. Contact support if this continues.",
