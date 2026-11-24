@@ -115,19 +115,9 @@ export default async function Detail({
       </div>
       <div className="workspace-columns project-detail-grid">
         <section className="suite-card project-overview-card">
-          <p className="eyebrow">PROJECT SNAPSHOT</p><h2>{projectState(job)==="online"?"Your next project starts here":"Project summary"}</h2>
+          <p className="eyebrow">PROJECT DETAILS</p><h2>Project overview</h2>
           <div className="project-overview-meta"><span>{job.location || "Remote · India"}</span><span>{job.pair ? "Two participants required" : "Individual participation"}</span>{job.deadline && <span>Deadline: {job.deadline} (India time)</span>}</div>
-          {projectState(job) === "paused" && (
-            <p>
-              This project is paused because its deadline has passed.
-              Applications and updates are closed.
-            </p>
-          )}
-          {projectState(job)==="online"?<p>Read the requirements below, then use the join button to create your account or continue your application. After approval, your project group and work setup will appear here.</p>:<p>Applications are currently closed. You can still review the full brief and requirements here.</p>}
-
-        </section>
-        <section className="suite-card">
-          <h2>Project overview</h2>
+          {projectState(job) === "paused" && <p>This project is currently closed. Applications and work updates are unavailable.</p>}
           <div className="project-copy preserve">{job.description}</div>
           {job.requirements && <div className="project-requirements-block"><h3>What you need to know</h3><div className="project-copy preserve">{job.requirements}</div></div>}
           <details className="project-extra-details"><summary>Payment & approval information</summary><p>{membership?.vendorFrom?'Your assigned vendor pays you under your private agreement. Samuriq settles with the vendor after client quality checks, target checks and owner review.':membership?'Your accepted individual contract and owner settlement review determine direct Samuriq payments.':'Your payment route and private terms are confirmed with your team assignment. No joining fee is required.'}</p>{membership?.vendorFrom&&membership.rateAccepted===1&&<p className="preserve">{membership.payrollTerms}</p>}</details>
