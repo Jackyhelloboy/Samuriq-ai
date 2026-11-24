@@ -92,8 +92,6 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                     defaultValue={profile?.name || user.displayName}
                   />
                 </label>
-                <label>Age in years<input type="number" name="age" min={1} max={120} defaultValue={signup?.age}/></label>
-                <label>Private street address (optional)<textarea name="address" rows={2} maxLength={300} autoComplete="street-address" defaultValue={signup?.address}/></label>
                 <ProfilePreferences language={profile?.language||""} location={profile?.location??signup?.city??""}/>
                 <MobileEquipment initial={profile?.device??signup?.device??""} platform={profile?.mobileOs??signup?.mobile_os??""} version={profile?.osVersion??signup?.os_version??""}/>
                 {!websiteOnly()&&<label>
