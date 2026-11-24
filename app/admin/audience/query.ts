@@ -4,6 +4,7 @@ export type Filters={interest?:string;city?:string;language?:string;device?:stri
 type Contact={id:string;name:string;interest:string;city:string;language:string;device:string;whatsapp:string;updated:string};
 export function audience(q:Filters,cursor="",limit=51){
   const city=(q.city||"").trim().slice(0,80),language=q.language||"",device=q.device||"",interest=q.interest||"";
+  const olderDevice=({Android:"Android phone",iOS:"iPhone",Mac:"Laptop / desktop",Laptops:"Laptop / desktop"} as Record<string,string>)[device]||"";
   return db().prepare(`WITH eligible AS (
     SELECT h.user_id id,a.name,h.interest,h.whatsapp,h.updated,
       coalesce(nullif(p.location,''),s.city,'') city,coalesce(p.language,'') language,
@@ -15,6 +16,6 @@ export function audience(q:Filters,cursor="",limit=51){
     AND NOT EXISTS (SELECT 1 FROM managers m WHERE m.user_id=h.user_id)
   ) SELECT * FROM eligible WHERE id>? AND (?='' OR interest=?) AND instr(lower(city),lower(?))>0
     AND (?='' OR instr(','||replace(lower(language),', ',',')||',', ','||lower(?)||',')>0)
-    AND (?='' OR device=?) ORDER BY id LIMIT ?`)
-    .bind(settings().ADMIN_EMAIL?.toLowerCase()||"",cursor,interest,interest,city,language,language,device,device,limit).all<Contact>();
+    AND (?='' OR device=? OR device=?) ORDER BY id LIMIT ?`)
+    .bind(settings().ADMIN_EMAIL?.toLowerCase()||"",cursor,interest,interest,city,language,language,device,device,olderDevice,limit).all<Contact>();
 }

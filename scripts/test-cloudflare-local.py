@@ -1,5 +1,6 @@
 """Exercise the Cloudflare build using disposable D1 data and real password forms."""
 import hashlib
+import concurrent.futures
 import html
 import json
 import pathlib
@@ -72,6 +73,12 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             assert status == 200 and 'Start here. Keep it simple.' not in body and 'Project opportunities' in body and 'Skip to main content' in body
             for path in ['/projects', '/login', '/privacy', '/favicon.svg']:
                 assert request(path)[0] == 200, path
+            status, project_board, _ = request('/projects')
+            assert status == 200 and 'Public navigation' in project_board
+            assert 'workspace-switcher' not in project_board and 'Payment details' not in project_board
+            with concurrent.futures.ThreadPoolExecutor(max_workers=20) as workers:
+                statuses = list(workers.map(lambda _: request('/projects')[0], range(100)))
+            assert all(status == 200 for status in statuses), statuses
             for old, current in [('/demo/login', '/login'), ('/demo', '/projects')]:
                 status, _, headers = request(old)
                 assert status == 308 and headers.get('Location') == current, (old, status, headers)
@@ -92,7 +99,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 response = error
             assert response.status == 403, response.status
             signup = form('Create account')
-            signup.update(age='25', address='Synthetic address', city='Pune', phone='+919000000000', device='iPhone', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
+            signup.update(age='25', address='Synthetic address', city='Pune', phone='+919000000000', device='iOS', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
             assert "code" not in signup
             status, _, headers = request('/login', signup)
             assert status in (303, 307) and any('sq_session=' in value for value in headers.get_all('Set-Cookie', [])), (status, dict(headers))

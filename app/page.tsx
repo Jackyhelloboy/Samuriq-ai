@@ -1,4 +1,3 @@
-import { ParticipationCards } from "./components/participation-cards";
 import {cardFields,publishedProject} from "./project-listing";
 import { ProjectCard } from "./components/project-card";
 import { ContentSlot } from "./components/content-slot";
@@ -9,6 +8,7 @@ import { desc } from "drizzle-orm";
 import {
   ArrowUpRight,
   AudioLines,
+  BellRing,
   ScanEye,
   Layers3,
   Move3d,
@@ -36,42 +36,42 @@ export default async function Home({
       <header className="company-nav">
         <Brand />
         <nav aria-label="Main navigation">
-          <a href={board}>Opportunities</a>
+          <a href="#projects">Projects</a>
           <a href="#company">For businesses</a>
+          <a href="/login#sign-in">Sign in</a>
         </nav>
-        <a className="nav-signin" href="/login">
-          Sign in <ArrowUpRight size={17} />
+        <a className="nav-signin" href="/login#create-account">
+          Join Samuriq AI <ArrowUpRight size={17} />
         </a>
       </header>
       <main id="main-content" tabIndex={-1}>
         <section className="hiring-hero">
           <div>
-            <p className="eyebrow">Freelance AI projects</p>
+            <p className="eyebrow">For freelance contributors and vendors</p>
             <h1>
-              Bring your skills
+              Find your next
               <br />
-              <em>to AI work.</em>
+              <em>AI project.</em>
             </h1>
             <p>
-              Find recording, annotation and evaluation work in your language. Apply independently or register a team as a vendor.
+              Discover projects that fit your language, skills and equipment. Join individually or register your team as a vendor.
             </p>
-            <div className="hiring-actions"><a className="primary-hiring-link" href={board}>Browse projects <ArrowUpRight size={16}/></a><a href="/workspace/hiring?interest=vendor">Register vendor interest <ArrowUpRight size={15}/></a></div>
+            <div className="hiring-actions"><a className="primary-hiring-link" href="#projects">See projects <ArrowUpRight size={16}/></a><a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Register a team <ArrowUpRight size={15}/></a></div>
           </div>
           <img
             src="/images/team-1200.webp" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 50vw" width={1200} height={800} fetchPriority="high"
             alt="Professionals collaborating on a project"
           />
         </section>
-        <section className="home-project-board">
+        <section className="home-project-board" id="projects">
           <div className="section-kicker">
             <div>
-              <h2>Project opportunities</h2>
+              <h2>Current projects</h2>
             </div>
             <a className="text-link" href={board}>
-              View project board <ArrowUpRight size={16}/>
+              Search all projects <ArrowUpRight size={16}/>
             </a>
           </div>
-      <ParticipationCards />
           <ContentSlot slot="home" />
           <div className="opportunity-grid">
             {jobs.map((j) => (
@@ -81,6 +81,16 @@ export default async function Home({
                 source={decodeURIComponent(source)}
               />
             ))}
+            {jobs.length === 1 && (
+              <aside className="next-project-card">
+                <span className="next-project-icon"><BellRing size={28} strokeWidth={1.5} /></span>
+                <div>
+                  <h3>Hear about the next project</h3>
+                  <p>Share your language, location and equipment so we can contact you when a suitable opportunity opens.</p>
+                </div>
+                <a href="/login?return_to=%2Fworkspace%2Fhiring#create-account">Get project updates <ArrowUpRight size={18} /></a>
+              </aside>
+            )}
           </div>
           {!jobs.length && (
             <p>New projects will appear when applications open.</p>
@@ -151,11 +161,11 @@ export default async function Home({
                 ],
                 [
                   "Register for the project",
-                  "Create your account, complete your profile and follow the enrollment steps in the project brief.",
+                  "Create your account, complete your profile and choose the project you want to join.",
                 ],
                 [
                   "Join your project group",
-                  "Once you have access, open the WhatsApp group from your project page for instructions and updates.",
+                  "Follow the project brief, join its group when invited and complete the required onboarding.",
                 ],
               ].map(([t, d], i) => (
                 <li key={t}>

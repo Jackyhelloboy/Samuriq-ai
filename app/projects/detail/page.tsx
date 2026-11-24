@@ -11,10 +11,9 @@ import { features } from "../../features";
 import { getDb } from "../../../db";
 import { projects, applications, participants,teamMembers } from "../../../db/schema";
 import { eq, and } from "drizzle-orm";
-import { getChatGPTUser, chatGPTSignInPath } from "../../chatgpt-auth";
+import { getChatGPTUser } from "../../chatgpt-auth";
 import { Shell, Heading } from "../../components/shell";
 import { applyProject } from "../../project-actions";
-import { projectCommunity } from "../../telegram";
 export const dynamic = "force-dynamic";
 export default async function Detail({
   searchParams,
@@ -86,7 +85,7 @@ export default async function Detail({
       <Heading
         eyebrow={job.category}
         title={job.title}
-        action={application?.status==='approved'?<a className="button dark" href={"/projects/work?id="+job.id+"&launch=1"}>Start project website →</a>:undefined}
+        action={application?.status==='approved' && projectState(job)==='online'?<a className="button dark" href={"/projects/work?id="+encodeURIComponent(job.id)+"&launch=1"}>Open work portal →</a>:undefined}
 
         description={
           job.location +
@@ -121,7 +120,7 @@ export default async function Detail({
               Applications and updates are closed.
             </p>
           )}
-          {projectState(job)==="online"?<><p>Review the project brief, complete the short setup and accept the terms. Approved contributors can then open the project website directly from their dashboard.</p><a className="button dark" href={'/projects/onboarding?id='+encodeURIComponent(job.id)}>Review setup, terms & apply →</a>{application?.status==='approved'&&<a className="button light" href={'/projects/work?id='+encodeURIComponent(job.id)+'&launch=1'}>Start project website</a>}</>:<p>Applications are currently closed. You can still review the full brief and requirements here.</p>}
+          {projectState(job)==="online"?<p>Read the requirements below, then use the join button to create your account or continue your application. After approval, your project group and work setup will appear here.</p>:<p>Applications are currently closed. You can still review the full brief and requirements here.</p>}
 
         </section>
         <section className="suite-card">
@@ -151,21 +150,18 @@ export default async function Detail({
                 <p>
                   Follow your application and project access from your dashboard.
                 </p>
-                <a className="button dark" href={"/projects/work?id="+job.id+"&launch=1"}>
-                  Start project website
-                </a>
+                {application.status==='approved' && projectState(job)==='online' && <a className="button dark" href={"/projects/work?id="+encodeURIComponent(job.id)+"&launch=1"}>
+                  Open work portal
+                </a>}
               </>
             ) : locks.length ? (<p>Application locked until your current TL approves your request above.</p>) : !job.active || !flags.applications ? (
               <p>Applications are closed for this project.</p>
             ) : !user ? (
               <a
                 className="button dark"
-                target="_top"
-                href={chatGPTSignInPath(
-                  "/projects/detail?id=" + encodeURIComponent(job.id),
-                )}
+                href={"/login?return_to=" + encodeURIComponent("/projects/detail?id=" + encodeURIComponent(job.id)) + "#create-account"}
               >
-                Sign in to apply
+                Create account to join this project
               </a>
             ) : !profile ? (
               <>
@@ -240,7 +236,7 @@ export default async function Detail({
             <span className="badge">PROJECT GROUP</span>
             <h2>Connect with the project team</h2>
             <p>Join the official group for onboarding help, project updates and coordinator support.</p>
-            {projectCommunity(job)?<a className="button dark" href={'/projects/community?id='+encodeURIComponent(job.id)} target="_blank" rel="noreferrer">Join WhatsApp group</a>:<p className="soft-note">The group link will appear here when the project coordinator adds it.</p>}
+            {brief?.group_url && application?.status==='approved' ? <a className="button dark" href={'/projects/group?id='+encodeURIComponent(job.id)}>Open project WhatsApp group</a> : <p className="soft-note">{brief?.group_url ? "The group opens after your application and project setup are approved." : "The group link will appear when the project coordinator adds it."}</p>}
           </section>
         </aside>
       </div>

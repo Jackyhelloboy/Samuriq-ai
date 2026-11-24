@@ -7,6 +7,8 @@ applications,
 participants,
 projects,
 progress,
+projectTeams,
+teamMembers,
 } from "../../../db/schema";
 import { Shell,Heading } from "../../components/shell";
 import { indiaDay } from "../../team-metrics";
@@ -18,7 +20,7 @@ export default async function Roster({
 }: {
   searchParams: Promise<Record<string, string>>;
 }) {
-  await requireOperator();
+  const staff = await requireOperator();
   const q = await searchParams,
     db = getDb(),
     day = indiaDay();
@@ -34,6 +36,13 @@ export default async function Roster({
   const reps = job
     ? await db.select().from(progress).where(eq(progress.projectId, job.id))
     : [];
+  const assignments = job
+    ? await db.select({ userId: teamMembers.userId, label: projectTeams.label })
+        .from(teamMembers)
+        .innerJoin(projectTeams, eq(projectTeams.id, teamMembers.teamId))
+        .where(eq(teamMembers.projectId, job.id))
+    : [];
+  const teamByUser = new Map(assignments.map((row) => [row.userId, row.label]));
   const list = rows.map(({ applications: a, participants: p }) => {
     const mine = reps.filter((r) => r.userId === a.userId);
     return {
@@ -60,7 +69,7 @@ export default async function Roster({
       <Heading
         eyebrow="PER-PROJECT USERS"
         title="Who is on this project."
-        description="Everyone who registered for the selected project, and who has submitted a daily report today."
+        description="Review each project's applicants, approval status and assigned teams. Owner exports include contact and onboarding details for payment reconciliation."
       />
       <form method="get" style={{ marginBottom: 20 }}>
         <label>
@@ -77,6 +86,9 @@ export default async function Roster({
           Show
         </button>
       </form>
+      {job && staff.role === "owner" && (
+        <p><a className="button light" href={"/admin/roster/export?project=" + encodeURIComponent(job.id)}>Export this project's registrations</a></p>
+      )}
       {job&&<section className="suite-card"><h2>Team assignment queue</h2><p>Direct applicants are balanced across eligible project TLs. Existing teams and TL referrals stay fixed. After appointing new TLs, route up to 100 waiting applications at a time. Contact consent and additional-project permissions still apply.</p><form action={routeWaitingApplicants}><input type="hidden" name="projectId" value={job.id}/><button>Route waiting applicants</button></form></section>}
       {job && (
         <p>
@@ -97,6 +109,7 @@ export default async function Roster({
           <thead>
             <tr>
               <th>Name</th>
+              <th>Team</th>
               <th>Telegram</th>
               <th>Status</th>
               <th>Verified</th>
@@ -110,6 +123,7 @@ export default async function Roster({
             {list.map((x) => (
               <tr key={x.a.userId}>
                 <td>{x.p.name}</td>
+                <td>{teamByUser.get(x.a.userId) || "Awaiting assignment"}</td>
                 <td>{x.p.telegram}</td>
                 <td>{x.a.status}</td>
                 <td>{x.a.communityVerified ? "Yes" : "No"}</td>
@@ -133,7 +147,7 @@ export default async function Roster({
             ))}
             {!list.length && (
               <tr>
-                <td colSpan={8}>No registrations for this project yet.</td>
+                <td colSpan={9}>No registrations for this project yet.</td>
               </tr>
             )}
           </tbody>
