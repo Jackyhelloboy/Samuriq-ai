@@ -99,8 +99,11 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
                 response = error
             assert response.status == 403, response.status
             signup = form('Create account')
-            signup.update(age='25', address='Synthetic address', city='Pune', phone='+919000000000', device='iOS', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', return_to='/workspace')
+            signup.update(age='25', state='27', phone='+919000000000', device='iOS', osVersion='18.4', name='Synthetic Cloudflare User', email=email, password='SyntheticOnly-Password-2026', confirmPassword='SyntheticOnly-Password-2026', return_to='/workspace')
             assert "code" not in signup
+            mismatch = dict(signup, confirmPassword='Other-Password-2026')
+            status, _, headers = request('/login', mismatch)
+            assert status in (303, 307) and 'passwordMismatch' in headers.get('Location', ''), (status, headers.get('Location'))
             status, _, headers = request('/login', signup)
             assert status in (303, 307) and any('sq_session=' in value for value in headers.get_all('Set-Cookie', [])), (status, dict(headers))
             status, _, headers = request('/login', signup)
@@ -115,7 +118,7 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             assert status in (303, 307) and any('sq_session=' in value for value in cookies), (status, dict(headers))
             session = next(value.split(';')[0] for value in cookies if value.startswith('sq_session='))
             status, profile_page, _ = request('/workspace', headers={'Cookie': session, **forged})
-            assert status == 200 and 'Synthetic address' in profile_page and '+919000000000' in profile_page and '18.4' in profile_page, status
+            assert status == 200 and 'Maharashtra' in profile_page and '+919000000000' in profile_page and '18.4' in profile_page, status
             status, _, _ = request('/admin/settings', headers={'Cookie': session, **forged})
             assert status in (302, 303, 307, 308, 403), status
             # Seed a delivery proof without contacting a real mailbox.
@@ -144,6 +147,37 @@ with tempfile.TemporaryDirectory(prefix='samuriq-cloudflare-test-') as state:
             with sqlite3.connect(state_db) as db:
                 assert db.execute('SELECT 1 FROM verified_mailboxes WHERE email=?', (email,)).fetchone()
                 assert db.execute('SELECT 1 FROM email_challenges WHERE email=?', (email,)).fetchone() is None
+                db.execute("UPDATE projects SET active=1,target_start='',deadline='',archived_at='' WHERE id='speech-pair'")
+                db.execute("INSERT INTO projects(id,title,category,description,requirements,client_url,invite_code,active,created) VALUES ('permission-target','Second project','Speech & audio','Test project','Test requirements','','',1,'2026-11-24')")
+                db.execute("INSERT INTO participants(id,name,email,telegram,language,project,created) VALUES (?,?,?,'','Hindi','general','2026-11-24')", (account_id, 'Synthetic Cloudflare User', email))
+                db.execute("INSERT INTO applications(user_id,project_id,partner,experience,status,created) VALUES (?,'speech-pair','','Test application','pending','2026-11-24')", (account_id,))
+            status, detail, _ = request('/projects/detail?id=permission-target', headers={'Cookie': session})
+            assert status == 200 and 'A manager must approve your additional project' in detail, (status, detail[-1000:])
+            permission = form('Request project permission', '/projects/detail?id=permission-target', {'Cookie': session})
+            permission.update(projectId='permission-target', reason='I can manage both project schedules and deliverables.')
+            status, _, _ = request('/projects/detail?id=permission-target', permission, {'Cookie': session})
+            assert status in (303, 307), status
+            with sqlite3.connect(state_db) as db:
+                request_row = db.execute("SELECT status FROM project_permissions WHERE team_id='application:speech-pair' AND user_id=? AND project_id='permission-target'", (account_id,)).fetchone()
+                assert request_row == ('pending',), request_row
+                manager_token = 'cd' * 32
+                db.execute("INSERT INTO accounts(id,email,name,salt,hash,created) VALUES ('test-manager','manager@example.com','Manager','','','2026-11-24')")
+                db.execute("INSERT INTO managers(user_id,granted_by,created) VALUES ('test-manager','owner','2026-11-24')")
+                db.execute("INSERT INTO sessions(token_hash,account_id,expires) VALUES (?,'test-manager',?)", (hashlib.sha256(manager_token.encode()).hexdigest(), int(time.time() * 1000) + 60000))
+                db.execute("INSERT INTO policy_acceptances(user_id,version_id,role,accepted_name,accepted_at,content_hash) SELECT 'test-manager',version_id,'manager','Manager','2026-11-24','test' FROM current_policy WHERE id='platform'")
+            manager_cookie = 'sq_session=' + manager_token
+            status, queue, _ = request('/admin/projects/permissions', headers={'Cookie': manager_cookie})
+            assert status == 200 and 'Second project' in queue and 'Synthetic Cloudflare User' in queue, (status, re.sub('<[^>]+>', ' ', queue)[-1400:])
+            review = form('Approve access', '/admin/projects/permissions', {'Cookie': manager_cookie})
+            review.update(userId=account_id, teamId='application:speech-pair', projectId='permission-target', decision='approved')
+            status, _, _ = request('/admin/projects/permissions', review, {'Cookie': session})
+            assert status >= 400, 'A contributor must not approve their own project switch'
+            status, _, _ = request('/admin/projects/permissions', review, {'Cookie': manager_cookie})
+            assert status in (303, 307), status
+            with sqlite3.connect(state_db) as db:
+                assert db.execute("SELECT status FROM project_permissions WHERE team_id='application:speech-pair' AND user_id=? AND project_id='permission-target'", (account_id,)).fetchone() == ('approved',)
+            status, detail, _ = request('/projects/detail?id=permission-target', headers={'Cookie': session})
+            assert status == 200 and 'A manager must approve your additional project' not in detail
             print('PASS CLOUDFLARE: D1 migrations, home/navigation/assets, real password signup/login, account email confirmation, forged-owner denial and cross-origin write denial.')
         except Exception:
             time.sleep(.5)

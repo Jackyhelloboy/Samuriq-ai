@@ -1,0 +1,1 @@
+ALTER TABLE signup_details ADD COLUMN state TEXT NOT NULL DEFAULT '';

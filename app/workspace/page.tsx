@@ -93,8 +93,7 @@ export default async function Workspace({searchParams}:{searchParams:Promise<Rec
                   />
                 </label>
                 <label>Age in years<input type="number" name="age" min={1} max={120} defaultValue={signup?.age}/></label>
-                <label>Private street address (optional)<textarea name="address" rows={2} maxLength={300} autoComplete="street-address" defaultValue={signup?.address}/></label>
-                <ProfilePreferences language={profile?.language||""} location={profile?.location??signup?.city??""}/>
+                <ProfilePreferences language={profile?.language||""} location={profile?.location??(signup?.state ? signup.state + ', India' : signup?.city??"")}/>
                 <MobileEquipment initial={profile?.device??signup?.device??""} platform={profile?.mobileOs??signup?.mobile_os??""} version={profile?.osVersion??signup?.os_version??""}/>
                 {!websiteOnly()&&<label>
                   Telegram username <small>Verified through the bot after saving</small>

@@ -1,6 +1,8 @@
-# Samuriq AI · V10 delivery operations
+# Samuriq AI · Projects, vendors and contributors
 
 A role-scoped portal for AI recording, annotation, evaluation, POV and other client projects. Work happens on the client platform; Samuriq coordinates registration, training, teams, evidence, support and owner-controlled settlements.
+
+Project listings and briefs are public. Contributors register once to save their profile, join an assigned project and provide private payment details. Vendors and team leaders manage only their assigned teams; managers control project access and the owner controls settlements. Registration alone does not guarantee work or payment: accepted terms and approved work determine eligibility.
 
 ## Payment responsibility
 
@@ -21,13 +23,14 @@ Read [PRODUCTION-V10.md](PRODUCTION-V10.md) for current role agreements, working
 | Vendor / TL | `/teams` | Assigned team only; one active project by default |
 | Helper | `/helper` | Explicitly delegated review, contact or ticket permissions |
 | Contributor | `/workspace` | Own projects, evidence, private agreement and support |
-| Isolated demos | `/demo/login` | Synthetic role previews; no password or live privileges |
+
+Legacy demo URLs redirect to the public projects or sign-in pages. Synthetic account and role tests run against disposable local databases.
 
 Owner tools include `/admin/vendors`, `/admin/payouts` and `/admin/workflows`. Managers add real training and community links at `/admin/projects/workflow?id=PROJECT_ID`. A second TL project needs an explicit management policy and appointment. Query parameters do not grant roles or another vendor's team access.
 
-## Hindi recording rollout
+## Project availability
 
-The existing Hindi pair project opens enrollment for the 18 November 2026 deadline. The owner selected **configure links later**. Client work remains locked if the tutorial or project community is missing. After required tutorial checks and terms acceptance, the server-gated community route opens the configured Telegram/Discord invite. Do not replace missing links with fake destinations.
+Project availability follows each configured start date and deadline in India time. Expired projects remain readable but close applications. Managers configure genuine tutorials, community links and project requirements; missing links never receive placeholder destinations. Additional active projects require approval from the current team leader or a manager for contributors without a team.
 
 ## Development and verification
 

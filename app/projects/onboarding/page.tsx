@@ -60,11 +60,11 @@ export default async function Onboarding({
       <Heading
         eyebrow="PROJECT ONBOARDING"
         title={j.title}
-        description="Watch the video, accept the terms and submit once. Your client desk is the next screen."
+        description="Complete the required lessons, agree to the terms and submit your project application. Work access opens after approval."
       />
       {q.error&&<p className="notice" role="alert">Check your partner’s separate email and your availability before submitting. Your recorded tutorial progress is saved.</p>}
       <div className="onboarding-steps">
-        <span>1 · Watch</span><span>2 · Agree & submit</span><span>3 · Client desk</span>
+        <span>1 · Watch</span><span>2 · Agree & submit</span><span>3 · Approval & access</span>
       </div>
       {!user ? (
         <a
@@ -94,7 +94,7 @@ export default async function Onboarding({
           </section>
           <aside>
             <section className="suite-card" id="project-agreement">
-              <h2>Agree, submit & open your client desk</h2>{j.inviteCode&&<div className="invite-code-notice"><span className="eyebrow">MANDATORY TASK INVITATION CODE</span><strong>{j.inviteCode}</strong><p>Enter this code when registering on the client platform. Without this task invitation code, you will not be able to access work under our project. Your TL must confirm registration evidence.</p></div>}
+              <h2>Agree and submit your application</h2>{j.inviteCode&&<div className="invite-code-notice"><span className="eyebrow">MANDATORY TASK INVITATION CODE</span><strong>{j.inviteCode}</strong><p>Enter this code when registering on the client platform. Without this task invitation code, you will not be able to access work under our project. Your TL must confirm registration evidence.</p></div>}
               <div className="terms-text">{j.terms || j.requirements}</div>
               {record?.acceptedAt && application ? (
                 <>
@@ -149,7 +149,7 @@ export default async function Onboarding({
                     />
                     I completed the tutorial, agree to the project requirements and QC terms, and submit these details. My partner must consent separately.
                   </label>
-                  <button disabled={!complete}>Accept and continue · submit & open client desk</button><p className="small-note">Approved contributors go straight to the embedded client. If approval, partner confirmation or folder checks are pending, the next screen shows exactly what remains.</p>
+                  <button disabled={!complete}>Accept terms and submit application</button><p className="small-note">The next screen shows any remaining approval, partner confirmation or project setup steps before work opens.</p>
                   {!complete && (
                     <p>
                       Terms unlock only after all required videos have recorded playback or coordinator

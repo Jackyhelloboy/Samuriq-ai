@@ -32,6 +32,7 @@ export default async function AdminProjects({
   )[0].n;
   return (
     <Shell admin active="Projects">
+      <p><a className="button light" href="/admin/projects/permissions">Review additional project requests</a></p>
       {operator.role==="owner"&&<div className="actions">
         <a className="button light" href="/admin/import">
           Import projects from CSV ↓

@@ -37,7 +37,7 @@ export default async function Home({
         <Brand />
         <nav aria-label="Main navigation">
           <a href="#projects">Projects</a>
-          <a href="#company">For businesses</a>
+          <a href="#vendors">For vendors</a>
           <a href="/login#sign-in">Sign in</a>
         </nav>
         <a className="nav-signin" href="/login#create-account">
@@ -47,14 +47,14 @@ export default async function Home({
       <main id="main-content" tabIndex={-1}>
         <section className="hiring-hero">
           <div>
-            <p className="eyebrow">For freelance contributors and vendors</p>
+            <p className="eyebrow">Project opportunities · Freelancers · Vendors</p>
             <h1>
-              Find your next
+              People power
               <br />
-              <em>AI project.</em>
+              <em>AI projects.</em>
             </h1>
             <p>
-              Discover projects that fit your language, skills and equipment. Join individually or register your team as a vendor.
+              See project requirements before you join. Create an account to register your interest, coordinate a team or set up payment details when you start working.
             </p>
             <div className="hiring-actions"><a className="primary-hiring-link" href="#projects">See projects <ArrowUpRight size={16}/></a><a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Register a team <ArrowUpRight size={15}/></a></div>
           </div>
@@ -86,7 +86,7 @@ export default async function Home({
                 <span className="next-project-icon"><BellRing size={28} strokeWidth={1.5} /></span>
                 <div>
                   <h3>Hear about the next project</h3>
-                  <p>Share your language, location and equipment so we can contact you when a suitable opportunity opens.</p>
+                  <p>Tell us your preferred languages, location and equipment to receive updates when suitable projects open.</p>
                 </div>
                 <a href="/login?return_to=%2Fworkspace%2Fhiring#create-account">Get project updates <ArrowUpRight size={18} /></a>
               </aside>
@@ -97,6 +97,20 @@ export default async function Home({
           )}
         </section>{" "}
 
+        <section className="hiring-paths" aria-label="Ways to participate">
+          <article>
+            <p className="eyebrow">Join individually</p>
+            <h2>Work on a project that fits you.</h2>
+            <p>Read the brief and requirements, register your details, then follow your project’s onboarding steps. Keep payment details in your account for approved work.</p>
+            <a href={board}>Explore projects <ArrowUpRight size={18}/></a>
+          </article>
+          <article>
+            <p className="eyebrow">Coordinate a team</p>
+            <h2>Bring your people together.</h2>
+            <p>Register as a vendor, share your team capacity and coordinate members through project-specific invitations and team leaders.</p>
+            <a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Register vendor interest <ArrowUpRight size={18}/></a>
+          </article>
+        </section>
         <section className="expertise-section" id="expertise">
           <div className="editorial-heading">
             <h2>Explore by <em>specialty.</em></h2>
@@ -161,11 +175,11 @@ export default async function Home({
                 ],
                 [
                   "Register for the project",
-                  "Create your account, complete your profile and choose the project you want to join.",
+                  "Create your account, complete your profile and register for the project you want to join.",
                 ],
                 [
                   "Join your project group",
-                  "Follow the project brief, join its group when invited and complete the required onboarding.",
+                  "Complete the agreement and tutorial, then join your assigned group and access work when approved.",
                 ],
               ].map(([t, d], i) => (
                 <li key={t}>
@@ -182,21 +196,21 @@ export default async function Home({
             </a>
           </div>
         </section>
-        <section className="business-section" id="company">
-          <p className="eyebrow">FOR AI TEAMS & PROJECT PARTNERS</p>
+        <section className="business-section" id="vendors">
+          <p className="eyebrow">FOR VENDORS AND TEAM LEADERS</p>
           <div>
             <h2>
-              Build your <em>project team.</em>
+              Bring a team <em>to the project.</em>
             </h2>
             <aside>
               <p>
-                Tell us the languages, devices and team size you need. We coordinate recruitment, onboarding and daily reporting.
+                Share your available languages, locations, devices and team size. Approved team leaders can invite members using a team code, with each member assigned to the right project.
               </p>
               <a
                 className="button pearl"
-                href="mailto:rayan.editor.businessquarry577@gmail.com?subject=Samuriq%20AI%20Project%20Enquiry"
+                href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account"
               >
-                Discuss your project <ArrowUpRight size={18} />
+                Register as a vendor <ArrowUpRight size={18} />
               </a>
             </aside>
           </div>
@@ -210,7 +224,7 @@ export default async function Home({
 
         </div>
         <nav aria-label="Footer navigation"><a href="/india">India locations & languages</a>
-          <a href="#expertise">Expertise</a>
+          <a href="#vendors">For vendors</a>
           <a href={board}>Project opportunities</a>
           <a href="/login">Your workspace</a>
           <a href="/support">Get support</a>

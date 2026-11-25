@@ -3,13 +3,15 @@ import {useEffect,useRef,useState} from "react";
 import {createAccount,submitSignup} from "../account-actions";
 import PasswordField from "../components/password-field";
 import MobileEquipment from "../components/mobile-equipment";
+import {INDIA_STATES} from "../india-states";
 
 const errors:Record<string,string>={
   details:"Enter your name and a valid .com email.",short:"Use a password with 8–128 characters.",
+  passwordMismatch:"Passwords do not match. Enter the same password twice.",
   exists:"This email already has an account. Use Sign in.",admin:"Use the existing owner sign-in.",
   rate:"Too many attempts. Try again in 15 minutes.",
   unavailable:"Registration is temporarily unavailable. Contact support if this continues.",
-  profile:"Check your age, city, mobile number and device version."
+  profile:"Check your age, state, mobile number and device details."
 };
 export default function SignupForm({returnTo}:{returnTo:string}){
   const [saving,setSaving]=useState(false),[error,setError]=useState("");
@@ -21,6 +23,13 @@ export default function SignupForm({returnTo}:{returnTo:string}){
   function next(){
     const inputs=accountFields.current?.querySelectorAll<HTMLInputElement>("input");
     for(const input of inputs||[]) if(!input.reportValidity())return;
+    const password=accountFields.current?.querySelector<HTMLInputElement>('input[name="password"]');
+    const confirmation=accountFields.current?.querySelector<HTMLInputElement>('input[name="confirmPassword"]');
+    if(password && confirmation && password.value!==confirmation.value){
+      confirmation.setCustomValidity("Passwords do not match.");
+      confirmation.reportValidity();
+      return;
+    }
     setStep(2);
   }
   return <form id="create-account" className="account-form" action={createAccount}
@@ -37,12 +46,17 @@ export default function SignupForm({returnTo}:{returnTo:string}){
     <label>Full name<input name="name" autoComplete="name" required maxLength={100}/></label>
     <label>Email address<input name="email" type="email" autoComplete="email" autoCapitalize="none" spellCheck={false} required maxLength={254}/></label>
     <PasswordField id="signup-password" creating/>
+    <label htmlFor="signup-confirm-password">Confirm password</label>
+    <input id="signup-confirm-password" name="confirmPassword" type="password" required minLength={8} maxLength={128}
+      autoComplete="new-password" onInput={event=>event.currentTarget.setCustomValidity("")}/>
     {step===1&&<button type="submit">Continue to contact details</button>}</fieldset>
     <fieldset className="entry-fields" hidden={step===1} disabled={step===1}><legend className="sr-only">Your profile</legend><fieldset className="signup-contact"><legend ref={profileHeading} tabIndex={-1}>Contact details</legend>
       <label>Age in years<input type="number" inputMode="numeric" name="age" min={1} max={120} step={1} required/></label>
       <label>Mobile number<input type="tel" name="phone" autoComplete="tel" required maxLength={22} placeholder="+91…"/></label>
-      <label>City or town<input name="city" autoComplete="address-level2" required maxLength={65}/></label>
-      <label>Street address (optional)<textarea name="address" autoComplete="street-address" rows={2} maxLength={300}/></label>
+      <label>State or union territory<select name="state" required defaultValue="">
+        <option value="" disabled>Select your state</option>
+        {INDIA_STATES.map(state=><option key={state.code} value={state.code}>{state.name}</option>)}
+      </select></label>
     </fieldset>
     <MobileEquipment initial="" platform="" version=""/>
     {step===2&&<button className="entry-back" type="button" onClick={()=>setStep(1)}>Back to account details</button>}

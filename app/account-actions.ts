@@ -23,6 +23,7 @@ export async function submitSignup(form: FormData) {
       .slice(0, 100),
     pw = String(form.get("password") || "");
   if (!acceptedEmail(email) || !name) return "details";
+  if (pw !== String(form.get("confirmPassword") || "")) return "passwordMismatch";
   try{await authLimit(email)}catch(e){if(e instanceof AuthRateLimitError)return "rate";throw e;}
   if (pw.length < 8 || pw.length > 128) return "short";
   const admin = bot().ADMIN_EMAIL?.toLowerCase();
@@ -36,16 +37,16 @@ export async function submitSignup(form: FormData) {
   const id = "pw_" + crypto.randomUUID();
   const salt = randomHex(16);
   const sql = directory();
-  const {age,address,city,phone,device,mobile_os,os_version} = details;
+  const {age,state,phone,device,mobile_os,os_version} = details;
   try {
     const [created] = await sql.batch([
       sql.prepare(`INSERT INTO accounts(id,email,name,salt,hash,created)
         SELECT ?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM participants WHERE lower(email)=?)
         AND NOT EXISTS (SELECT 1 FROM verified_mailboxes WHERE email=?)`)
         .bind(id,email,name,salt,await hashPassword(pw,salt),new Date().toISOString(),email,email),
-      sql.prepare(`INSERT INTO signup_details(account_id,age,address,city,phone,device,mobile_os,os_version)
-        SELECT id,?,?,?,?,?,?,? FROM accounts WHERE id=?`)
-        .bind(age,address,city,phone,device,mobile_os,os_version,id)
+      sql.prepare(`INSERT INTO signup_details(account_id,age,state,phone,device,mobile_os,os_version)
+        SELECT id,?,?,?,?,?,? FROM accounts WHERE id=?`)
+        .bind(age,state,phone,device,mobile_os,os_version,id)
     ]);
     if (!created.meta.changes) return "exists";
   } catch(error) {

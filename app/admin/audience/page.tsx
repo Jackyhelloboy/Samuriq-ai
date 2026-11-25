@@ -16,7 +16,7 @@ export default async function Audience({searchParams}:{searchParams:Promise<Reco
   const displayed=results.slice(0,50);
   return <Shell admin active="WhatsApp audience"><Heading eyebrow="Recruitment" title="WhatsApp audience" description="Build a contact list for a hiring campaign. Only verified accounts that opted in to project invitations appear here."/>
     <form className="suite-card project-filters" method="get"><label>Work type<select name="interest" defaultValue={q.interest||""}><option value="">All work types</option><option value="freelancer">Freelancers</option><option value="vendor">Vendors</option></select></label>
-      <label>City<input name="city" defaultValue={q.city||""} maxLength={80}/></label>
+      <label>State<input name="city" defaultValue={q.city||""} maxLength={80} placeholder="Search by state"/></label>
       {([["language","Language",INDIA_LANGUAGES],["device","Device",devices]] as const).map(([key,label,options])=><label key={key}>{label}<select name={key} defaultValue={q[key]||""}><option value="">All</option>{options.map(o=><option key={o}>{o}</option>)}</select></label>)}
       <button>Filter audience</button></form>
     {q.result && <p role="status">{messages[q.result]}</p>}
