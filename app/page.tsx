@@ -12,6 +12,11 @@ import {
   ScanEye,
   Layers3,
   Move3d,
+  Building2,
+  Users,
+  ShieldCheck,
+  Compass,
+  Wallet,
 } from "lucide-react";
 export const dynamic = "force-dynamic";
 export default async function Home({
@@ -49,23 +54,26 @@ export default async function Home({
           <div>
             <p className="eyebrow">HUMAN DATA · PROJECT DELIVERY</p>
             <h1>
-              Build the future of AI.
-              <br /><em>Work together.</em>
+              Human talent.
+              <br />Intelligent <em>impact.</em>
             </h1>
             <p>
-              Discover real project opportunities, join as an individual contributor or bring your own delivery team. Explore freely; register when you are ready to participate and receive eligible payments.
+              A project network built for people who deliver. Discover opportunities, bring your team and manage your work in one place.
             </p>
             <div className="hiring-actions"><a className="primary-hiring-link" href="#projects">Explore projects <ArrowUpRight size={16}/></a><a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Become a vendor <ArrowUpRight size={15}/></a></div>
           </div>
           <aside className="brand-portal" aria-label="Explore the Samuriq AI platform">
             <div className="portal-top"><span> SAMURIQ / PROJECT NETWORK</span><span className="portal-indicator">PROJECT DIRECTORY</span></div>
-            <h2>One network.<br/>More possibilities.</h2>
+            <div className="signature-network" aria-hidden="true"><svg viewBox="0 0 420 180" fill="none"><defs><linearGradient id="network-line" x1="0" y1="0" x2="420" y2="180" gradientUnits="userSpaceOnUse"><stop stopColor="#738fff"/><stop offset="1" stopColor="#e8d6b7"/></linearGradient></defs><g stroke="url(#network-line)" opacity=".6"><ellipse cx="210" cy="90" rx="164" ry="60" transform="rotate(-12 210 90)"/><ellipse cx="210" cy="90" rx="164" ry="60" transform="rotate(12 210 90)"/><ellipse cx="210" cy="90" rx="100" ry="76"/><path d="M46 90h328M210 14v152M80 38l260 104M80 142L340 38"/></g><g fill="#e8d6b7"><circle cx="46" cy="90" r="4"/><circle cx="374" cy="90" r="4"/><circle cx="210" cy="14" r="4"/><circle cx="210" cy="166" r="4"/><circle cx="80" cy="38" r="3"/><circle cx="340" cy="142" r="3"/></g><rect x="176" y="56" width="68" height="68" rx="19" fill="#152744" stroke="#e8d6b7"/><path d="M229 73h-25l-12 12 26 13-12 12h-14M194 110h24l12-12-26-13 12-12h14" stroke="#e8d6b7" strokeWidth="3.5" strokeLinejoin="round"/></svg></div><h2>Opportunity, connected.</h2>
             <div className="portal-records">
               {jobs.slice(0,3).map(j=><a key={j.id} href={"/projects/detail?id="+encodeURIComponent(j.id)+"&source="+source}><span className="portal-glyph"><Layers3 size={20}/></span><span><strong>{j.title}</strong><small>{j.category}</small></span><ArrowUpRight size={18}/></a>)}
               {!jobs.length&&<p>Explore the project directory for new opportunities as they become available.</p>}
             </div>
             <a className="portal-link" href={board}>Explore the project directory <ArrowUpRight size={17}/></a>
           </aside>
+        </section>
+        <section className="brand-assurances" aria-label="Platform benefits">
+          {[[Compass,"Open discovery","Browse projects without signing in"],[Users,"Two ways to join","Contributors and vendor teams"],[ShieldCheck,"Project-specific terms","Know the requirements before work"],[Wallet,"Account-based payments","Registration required for eligible payouts"]].map(([Icon,t,d])=>{const Glyph=Icon as typeof Compass;return <article key={String(t)}><Glyph size={22} strokeWidth={1.6}/><div><strong>{String(t)}</strong><small>{String(d)}</small></div></article>})}
         </section>
         <section className="home-project-board" id="projects">
           <div className="section-kicker">
@@ -103,13 +111,15 @@ export default async function Home({
 
         <section className="hiring-paths" aria-label="Ways to participate">
           <article>
-            <p className="eyebrow">Join individually</p>
+            <span className="path-icon"><Users size={27} strokeWidth={1.5}/></span>
+            <p className="eyebrow">01 / FOR CONTRIBUTORS</p>
             <h2>Work on a project that fits you.</h2>
             <p>Read the brief and requirements, register your details, then follow your project’s onboarding steps. Keep payment details in your account for approved work.</p>
             <a href={board}>Explore projects <ArrowUpRight size={18}/></a>
           </article>
           <article>
-            <p className="eyebrow">Coordinate a team</p>
+            <span className="path-icon"><Building2 size={27} strokeWidth={1.5}/></span>
+            <p className="eyebrow">02 / FOR VENDORS</p>
             <h2>Bring your people together.</h2>
             <p>Register vendor interest, share your team capacity and coordinate assigned contributors through project-specific invitations.</p>
             <a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Register vendor interest <ArrowUpRight size={18}/></a>
@@ -146,7 +156,7 @@ export default async function Home({
               return (
                 <article key={String(t)}>
                   
-                  <Glyph size={28} strokeWidth={1.2} />
+                  <span className="specialty-glyph"><Glyph size={32} strokeWidth={1.5}/></span>
                   <div>
                     <h3><a href={board+"&category="+encodeURIComponent(["Speech & audio","Data annotation","Human motion & POV","AI evaluation"][i])}>{String(t)} <ArrowUpRight size={16}/></a></h3>
                     <p>{String(d)}</p>
