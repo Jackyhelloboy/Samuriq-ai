@@ -26,9 +26,7 @@ export default async function Login({
       <header className="entry-header"><Brand/><a href="/projects">Browse projects <span aria-hidden="true">↗</span></a></header>
       <div className="entry-layout">
         <aside className="entry-photo" aria-label="Project opportunities">
-          <picture><source media="(min-width: 860px)" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="48vw"/>
-            <img src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" width="1200" height="800" alt="" /></picture>
-          <div><p>Contributor workspace</p><h2>Find your project.<br/><em>Work with your team.</em></h2></div>
+          <div className="account-brand-panel"><p>YOUR SAMURIQ WORKSPACE</p><h2>Good work.<br/><em>Clear opportunities.</em></h2><ul><li>Discover and join project opportunities.</li><li>Manage your assigned projects and agreements.</li><li>Keep payment information in your account.</li></ul><a href="/projects">Browse public projects ↗</a></div>
         </aside>
         <section className="entry-panel" aria-label="Your account">
         {q.error && (
