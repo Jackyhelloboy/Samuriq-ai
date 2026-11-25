@@ -31,7 +31,7 @@ export default async function Home({
       .orderBy(desc(projects.active),desc(projects.created))
       .limit(12);
   return (
-    <div className="premium-site pro5 hiring-site">
+    <div className="premium-site pro5 hiring-site vendor-v11">
       <a className="skip-to-content" href="#main-content">Skip to main content</a>
       <header className="company-nav">
         <Brand />
@@ -47,16 +47,15 @@ export default async function Home({
       <main id="main-content" tabIndex={-1}>
         <section className="hiring-hero">
           <div>
-            <p className="eyebrow">Project opportunities · Freelancers · Vendors</p>
+            <p className="eyebrow">HUMAN DATA · PROJECT DELIVERY</p>
             <h1>
-              People power
-              <br />
-              <em>AI projects.</em>
+              Build the future of AI.
+              <br /><em>Work together.</em>
             </h1>
             <p>
-              See project requirements before you join. Create an account to register your interest, coordinate a team or set up payment details when you start working.
+              Discover real project opportunities, join as an individual contributor or bring your own delivery team. Explore freely; register when you are ready to participate and receive eligible payments.
             </p>
-            <div className="hiring-actions"><a className="primary-hiring-link" href="#projects">See projects <ArrowUpRight size={16}/></a><a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Register a team <ArrowUpRight size={15}/></a></div>
+            <div className="hiring-actions"><a className="primary-hiring-link" href="#projects">Explore projects <ArrowUpRight size={16}/></a><a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Become a vendor <ArrowUpRight size={15}/></a></div>
           </div>
           <img
             src="/images/team-1200.webp" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 50vw" width={1200} height={800} fetchPriority="high"
@@ -66,10 +65,10 @@ export default async function Home({
         <section className="home-project-board" id="projects">
           <div className="section-kicker">
             <div>
-              <h2>Current projects</h2>
+              <p className="eyebrow">PROJECT MARKETPLACE</p><h2>Find your next opportunity.</h2><p className="v11-section-description">Explore published requirements, rates and joining instructions without signing in.</p>
             </div>
             <a className="text-link" href={board}>
-              Search all projects <ArrowUpRight size={16}/>
+              View all projects <ArrowUpRight size={16}/>
             </a>
           </div>
           <ContentSlot slot="home" />
@@ -85,7 +84,7 @@ export default async function Home({
               <aside className="next-project-card">
                 <span className="next-project-icon"><BellRing size={28} strokeWidth={1.5} /></span>
                 <div>
-                  <h3>Hear about the next project</h3>
+                  <h3>Stay ready for the next project</h3>
                   <p>Tell us your preferred languages, location and equipment to receive updates when suitable projects open.</p>
                 </div>
                 <a href="/login?return_to=%2Fworkspace%2Fhiring#create-account">Get project updates <ArrowUpRight size={18} /></a>
@@ -107,7 +106,7 @@ export default async function Home({
           <article>
             <p className="eyebrow">Coordinate a team</p>
             <h2>Bring your people together.</h2>
-            <p>Register as a vendor, share your team capacity and coordinate members through project-specific invitations and team leaders.</p>
+            <p>Register vendor interest, share your team capacity and coordinate assigned contributors through project-specific invitations.</p>
             <a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Register vendor interest <ArrowUpRight size={18}/></a>
           </article>
         </section>
@@ -174,12 +173,12 @@ export default async function Home({
                   "Choose work that matches your language, skills and equipment.",
                 ],
                 [
-                  "Register for the project",
+                  "Create your account",
                   "Create your account, complete your profile and register for the project you want to join.",
                 ],
                 [
                   "Join your project group",
-                  "Complete the agreement and tutorial, then join your assigned group and access work when approved.",
+                  "Follow the project-specific instructions and terms. Approved work and verified payment details are required before payment.",
                 ],
               ].map(([t, d], i) => (
                 <li key={t}>
@@ -197,14 +196,14 @@ export default async function Home({
           </div>
         </section>
         <section className="business-section" id="vendors">
-          <p className="eyebrow">FOR VENDORS AND TEAM LEADERS</p>
+          <p className="eyebrow">FOR DELIVERY PARTNERS</p>
           <div>
             <h2>
               Bring a team <em>to the project.</em>
             </h2>
             <aside>
               <p>
-                Share your available languages, locations, devices and team size. Approved team leaders can invite members using a team code, with each member assigned to the right project.
+                Share your available languages, locations, devices and team size. Approved vendor teams can invite members using a team code, with each member assigned to the right project.
               </p>
               <a
                 className="button pearl"
