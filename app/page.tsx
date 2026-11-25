@@ -57,10 +57,15 @@ export default async function Home({
             </p>
             <div className="hiring-actions"><a className="primary-hiring-link" href="#projects">Explore projects <ArrowUpRight size={16}/></a><a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Become a vendor <ArrowUpRight size={15}/></a></div>
           </div>
-          <img
-            src="/images/team-1200.webp" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 50vw" width={1200} height={800} fetchPriority="high"
-            alt="Professionals collaborating on a project"
-          />
+          <aside className="brand-portal" aria-label="Explore the Samuriq AI platform">
+            <div className="portal-top"><span> SAMURIQ / PROJECT NETWORK</span><span className="portal-indicator">PROJECT DIRECTORY</span></div>
+            <h2>One network.<br/>More possibilities.</h2>
+            <div className="portal-records">
+              {jobs.slice(0,3).map(j=><a key={j.id} href={"/projects/detail?id="+encodeURIComponent(j.id)+"&source="+source}><span className="portal-glyph"><Layers3 size={20}/></span><span><strong>{j.title}</strong><small>{j.category}</small></span><ArrowUpRight size={18}/></a>)}
+              {!jobs.length&&<p>Explore the project directory for new opportunities as they become available.</p>}
+            </div>
+            <a className="portal-link" href={board}>Explore the project directory <ArrowUpRight size={17}/></a>
+          </aside>
         </section>
         <section className="home-project-board" id="projects">
           <div className="section-kicker">
@@ -153,14 +158,7 @@ export default async function Home({
           </div>
         </section>
         <section className="delivery-section" id="delivery">
-          <div className="delivery-photo">
-            <img
-              src="/images/collaboration.jpg"
-              alt="Two professionals reviewing a project together"
-              loading="lazy"
-            />
-
-          </div>
+          <div className="delivery-photo brand-process"><span className="portal-indicator">THE SAMURIQ EXPERIENCE</span><h3>Clarity at every step.</h3>{[["01","Explore","Public project briefs"],["02","Connect","Project-specific onboarding"],["03","Deliver","Approved work and agreed payments"]].map(([n,t,d])=><div className="process-item" key={n}><span>{n}</span><div><strong>{t}</strong><small>{d}</small></div></div>)}</div>
           <div className="delivery-copy">
 
             <h2>
