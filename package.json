@@ -16,6 +16,7 @@
     "build:cloudflare:local": "node scripts/cloudflare.mjs build --local",
     "deploy:cloudflare": "node scripts/cloudflare.mjs deploy",
     "test:hosting": "node --test scripts/test-hosting-request.mjs",
+    "test:device": "esbuild scripts/test-device-detection.ts --bundle --platform=node --format=esm --packages=external --outfile=.wrangler/test-device-detection.mjs && node .wrangler/test-device-detection.mjs",
     "test:security:local": "python3 scripts/test-security-local.py",
     "test:cloudflare:local": "python3 scripts/test-cloudflare-local.py"
   },

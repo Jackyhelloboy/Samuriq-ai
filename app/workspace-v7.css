@@ -14,3 +14,12 @@
 .v7-suite .suite-sidebar>.brand{gap:8px;max-width:145px}.v7-suite .suite-sidebar>.brand .identity-mark{width:28px;height:32px;flex-shrink:0}.v7-suite .suite-sidebar>.brand>span{font-size:19px;letter-spacing:-.7px}.v7-suite .suite-sidebar>.brand small{font-size:5.2px;letter-spacing:.4px;white-space:nowrap}
 
 /* V8: role-scoped production operations */.workspace-notices{padding:12px 18px!important;margin-bottom:18px}.workspace-notices summary{display:flex;align-items:center;gap:10px;cursor:pointer}.workspace-notices article+article{border-top:1px solid #e1e8eb;padding-top:12px}.workspace-notices h3{margin:8px 0}.project-card-top{gap:8px}.project-card-top .share-project{margin-left:auto}.request-status form{display:flex;flex-wrap:wrap;gap:8px}.contributor-v7 .v7-project-focus>.share-project{float:right}
+
+/* Keep role switching compact on narrow screens. */
+.v7-suite .workspace-current,.v7-suite .workspace-switcher>summary{display:inline-flex;align-items:center;gap:9px;min-height:42px;max-width:100%;color:var(--ink)}
+.v7-suite .workspace-current strong,.v7-suite .workspace-switcher>summary>strong{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13px;font-weight:650}
+.v7-suite .workspace-switcher>summary>svg:last-child{flex:none;width:14px}
+.v7-suite .workspace-options{left:0;width:min(260px,calc(100vw - 32px));max-height:min(320px,65dvh);overflow-y:auto;padding:6px;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:0 16px 34px rgb(23 46 40 / 12%)}
+.v7-suite.v6-suite .workspace-options form>.workspace-choice{display:block;width:100%;min-height:42px;padding:10px 12px;text-align:left;line-height:1.3}
+.v7-suite .workspace-options .workspace-choice[aria-current="page"]{background:var(--sage)!important}
+@media(max-width:760px){.v7-suite .suite-top{gap:8px!important}.v7-suite .workspace-current,.v7-suite .workspace-switcher{min-width:0;max-width:calc(100vw - 190px)}.v7-suite .workspace-current strong,.v7-suite .workspace-switcher>summary>strong{font-size:12px}.v7-suite .workspace-options{left:0;top:calc(100% + 5px)}.v7-suite .top-quick-links .top-projects>span{display:none}}

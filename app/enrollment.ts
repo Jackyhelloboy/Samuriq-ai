@@ -1,10 +1,26 @@
 import {getDb} from '../db';
-import {teamMembers,projectTeams,projects,projectPermissions,participants} from '../db/schema';
+import {teamMembers,projectTeams,projects,projectPermissions,participants,applications} from '../db/schema';
 import {and,eq,sql} from 'drizzle-orm';
 import {projectState} from './project-state';
 import {baseRate,isProtectedStaff,workDay} from './team-access';
-export class EnrollmentError extends Error {constructor(public code:'permission-required'|'tl-role'){super(code==='tl-role'?'Team leaders need a manager-approved role change before joining another team.':'Your current team leader must approve this additional project first.');}}
-export async function applicationLocks(userId:string,target:string){const db=getDb(),rows=await db.select().from(teamMembers).innerJoin(projectTeams,eq(projectTeams.id,teamMembers.teamId)).innerJoin(projects,eq(projects.id,teamMembers.projectId)).where(and(eq(teamMembers.userId,userId),eq(projectTeams.active,1),eq(projects.active,1),eq(projects.archivedAt,"")));const locks=[];for(const row of rows){if(row.projects.id===target||projectState(row.projects)!=='online')continue;const grant=await db.select().from(projectPermissions).where(and(eq(projectPermissions.teamId,row.project_teams.id),eq(projectPermissions.userId,userId),eq(projectPermissions.projectId,target))).get();if(grant?.status!=='approved')locks.push(row);}return locks;}
+export class EnrollmentError extends Error {constructor(public code:'permission-required'|'tl-role'){super(code==='tl-role'?'Team leaders need a manager-approved role change before joining another team.':'Your current team leader or a manager must approve this additional project first.');}}
+export async function applicationLocks(userId:string,target:string){
+  const db=getDb();
+  const memberships=await db.select().from(teamMembers).innerJoin(projectTeams,eq(projectTeams.id,teamMembers.teamId)).innerJoin(projects,eq(projects.id,teamMembers.projectId)).where(and(eq(teamMembers.userId,userId),eq(projectTeams.active,1),eq(projects.active,1),eq(projects.archivedAt,"")));
+  const assigned=new Set(memberships.map(row=>row.projects.id));
+  const pending=await db.select().from(applications).innerJoin(projects,eq(projects.id,applications.projectId)).where(and(eq(applications.userId,userId),eq(projects.active,1),eq(projects.archivedAt,"")));
+  const sources=[
+    ...memberships.map(row=>({teamId:row.project_teams.id,sourceId:row.projects.id,manager:false,project:row.projects})),
+    ...pending.filter(row=>!assigned.has(row.projects.id)&&['pending','approved'].includes(row.applications.status)).map(row=>({teamId:'application:'+row.projects.id,sourceId:row.projects.id,manager:true,project:row.projects})),
+  ];
+  const locks=[];
+  for(const source of sources){
+    if(source.sourceId===target||projectState(source.project)!=='online')continue;
+    const grant=await db.select().from(projectPermissions).where(and(eq(projectPermissions.teamId,source.teamId),eq(projectPermissions.userId,userId),eq(projectPermissions.projectId,target))).get();
+    if(grant?.status!=='approved')locks.push(source);
+  }
+  return locks;
+}
 export async function requireApplicationPermission(userId:string,target:string){if((await applicationLocks(userId,target)).length)throw new EnrollmentError('permission-required');}
 export async function assignDirect(userId:string,projectId:string){await (await import('./work-membership')).requireProjectAllowed(userId,projectId);const db=getDb(),existing=await db.select().from(teamMembers).where(and(eq(teamMembers.userId,userId),eq(teamMembers.projectId,projectId))).get();if(existing)return existing;const p=await db.select().from(participants).where(eq(participants.id,userId)).get(),job=await db.select().from(projects).where(eq(projects.id,projectId)).get();if(!p||p.suspended||!p.phoneConsent||!p.phone||!job?.active||job.archivedAt||projectState(job)!=='online'||await isProtectedStaff(p.id,p.email))return null;if(await db.select().from(projectTeams).where(and(eq(projectTeams.leaderId,userId),eq(projectTeams.active,1))).get())throw new EnrollmentError('tl-role');
 // One SQLite write chooses the least-populated eligible team and inserts membership.
@@ -16,6 +32,7 @@ WHERE t.project_id=${projectId} AND t.active=1 AND l.suspended=0 AND l.phone_con
 AND NOT EXISTS(SELECT 1 FROM managers m WHERE m.user_id=l.id)
 AND lower(l.email)<>${(await import('./telegram')).settings().ADMIN_EMAIL?.toLowerCase()||''}
 AND NOT EXISTS(SELECT 1 FROM team_members locked JOIN project_teams lt ON lt.id=locked.team_id JOIN projects lp ON lp.id=locked.project_id WHERE locked.user_id=${userId} AND locked.project_id<>${projectId} AND lt.active=1 AND lp.active=1 AND lp.archived_at='' AND (lp.target_start='' OR lp.target_start<=${workDay()}) AND (lp.deadline='' OR lp.deadline>=${workDay()}) AND NOT EXISTS(SELECT 1 FROM project_permissions permission WHERE permission.team_id=locked.team_id AND permission.user_id=${userId} AND permission.project_id=${projectId} AND permission.status='approved'))
+AND NOT EXISTS(SELECT 1 FROM applications a JOIN projects ap ON ap.id=a.project_id WHERE a.user_id=${userId} AND a.project_id<>${projectId} AND a.status IN ('pending','approved') AND ap.active=1 AND ap.archived_at='' AND (ap.target_start='' OR ap.target_start<=${workDay()}) AND (ap.deadline='' OR ap.deadline>=${workDay()}) AND NOT EXISTS(SELECT 1 FROM team_members assigned JOIN project_teams at ON at.id=assigned.team_id WHERE assigned.user_id=${userId} AND assigned.project_id=a.project_id AND at.active=1) AND NOT EXISTS(SELECT 1 FROM project_permissions permission WHERE permission.team_id='application:'||a.project_id AND permission.user_id=${userId} AND permission.project_id=${projectId} AND permission.status='approved'))
 AND (SELECT count(*) FROM project_teams earlier JOIN projects ep ON ep.id=earlier.project_id WHERE earlier.leader_id=t.leader_id AND earlier.active=1 AND ep.active=1 AND ep.archived_at='' AND (earlier.created<t.created OR (earlier.created=t.created AND earlier.id<=t.id)))<=coalesce((SELECT max_projects FROM leader_policies WHERE user_id=t.leader_id),1)
 AND EXISTS(SELECT 1 FROM policy_acceptances consent JOIN current_policy cp ON cp.version_id=consent.version_id WHERE consent.user_id=t.leader_id AND consent.role='tl')
 AND t.approved_rate_paise>0 AND t.approved_rate_paise<=${baseRate(job)}

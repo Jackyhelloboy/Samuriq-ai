@@ -51,7 +51,7 @@ export default async function Projects({
   });
   return (
     <Shell active="Find projects">
-      <h1 className="sr-only">Projects</h1>
+      <header className="suite-heading"><div><p className="eyebrow">CONTRIBUTORS & VENDOR TEAMS</p><h1>Find your next project.</h1><p>View every published brief without an account. Register when you are ready to join a team and set up your payment profile.</p></div></header>
       <form className="filter-bar project-filters" method="get">
         <label>
           <span className="filter-label">Search projects</span>

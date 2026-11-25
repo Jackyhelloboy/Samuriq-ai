@@ -15,6 +15,7 @@ type Registration = {
   username: string;
   phone: string;
   city: string;
+  state: string;
   language: string;
   age: number | null;
   device: string;
@@ -43,7 +44,7 @@ export async function GET(request: Request) {
   const body = new ReadableStream<Uint8Array>({
     start(controller) {
       controller.enqueue(line([
-        "Project", "User ID", "Name", "Email", "Username", "Phone", "City",
+        "Project", "User ID", "Name", "Email", "Username", "Phone", "State", "City (legacy)",
         "Language", "Age", "Device", "Mobile OS", "OS version", "Application status",
         "Registered", "Team", "Team leader", "Email verified", "Terms accepted",
         "Client username",
@@ -53,7 +54,9 @@ export async function GET(request: Request) {
       const { results } = await directory().prepare(`
         SELECT a.user_id, p.name, p.email, p.username,
           coalesce(nullif(p.phone,''), s.phone, '') AS phone,
-          coalesce(nullif(s.city,''), p.location, '') AS city, p.language, s.age,
+          coalesce(s.city,'') AS city,
+          coalesce(nullif(s.state,''), p.location, '') AS state,
+          p.language, s.age,
           coalesce(nullif(p.device,''), s.device, '') AS device,
           coalesce(nullif(p.mobile_os,''), s.mobile_os, '') AS mobile_os,
           coalesce(nullif(p.os_version,''), s.os_version, '') AS os_version,
@@ -74,7 +77,7 @@ export async function GET(request: Request) {
       for (const row of results) {
         controller.enqueue(line([
           project.title, row.user_id, row.name, row.email, row.username, row.phone,
-          row.city, row.language, row.age, row.device, row.mobile_os, row.os_version,
+          row.state, row.city, row.language, row.age, row.device, row.mobile_os, row.os_version,
           row.status, row.registered, row.team, row.leader, row.verified ? "Yes" : "No",
           row.accepted_at, row.client_username,
         ]));

@@ -7,7 +7,7 @@ export function audience(q:Filters,cursor="",limit=51){
   const olderDevice=({Android:"Android phone",iOS:"iPhone",Mac:"Laptop / desktop",Laptops:"Laptop / desktop"} as Record<string,string>)[device]||"";
   return db().prepare(`WITH eligible AS (
     SELECT h.user_id id,a.name,h.interest,h.whatsapp,h.updated,
-      coalesce(nullif(p.location,''),s.city,'') city,coalesce(p.language,'') language,
+      coalesce(nullif(p.location,''),nullif(s.state,''),s.city,'') city,coalesce(p.language,'') language,
       coalesce(nullif(p.device,''),s.device,'') device
     FROM hiring_preferences h JOIN accounts a ON a.id=h.user_id
     JOIN verified_mailboxes v ON v.email=lower(a.email)

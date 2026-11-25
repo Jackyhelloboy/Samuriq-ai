@@ -7,6 +7,7 @@ import { getDb } from "../db";
 import { participants, reports, projects } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { INDIA_STATES } from "./india-states";
 
 export async function register(form: FormData) {
   const fail=(code:string)=>redirect("/workspace?edit=1&error="+code+"&next="+encodeURIComponent(String(form.get("next")||"").slice(0,100)));
@@ -46,8 +47,8 @@ export async function register(form: FormData) {
   const osVersion=String(form.get("osVersion")||"").trim();
   if ((device && !["Android","iOS","Mac","Laptops","iPhone","Android phone","Phone and computer","Laptop / desktop"].includes(device)) || (device==="Phone and computer" && !["Android","iOS"].includes(mobileOs)) || mobileOs.length>30 || (osVersion && !/^\d{1,3}(?:\.\d{1,3}){0,3}$/.test(osVersion))) return fail("equipment");
   const ageText=String(form.get("age")||"").trim(),age=ageText?Number(ageText):null;
-  const address=String(form.get("address")||"").trim();
-  if ((age!==null&&(!Number.isInteger(age)||age<1||age>120))||address.length>300) return fail("privateDetails");
+  const state=INDIA_STATES.find(item=>item.code===String(form.get("indiaState")||""))?.name||"";
+  if (age!==null&&(!Number.isInteger(age)||age<1||age>120)) return fail("privateDetails");
   try{await (await import('./policy')).recordRegistrationPolicy(user,String(form.get('policyVersion')||''),form.get('platformPolicyConsent'));}catch(error){if(error instanceof Error&&/Read and accept the current platform agreement/i.test(error.message))return fail('policy');throw error;}const chosen=String(form.get('next')||(!existingProfile?primaryProjectId:''));if(chosen&&(!phone||!phoneConsent))return fail('phone-required');
   try{await getDb()
     .insert(participants)
@@ -69,10 +70,10 @@ export async function register(form: FormData) {
       target: participants.id,
       set: { username:handle,name,primaryProjectId,phone,phoneConsent, telegram, language, project, skills, location, device,mobileOs,osVersion,skillLevel },
     });}catch(error){const message=String(error)+String((error as {cause?:unknown})?.cause||"");if(/participant_username_unique|UNIQUE constraint failed: participants.username/i.test(message))return fail("taken");throw error;}
-  if(form.has("address") && form.has("age")){
+  if(form.has("age")){
     await (await import("./recruitment/data")).db().prepare(
-      "INSERT INTO signup_details(account_id,age,address) SELECT id,?,? FROM accounts WHERE id=? ON CONFLICT(account_id) DO UPDATE SET age=excluded.age,address=excluded.address,city='',phone='',device='',mobile_os='',os_version=''"
-    ).bind(age,address,user.userId).run();
+      "INSERT INTO signup_details(account_id,age,state,phone,device,mobile_os,os_version) SELECT id,?,?,?,?,?,? FROM accounts WHERE id=? ON CONFLICT(account_id) DO UPDATE SET age=coalesce(excluded.age,signup_details.age),state=CASE WHEN excluded.state<>'' THEN excluded.state ELSE signup_details.state END,phone=excluded.phone,device=excluded.device,mobile_os=excluded.mobile_os,os_version=excluded.os_version"
+    ).bind(age,state,phone,device,mobileOs,osVersion,user.userId).run();
   }
   const next=String(form.get("next")||(!existingProfile?primaryProjectId:""));if(next){const e=await import("./enrollment");try{await e.requireApplicationPermission(user.userId,next);await e.assignDirect(user.userId,next);}catch(error){if(error instanceof e.EnrollmentError)redirect("/projects/detail?id="+encodeURIComponent(next)+"&notice="+error.code);throw error;}}
   if(next){const job=await getDb().select().from(projects).where(eq(projects.id,next)).get();if(!websiteOnly()&&job?.telegramRequired&&!(await (await import("./telegram-identity")).telegramIdentity(user.userId))?.username)redirect("/workspace/telegram?next="+encodeURIComponent("/projects/onboarding?id="+next));}

@@ -9,8 +9,9 @@ import { settings } from "./telegram";
 import { projectState } from "./project-state";
 import { getDb } from "../db";
 import { projects, applications, participants,teamMembers,projectTeams } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import {workDay} from './team-access';
 async function owner() {
   const user = await getChatGPTUser();
   if (
@@ -178,18 +179,42 @@ export async function submitProjectApplication(form: FormData) {
   await assignDirect(user.userId,projectId);
   await (await import("./work-membership")).requireProjectAllowed(user.userId,projectId);
   await requireApplicationPermission(user.userId,projectId);
-  await db
-    .insert(applications)
-    .values({
-      userId: user.userId,
-      projectId,
-      partner,
-      partnerEmail,
-      communityHandle,
-      experience: String(form.get("experience") || "").slice(0, 2000),
-      created: new Date().toISOString(),
-    })
-    .onConflictDoNothing();
+  // Enforce the permission checks in the same SQLite write as the application.
+  // Concurrent requests for different projects cannot both bypass the read checks.
+  const today=workDay();
+  await db.run(sql`INSERT OR IGNORE INTO applications
+    (user_id,project_id,partner,partner_email,community_handle,experience,created)
+    SELECT ${user.userId},${projectId},${partner},${partnerEmail},${communityHandle},${answers.slice(0,2000)},${new Date().toISOString()}
+    WHERE NOT EXISTS (
+      SELECT 1 FROM applications a JOIN projects p ON p.id=a.project_id
+      WHERE a.user_id=${user.userId} AND a.project_id<>${projectId}
+      AND a.status IN ('pending','approved') AND p.active=1 AND p.archived_at=''
+      AND (p.target_start='' OR p.target_start<=${today})
+      AND (p.deadline='' OR p.deadline>=${today})
+      AND NOT EXISTS (
+        SELECT 1 FROM team_members m JOIN project_teams t ON t.id=m.team_id
+        WHERE m.user_id=${user.userId} AND m.project_id=a.project_id AND t.active=1
+      )
+      AND NOT EXISTS (
+        SELECT 1 FROM project_permissions permission
+        WHERE permission.team_id='application:'||a.project_id
+        AND permission.user_id=${user.userId} AND permission.project_id=${projectId}
+        AND permission.status='approved'
+      )
+    )
+    AND NOT EXISTS (
+      SELECT 1 FROM team_members member JOIN project_teams team ON team.id=member.team_id
+      JOIN projects p ON p.id=member.project_id
+      WHERE member.user_id=${user.userId} AND member.project_id<>${projectId}
+      AND team.active=1 AND p.active=1 AND p.archived_at=''
+      AND (p.target_start='' OR p.target_start<=${today})
+      AND (p.deadline='' OR p.deadline>=${today})
+      AND NOT EXISTS (
+        SELECT 1 FROM project_permissions permission
+        WHERE permission.team_id=member.team_id AND permission.user_id=${user.userId}
+        AND permission.project_id=${projectId} AND permission.status='approved'
+      )
+    )`);
 }
 export async function applyProject(form:FormData){await submitProjectApplication(form);const id=String(form.get("projectId"));if((await (await import("./recruitment/data")).memberBrief(id,(await getChatGPTUser())?.userId))?.group_url) redirect("/projects/group?id="+encodeURIComponent(id));redirect("/projects/work?id="+encodeURIComponent(String(form.get("projectId")))+"&launch=1");}
 export async function decideApplication(form: FormData) {

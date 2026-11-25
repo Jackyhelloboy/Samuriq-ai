@@ -41,9 +41,10 @@ export default async function Login({
                 restricted:"This account is restricted. Contact your project manager for a review.",
                 exists: "That email already has an account. Sign in instead.",
                 short: "Choose a password with 8–128 characters.",
+                passwordMismatch: "Passwords do not match. Enter the same password twice.",
                 details: "Enter your name and a valid .com email.",
                 unavailable: "Registration is temporarily unavailable. Contact support if this continues.",
-                profile:"Check your age, phone, city and device version.",
+                profile:"Check your age, phone, state and device details.",
                 admin:
                   "That email is reserved for the owner. Use your existing owner password sign-in.",
               } as Record<string, string>
