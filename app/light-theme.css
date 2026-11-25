@@ -152,3 +152,80 @@ body, .premium-site.pro5, .account-entry, .suite .suite-main {
 @media (max-width: 760px) {
   .guest-top-brand span { display: none; }
 }
+
+/* Elevated original — extend the original paper/sage identity, not a rebrand. */
+:root{--elevated-forest:#23483c;--elevated-sage:#e8eee5;--elevated-paper:#fafbf8;--elevated-shadow:0 10px 32px rgb(23 46 40 / 6%);--elevated-radius:18px}
+.elevated-original main{max-width:1520px;margin-inline:auto;padding-inline:clamp(12px,3vw,40px)}
+.elevated-original .company-nav{min-height:76px;padding-inline:clamp(18px,4vw,64px)}
+.elevated-original .company-nav nav a{font-weight:550}
+.elevated-original .company-nav .nav-signin{background:var(--accent);color:var(--on-accent);border:1px solid var(--accent);border-radius:10px}
+.elevated-original .hiring-hero{margin:clamp(16px,3vw,40px) 0 18px;border-radius:26px;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);background:linear-gradient(135deg,#f1f3eb,#e4ece2);box-shadow:var(--elevated-shadow);align-items:stretch}
+.elevated-original .hiring-hero>div{padding:clamp(28px,5vw,76px)}
+.elevated-original .hiring-hero h1{font-size:clamp(3rem,5.9vw,6.4rem);letter-spacing:-.065em;line-height:1.02}
+.elevated-original .hiring-hero h1 em{color:var(--elevated-forest)}
+.elevated-original .hiring-hero .eyebrow{color:var(--accent);font-weight:650;letter-spacing:.11em}
+.elevated-original .hiring-hero>img{height:100%;min-height:360px;object-fit:cover;object-position:center;filter:saturate(.8) contrast(1.03)}
+.elevated-original .hiring-actions a{padding:12px 18px;border:1px solid var(--control-border);border-radius:9px;justify-content:center;text-decoration:none}
+.elevated-original .hiring-actions .primary-hiring-link{background:var(--elevated-forest);border-color:var(--elevated-forest);color:white}
+.elevated-original .hiring-actions a:hover{box-shadow:0 5px 14px rgb(23 46 40 / 10%);text-decoration:none}
+.elevated-benefits{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:14px 0 24px;border-bottom:1px solid var(--line)}
+.elevated-benefits>div{display:flex;align-items:flex-start;gap:12px;padding:12px 18px;min-width:0}
+.elevated-benefits>div+div{border-left:1px solid var(--line)}
+.elevated-benefits svg{flex-shrink:0;color:var(--accent);margin-top:2px}
+.elevated-benefits strong,.elevated-benefits small{display:block;line-height:1.4}
+.elevated-benefits strong{font-size:.94rem;font-weight:650;color:var(--ink)}
+.elevated-benefits small{font-size:.8rem;color:var(--muted);margin-top:5px}
+.elevated-original .home-project-board{padding:clamp(30px,4.5vw,66px) 0}
+.elevated-original .home-project-board .section-kicker{align-items:end}
+.elevated-original .section-kicker .eyebrow{font-size:.74rem;color:var(--accent);letter-spacing:.12em;font-weight:650}
+.elevated-original .home-project-board .section-kicker h2{font-size:clamp(2rem,3.8vw,3.7rem);line-height:1.1;letter-spacing:-.05em}
+.board-intro{margin:8px 0 0;color:var(--muted);line-height:1.5}
+.elevated-search{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.7fr) auto;align-items:center;gap:12px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--elevated-shadow);margin:24px 0}
+.elevated-search label{display:flex;align-items:center;gap:10px;min-width:0;padding:0 12px}
+.elevated-search label+label{border-left:1px solid var(--line)}
+.elevated-search label svg{color:var(--accent);flex-shrink:0}
+.elevated-search :is(input,select){background:transparent;color:var(--ink);border:0;min-height:46px;width:100%;min-width:0;font:inherit;padding:0}
+.elevated-search .search-category-label{font-size:.72rem;font-weight:650;color:var(--muted)}
+.elevated-search button{background:var(--elevated-forest);color:#fff;border:1px solid var(--elevated-forest);border-radius:9px;padding:13px 18px;display:flex;align-items:center;justify-content:center;gap:8px;font:inherit;font-weight:600;min-height:48px}
+.elevated-original .home-project-board .opportunity-grid,.suite .opportunity-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+:is(.elevated-original,.suite) .opportunity-card{border-radius:var(--elevated-radius);border-color:var(--line);box-shadow:var(--elevated-shadow);transition:box-shadow .18s,border-color .18s,transform .18s}
+:is(.elevated-original,.suite) .opportunity-card:hover{border-color:var(--control-border);box-shadow:0 16px 40px rgb(23 46 40 / 10%);transform:translateY(-2px)}
+:is(.elevated-original,.suite) .opportunity-card h2{line-height:1.2;letter-spacing:-.035em}
+:is(.elevated-original,.suite) .card-compensation{background:#eff3ed;border:1px solid var(--line);border-radius:9px;padding:12px}
+:is(.elevated-original,.suite) .card-apply{background:var(--elevated-forest);color:white;border-radius:9px;min-height:46px;padding:10px 14px}
+.elevated-original .hiring-paths{margin:0 0 36px;gap:20px}
+.elevated-original .hiring-paths article{border-radius:22px;padding:clamp(24px,3.5vw,48px);box-shadow:var(--elevated-shadow)}
+.elevated-original .hiring-paths article:nth-child(2){background:linear-gradient(135deg,#e8eee5,#f3f2e9)}
+.elevated-path-icon{display:grid;place-items:center;width:56px;height:56px;border-radius:15px;background:var(--elevated-forest);color:white;margin-bottom:20px}
+.elevated-original .expertise-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.elevated-original .expertise-list article{padding:clamp(20px,2.8vw,36px);border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:var(--elevated-shadow);align-items:start}
+.elevated-original .expertise-list article>svg{color:var(--accent);margin-top:6px}
+.elevated-original .business-section{margin-inline:0;border-radius:24px;background:linear-gradient(125deg,#e4ebe1,#f1f1e8)}
+.v7-suite.v6-suite .suite-heading h1{font-size:clamp(1.7rem,3vw,2.6rem);letter-spacing:-.045em;line-height:1.15}
+.v7-suite.v6-suite .suite-sidebar nav a{border-radius:8px;margin-block:2px;min-height:40px}
+.v7-suite.v6-suite .suite-sidebar nav a.selected{color:var(--accent)!important;font-weight:650;box-shadow:inset 3px 0 var(--accent)}
+.v7-suite.v6-suite .suite-card{border-radius:16px;border:1px solid var(--line)!important;box-shadow:var(--elevated-shadow)}
+.v7-suite.v6-suite .suite-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:12px;border:0!important;background:transparent!important;padding:0;box-shadow:none}
+.v7-suite.v6-suite .suite-stats article{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;min-width:0;box-shadow:var(--elevated-shadow)}
+.v7-suite.v6-suite .suite-stats strong{font-variant-numeric:tabular-nums;letter-spacing:-.045em;overflow-wrap:anywhere}
+.v7-suite.v6-suite .hiring-launch a{border-radius:14px;box-shadow:var(--elevated-shadow)}
+.v7-suite.v6-suite .suite-table thead{background:var(--sage)}
+.account-entry .account-form{border-radius:18px;border-color:var(--line)}
+@media(max-width:900px){.elevated-benefits{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.elevated-benefits>div:nth-child(3){border-left:0}}
+@media(max-width:760px){
+ .elevated-original .company-nav{min-height:60px;padding-inline:14px}
+ .elevated-original .hiring-hero{grid-template-columns:minmax(0,1fr);border-radius:18px}
+ .elevated-original .hiring-hero>div{padding:28px 22px}
+ .elevated-original .hiring-hero h1{font-size:clamp(2.65rem,10vw,4rem)}
+ .elevated-original .hiring-hero>img{height:clamp(190px,52vw,320px);min-height:0}
+ .elevated-original .hiring-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+ .elevated-benefits>div{padding:9px 6px;gap:8px}
+ .elevated-search{grid-template-columns:minmax(0,1fr);gap:6px}
+ .elevated-search label+label{border-left:0;border-top:1px solid var(--line)}
+ .elevated-original .home-project-board .section-kicker{flex-wrap:wrap;align-items:start}
+ .elevated-original .hiring-paths,.elevated-original .expertise-list{grid-template-columns:minmax(0,1fr)}
+ .v7-suite.v6-suite .suite-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .v7-suite.v6-suite .suite-stats article{padding:14px}
+}
+@media(max-width:360px){.elevated-benefits{grid-template-columns:minmax(0,1fr)}.elevated-benefits>div+div{border-left:0;border-top:1px solid var(--line)}}
+@media(prefers-reduced-motion:reduce){:is(.elevated-original,.suite) .opportunity-card{transition:none;transform:none!important}}
