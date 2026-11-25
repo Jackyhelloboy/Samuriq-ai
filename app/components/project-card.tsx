@@ -5,7 +5,7 @@ import {
   Move3d,
   ScanEye,
   MapPin,
-  Users, Languages, MonitorSmartphone,
+  Users, Languages, MonitorSmartphone, CalendarDays,
 } from "lucide-react";
 import { projectState, stateLabel } from "../project-state";
 type Job = {
@@ -61,12 +61,12 @@ export function ProjectCard({
         </span>
         <span>
           <Users size={13} />
-          {j.pair ? "Permanent pair" : "Individual"}
+          {j.pair ? "Pair work" : "Individual"}
         </span>
-        <span><Languages size={15} aria-hidden="true"/><span>Language: {j.languages || "All languages"}</span></span>
-        <span><MonitorSmartphone size={15} aria-hidden="true"/><span>Device: {j.devices || "Any device"}</span></span>
+        <span><Languages size={15} aria-hidden="true"/><span>Language: {j.languages || "See project requirements"}</span></span>
+        <span><MonitorSmartphone size={15} aria-hidden="true"/><span>Device: {j.devices || "See project requirements"}</span></span>{j.deadline && <span><CalendarDays size={15} aria-hidden="true"/><span>Deadline: {j.deadline}</span></span>}
       </div>
-      <div className="card-compensation">{j.rate || "See the project brief for compensation"}</div>
+      <div className="card-compensation"><span className="card-discipline">Project rate</span><div>{j.rate || "See the project brief for compensation"}</div></div>
 
       <a
         href={
@@ -77,7 +77,7 @@ export function ProjectCard({
         }
         className="card-apply"
       >
-        {state==="online"?"View requirements":"View project details"} <ArrowUpRight size={18} />
+        {state==="online"?"View project & requirements":"View project details"} <ArrowUpRight size={18} />
       </a>
     </article>
   );
