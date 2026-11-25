@@ -12,6 +12,11 @@ import {
   ScanEye,
   Layers3,
   Move3d,
+  Search,
+  Users,
+  Building2,
+  ShieldCheck,
+  Wallet,
 } from "lucide-react";
 export const dynamic = "force-dynamic";
 export default async function Home({
@@ -31,7 +36,7 @@ export default async function Home({
       .orderBy(desc(projects.active),desc(projects.created))
       .limit(12);
   return (
-    <div className="premium-site pro5 hiring-site">
+    <div className="premium-site pro5 hiring-site elevated-original">
       <a className="skip-to-content" href="#main-content">Skip to main content</a>
       <header className="company-nav">
         <Brand />
@@ -54,24 +59,36 @@ export default async function Home({
               <em>AI projects.</em>
             </h1>
             <p>
-              See project requirements before you join. Create an account to register your interest, coordinate a team or set up payment details when you start working.
+              Find work that fits your skills or bring your own team. Browse every published project freely, then register to participate and receive eligible payments.
             </p>
-            <div className="hiring-actions"><a className="primary-hiring-link" href="#projects">See projects <ArrowUpRight size={16}/></a><a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Register a team <ArrowUpRight size={15}/></a></div>
+            <div className="hiring-actions"><a className="primary-hiring-link" href="#projects">Explore projects <ArrowUpRight size={16}/></a><a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Become a vendor <ArrowUpRight size={15}/></a></div>
           </div>
           <img
             src="/images/team-1200.webp" srcSet="/images/team-640.webp 640w, /images/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 50vw" width={1200} height={800} fetchPriority="high"
             alt="Professionals collaborating on a project"
           />
         </section>
+        <section className="elevated-benefits" aria-label="How Samuriq AI works">
+          <div><Search size={22} aria-hidden="true"/><span><strong>Open opportunities</strong><small>Browse without an account</small></span></div>
+          <div><Users size={22} aria-hidden="true"/><span><strong>Flexible participation</strong><small>Individuals and vendor teams</small></span></div>
+          <div><ShieldCheck size={22} aria-hidden="true"/><span><strong>Clear project terms</strong><small>Requirements before you join</small></span></div>
+          <div><Wallet size={22} aria-hidden="true"/><span><strong>Account-based payments</strong><small>Register for eligible payouts</small></span></div>
+        </section>
         <section className="home-project-board" id="projects">
           <div className="section-kicker">
             <div>
-              <h2>Current projects</h2>
+              <p className="eyebrow">THE PROJECT BOARD</p><h2>Current projects</h2><p className="board-intro">Discover published opportunities, requirements and rates.</p>
             </div>
             <a className="text-link" href={board}>
               Search all projects <ArrowUpRight size={16}/>
             </a>
           </div>
+          <form className="elevated-search" action="/projects" method="get" aria-label="Search opportunities">
+            <label><Search size={20} aria-hidden="true"/><input name="q" placeholder="Search by project or keyword" aria-label="Search by project or keyword"/></label>
+            <label><span className="search-category-label">Category</span><select name="category" aria-label="Project category"><option value="">All categories</option>{["AI training","Data annotation","3D hand labeling","Video labeling","Speech & audio","Human motion & POV","AI evaluation","Research & other"].map(c=><option key={c}>{c}</option>)}</select></label>
+            <input type="hidden" name="source" value={decodeURIComponent(source)}/>
+            <button type="submit">Find projects <ArrowUpRight size={16}/></button>
+          </form>
           <ContentSlot slot="home" />
           <div className="opportunity-grid">
             {jobs.map((j) => (
@@ -99,15 +116,17 @@ export default async function Home({
 
         <section className="hiring-paths" aria-label="Ways to participate">
           <article>
+            <span className="elevated-path-icon"><Users size={26} aria-hidden="true"/></span>
             <p className="eyebrow">Join individually</p>
             <h2>Work on a project that fits you.</h2>
             <p>Read the brief and requirements, register your details, then follow your project’s onboarding steps. Keep payment details in your account for approved work.</p>
             <a href={board}>Explore projects <ArrowUpRight size={18}/></a>
           </article>
           <article>
+            <span className="elevated-path-icon"><Building2 size={26} aria-hidden="true"/></span>
             <p className="eyebrow">Coordinate a team</p>
             <h2>Bring your people together.</h2>
-            <p>Register as a vendor, share your team capacity and coordinate members through project-specific invitations and team leaders.</p>
+            <p>Register vendor interest, share your team capacity and coordinate assigned contributors through project-specific invitations.</p>
             <a href="/login?return_to=%2Fworkspace%2Fhiring%3Finterest%3Dvendor#create-account">Register vendor interest <ArrowUpRight size={18}/></a>
           </article>
         </section>
@@ -197,14 +216,14 @@ export default async function Home({
           </div>
         </section>
         <section className="business-section" id="vendors">
-          <p className="eyebrow">FOR VENDORS AND TEAM LEADERS</p>
+          <p className="eyebrow">FOR VENDOR PARTNERS</p>
           <div>
             <h2>
               Bring a team <em>to the project.</em>
             </h2>
             <aside>
               <p>
-                Share your available languages, locations, devices and team size. Approved team leaders can invite members using a team code, with each member assigned to the right project.
+                Share your available languages, locations, devices and team size. Approved vendor teams can invite members using a team code, with each member assigned to the right project.
               </p>
               <a
                 className="button pearl"
