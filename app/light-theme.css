@@ -271,3 +271,62 @@ body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,
 .account-brand-panel li{padding-block:6px}
 .account-brand-panel a{color:var(--brand-champagne);font-weight:600;text-underline-offset:4px}
 @media(max-width:760px){.vendor-v11 .brand-portal{margin:8px;padding:22px;gap:18px;border-radius:15px}.vendor-v11 .delivery-photo.brand-process{min-height:0}.portal-top{font-size:.63rem}}
+
+/* Signature edition: editorial typography, sculpted navy and warm metallic details. */
+:root{--brand-electric:#516ce2;--brand-night:#101b32;--brand-porcelain:#f8f7f4}
+.vendor-v11 .company-nav{min-height:82px}
+.vendor-v11 .hiring-hero{background:radial-gradient(ellipse at 85% 20%,#253c68 0,transparent 55%),linear-gradient(125deg,#101b32 0%,#152746 70%,#20375e 100%);border-color:#243a5a;color:#fff;box-shadow:0 24px 65px #15274424;position:relative;isolation:isolate;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr)}
+.vendor-v11 .hiring-hero>div{padding:clamp(30px,5vw,82px)}
+.vendor-v11 .hiring-hero h1{color:#fff;font-size:clamp(3rem,5.5vw,6.3rem);font-weight:620;letter-spacing:-.075em;line-height:.99}
+.vendor-v11 .hiring-hero h1 em{color:#e8d6b7;font-weight:500}
+.vendor-v11 .hiring-hero .eyebrow{color:#e8d6b7;letter-spacing:.17em}
+.vendor-v11 .hiring-hero p:not(.eyebrow){color:#d4deef;max-width:39ch}
+.vendor-v11 .hiring-actions a{color:#fff;border:1px solid #788ba9;padding:13px 20px;min-height:48px}
+.vendor-v11 .hiring-actions .primary-hiring-link{background:#e8d6b7;color:#14253c;border-color:#e8d6b7}
+.vendor-v11 .hiring-actions a:hover{background:#354b70;border-color:#c2cee3;color:#fff}
+.vendor-v11 .hiring-actions .primary-hiring-link:hover{background:#f4e4c9;color:#14253c}
+.vendor-v11 .brand-portal{background:linear-gradient(145deg,#243857,#16243c 70%);margin:20px 20px 20px 0;border-color:#4a5c7a;box-shadow:0 18px 45px #09132655;gap:16px;padding:clamp(24px,3vw,38px)}
+.signature-network{max-height:180px;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at center,#516ce228 0,transparent 65%)}
+.signature-network svg{width:100%;height:auto;max-height:180px}
+.vendor-v11 .brand-portal h2{font-size:clamp(1.4rem,2.1vw,2.1rem)}
+.portal-records>a{background:#ffffff09;border-color:#ffffff24;transition:background .18s,border-color .18s}
+.portal-top{letter-spacing:.1em}
+.brand-assurances{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;padding:22px 4px;margin:0 0 12px;border-block:1px solid var(--line)}
+.brand-assurances article{display:flex;align-items:flex-start;gap:12px;padding:8px 18px;min-width:0}
+.brand-assurances article+article{border-left:1px solid var(--line)}
+.brand-assurances svg{color:#203d63;flex-shrink:0;margin-top:2px}
+.brand-assurances strong,.brand-assurances small{display:block}
+.brand-assurances strong{color:var(--ink);font-weight:650;font-size:.92rem;line-height:1.35}
+.brand-assurances small{color:var(--muted);font-size:.8rem;margin-top:4px;line-height:1.5}
+.vendor-v11 .home-project-board .section-kicker h2{font-size:clamp(2rem,3.7vw,3.8rem);line-height:1.06;font-weight:620;letter-spacing:-.06em}
+.vendor-v11 .home-project-board .opportunity-card,.suite .opportunity-card{position:relative;overflow:hidden;border-radius:20px;transition:transform .18s,box-shadow .18s,border-color .18s}
+:is(.vendor-v11,.suite) .opportunity-card:before{content:"";height:3px;position:absolute;inset:0 0 auto;background:linear-gradient(90deg,#203d63,#a9b9e1 65%,#e8d6b7);opacity:.8}
+:is(.vendor-v11,.suite) .opportunity-card:hover{transform:translateY(-3px);box-shadow:0 16px 42px #14253c15}
+:is(.vendor-v11,.suite) .project-glyph{background:linear-gradient(145deg,#e9edf9,#f4f1e9);border:1px solid #dce3ef}
+:is(.vendor-v11,.suite) .card-compensation{background:#f6f5f1;border:1px solid #e7e1d5}
+:is(.vendor-v11,.suite) .card-compensation .card-discipline{display:block;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.vendor-v11 .hiring-paths article{position:relative;overflow:hidden;min-height:310px;isolation:isolate}
+.vendor-v11 .hiring-paths article:after{content:"";position:absolute;width:210px;height:210px;right:-76px;top:-74px;border:1px solid #b5c3db;border-radius:50%;box-shadow:0 0 0 22px #dce4f22e,0 0 0 44px #dce4f21c;z-index:-1;pointer-events:none}
+.vendor-v11 .hiring-paths article:nth-child(2){background:linear-gradient(140deg,#e4ebf7,#f1eee6);border-color:#ced9e9}
+.vendor-v11 .hiring-paths .path-icon{display:grid;place-items:center;width:58px;height:58px;background:#14253c;color:#e8d6b7;border-radius:15px;margin-bottom:20px}
+.vendor-v11 .hiring-paths .eyebrow{letter-spacing:.12em}
+.vendor-v11 .expertise-section{padding-block:clamp(32px,5vw,72px)}
+.vendor-v11 .expertise-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.vendor-v11 .expertise-list article{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:16px;border:1px solid var(--line);border-radius:18px;background:#fff;padding:clamp(20px,2.5vw,34px);box-shadow:var(--v11-shadow)}
+.specialty-glyph{display:grid;place-items:center;width:60px;height:60px;border-radius:16px;background:#e9edf3;color:#203d63}
+.vendor-v11 .expertise-list article:nth-child(2) .specialty-glyph{background:#f2eadb;color:#78582e}
+.vendor-v11 .expertise-list article:nth-child(3) .specialty-glyph{background:#e9e8f7;color:#4d4a91}
+.vendor-v11 .expertise-list article:nth-child(4) .specialty-glyph{background:#e4edf0;color:#28546b}
+.vendor-v11 .business-section{background:radial-gradient(ellipse at 85% 0,#304772,transparent 60%),#101b32}
+.v7-suite.v6-suite .suite-stats article{position:relative;overflow:hidden;border-radius:16px}
+.v7-suite.v6-suite .suite-stats article:before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:#203d63}
+.v7-suite.v6-suite .suite-stats article:nth-child(4n+2):before{background:#a47b45}
+.v7-suite.v6-suite .suite-stats article:nth-child(4n+3):before{background:#516ce2}
+.v7-suite.v6-suite .suite-stats article:nth-child(4n+4):before{background:#62768d}
+.v7-suite.v6-suite .hiring-launch a{border-radius:14px;box-shadow:var(--v11-shadow);transition:transform .18s,background .18s}
+.v7-suite.v6-suite .hiring-launch a:hover{transform:translateY(-2px)}
+.account-entry .entry-photo{background:radial-gradient(ellipse at 100% 0,#304772,transparent 65%),#101b32}
+@media(max-width:900px){.brand-assurances{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:16px}.brand-assurances article:nth-child(3){border-left:0}}
+@media(max-width:760px){.vendor-v11 .hiring-hero{grid-template-columns:minmax(0,1fr)}.vendor-v11 .hiring-hero>div{padding:34px 22px}.vendor-v11 .hiring-hero h1{font-size:clamp(2.65rem,10vw,4.2rem)}.vendor-v11 .brand-portal{margin:0 12px 12px;padding:18px}.signature-network svg{max-height:134px}.brand-assurances article{padding:6px 8px;gap:8px}.vendor-v11 .expertise-list{grid-template-columns:minmax(0,1fr)}.vendor-v11 .hiring-paths article{min-height:0}}
+@media(max-width:360px){.brand-assurances{grid-template-columns:minmax(0,1fr)}.brand-assurances article+article{border-left:0;border-top:1px solid var(--line);padding-top:12px}}
+@media(prefers-reduced-motion:reduce){:is(.vendor-v11,.suite) .opportunity-card,.portal-records>a,.v7-suite.v6-suite .hiring-launch a{transition:none;transform:none!important}}
